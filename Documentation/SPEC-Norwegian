@@ -1,7 +1,7 @@
 Kravspesifikasjon for bwreg2
 - Alle eksisterende funksjoner som benyttes.
 
-1. Overordnet måla
+1. Overordnet mål
 1.1 BWReg1
 1.2 Lisens
 1.3 Antatt tidsbruk
@@ -78,50 +78,69 @@ Dette tilsvarer cirka den tiden som allerede er investert i BWReg1.
 
 2.1 Verktøy
 
-PHP4, MySQL og Apache vil bli brukt for å drive systemet. Det vil i så stor grad som 
-mulig skrives uavhengi av andre verktøy. Med unntak av backupscriptene.
+PHP4, MySQL og Apache vil bli brukt for å drive systemet. Det vil i så stor 
+grad som mulig skrives uavhengi av andre verktøy. Med unntak av backupscriptene.
 
-Maskinvaren som vil trenges for å drive systemet er minimalt. Det eneste som spiller
-noen stor rolle er at internettforbindelsen er stabil.
+Maskinvaren som vil trenges for å drive systemet er minimalt. Det eneste som 
+spiller noen stor rolle er at internettforbindelsen er stabil.
 
 BWReg2 vil forventes å kjøre på Linux. 
-
 
 
 2.2 Oversikt over individuelle databaser/tabeller
 
 
 Brukerdatabase
- - Inneholder liste over brukere med navn, fødselsår, adresse, telefonnummer, e-postadresse og ekstra-informasjon. 
- - Liste over generelt rettighetsnivå.
+ - Inneholder liste over brukere med navn, fødselsår, adresse, telefonnummer, 
+   e-postadresse og ekstra-informasjon. 
+
+Location-database
+ - Beskriver et lokale. Inkludert rader/plasser, adresse og måter å finne 
+   lokalet på.
 
 Eventdatabase
- - Liste over eventer, med pris, antall rader, plasser, åpningstid, eventansvarlig (link til brukerdatabase)
- - Liten, kort tabell.
+ - Liste over eventer, med pris, location-lenke, tidsperiode, navn.
 
 Eventusers
  - Linker event-tabellen med brukerdatabasen. 
- - Hver bruker har maks 1 record her. 
- - Inneholder informasjon om: Betalingsstatus, crew-status, plass, ventelisteplass, tid for registrering.
+ - Hver bruker har maks 1 record her per event. 
+ - Inneholder informasjon om: Betalingsstatus, crew-status, plass,
+   ventelisteplass, tid for registrering.
 
 Content table:
- - id og blob
+ - id, eventid, tittel, permission-lenke, og blob
  - Lagrer det faktiske innholdet på de "statiske" sidene. 
- - Krever rettigheter i brukerdatabasen
+ - Krever rettigheter i brukerdatabasen ELLER crew-tabel.
+ - Kan dynamisk opprettes og fjernes.
 
+Admin-users
+ - Definerer admins for hele systemet, som kan lage og editere events. 
+ - Lenker til user-tabellen
 
+Crews
+ - Definerer hvile crew som eksiterer.
+ - En rad per crew per event. (Game, Vision, Admin....).
+ 
+Crew list
+ - En entry per crewmedlem.
 
+Permissions
+ - EventID, Type, User, Crew
+ - Definerer generiske rettigheter. Type er Read, Write eller Modify.
+ - Modify == slett/rename. User kan enten være 0 eller en uid.
+ - Crew kan være en lenke til crew-id. 
+
+News
+ - Content
 
 2.3 Brukernivåer og rettigheter
 
-Fra brukerdatabase:
+Eventusers crew-status-feltet definerer:
+	0: Vanlig bruker.
+	1-5: Reservert.
+	6: Opplastingsrettigheter.
+	7-9: Reservert.
+	10: Vanlig crew.
 
-0: Normal bruker
-1: Reservert
-2: Bruker med opplastningsrettigheter til filområdet
-3-5: Reservert
-6: Normal crew
-
-
-
-
+Permission-tabellen brukes for å dynamisk opprette rettigheter for content,
+news og andre ting.
