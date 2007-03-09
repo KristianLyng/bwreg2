@@ -225,6 +225,151 @@ bankkontonummer, kontakt-personer, og lignende.
 =======================
 Dette går ut på å kunne tildele folk crew-status og å fjerne det igjenn. 
 
+4. Dynamisk innhold
+===================
+Det lages et eget språk for å lagre dynmaisk innhold, lignende det vi
+bruker for nyheter idag, men nærmere wiki-typen, for å støtte mye gøyall
+formatering. Om mulig, bruker vi et eksisterende bibliotek for å 
+implementere dette.
+
+På det som tradisjonelt er statiske sider, har vi ett tillegg til dette
+språket for å kunne plassere andre dynamiske objekter, f.eks en nyhetsmodul
+eller en poll. 
+
+Fokus er brukervennlighet.
+
+4.1 Nyheter
+===========
+Nyheter binnes opp mot en side, genre og event. Om event er blankt, gjelder
+det alle event i det genret. 
+
+Hver nyhets-modul bindes opp mot permission-tabellen, slik at kun de med
+korrekt rettigheter kan poste på forsiden, f.eks. 
+
+Det skal være lett og intuitivt å opprette nye nyhetsmoduler.
+
+4.2 Brukersystem
+================
+Brukersystemet skal sørge for at man til enhver tid bare trenger EN bruker,
+uavhengi av hvor mange eventer man skal være med på, eller hvilke
+forskjellige rettigheter man har. 
+
+Det skal være intuitivt for brukerene, men også for administratorene.
+
+Tanken er at det skal være så idiotsikkert som mulig. 
+
+4.2.1 Enkeltbrukere
+===================
+Hver enkelt bruker blir presentert med en "din side"-aktig side etter
+han/hun har logget inn. Denne viser all relevant informasjon om brukeren,
+samt meldinger til brukeren.
+
+Mens man er logget inn får man prioriterte meldinger på samtlige sider
+man er på, intill man klikker dem bort. 
+
+Under registrering vil det være bedre kontroll på data hver bruker skriver
+inn. F.eks kan det være nødvendig med e-post konfirmering.
+
+Dynamiske menyer sørger for at det er lett for en administrator f.eks å ha 
+en rekke menyer for de forskjellige systemene.
+
+4.2.2 Grupper
+=============
+Gruppesystemet skal la folk kunne plassreservere seg sammen. Det skal
+også være mulig å la en og samme person bestille billetter for grupper
+på opp til X antall deltakere, der X varierer fra event til event.
+
+Klansystemet er relatert til grupper, men ikke avhengi av dem.
+
+4.3 Bilettsystem
+================
+Billettsystemet blir mye ala det vi har i dag, men smartere. Det vil være
+mer automatisering rundt åpningstider og ventelister, f.eks, samtidig som
+det skal være lett for event-admin å overstyre denne automatikken. 
+
+4.3.1 Registrering
+==================
+Foregår ved enkel klikking ette rman har logget inn. Avhengi av hvilket
+event/genre man bruker for å legge inn, velges et default event, men det 
+skal være lett å velge ett annet event. Og det skal dobbeltsjekkes
+at brukeren vet hva han eller hun velger.
+
+4.3.2 Kontrollering
+===================
+Modulbasert. Standardmodulene skal sørge for å implementere funksjonaliteten
+bwreg1 har idag. Det vil si enkel, manuel kontrollering av billetter og 
+om folk har ankommet. 
+
+Også naturlig støtte for søking og sortering basert på forskjellige
+kriterier, f.eks bare vise ubetalte billetter for folk som ikke har
+ankommet. Prioritet er at det skal være enkelt å bekrefte at folk har
+kommet og/eller betalt.
+
+Gjerne støtte for flere endringer samtidig.
+
+4.3.3 Reservering
+=================
+Plassreservering foregår mye som idag, men med støtte for grupper.
+Enten kan man reservere en plass selv, eller tildele den til gruppens
+"seater". 
+
+Det vil være opp til event-admin å definere hvor store grupper som er
+tillatt, og om det kreves at alle har betalt.
+
+4.4 Clan og composystem
+=======================
+I første omgang skal dette systemet kun ha støtte for å registrere klaner
+og å lage compoer som deltakere kan melde seg på. 
+
+En Klan kan bruke en gruppe som mal, men er ikke på noen måte bundet opp
+mot denne gruppen. Det er kun under opprettelsen av klanen at det er en
+forbindelse mellom grupper og klaner, og dette er heller ikke absolutt
+på noen måte.
+
+Kontroll av klan-deltakere foregår mye på samme måte som gruppe-systemet.
+
+Avhengi av tidsbruk og investering, kand et vurderes å implementere 
+automatisk bracket-system. Systemet skal lages med dette i bakhodet.
+
+4.5 Avstemming
+==============
+Polls bindes opp mot eventer. En poll-klasse kan f.eks være "vision",
+og de kan ha en poll for hver natt, der vision-crew kan styre den
+enkelte pollen. Event-admin lager nye klasser. 
+
+
+4.6 Kommunikasjon
+=================
+Kommunikasjon skal gå over meldinger OG mail. Avhengi av prioriteten
+brukeren velger. All mail sendt til brukeren skal også lagres som en 
+melding.
+
+Det skal kunne sendes meldinger til grupper og klaner, systemet skal 
+hele tiden være basert på at en melding er personlig, så om man sender
+en melding til en cs5on5 klan, sendes 5 individuelle meldinger, men
+dette gjøres automatisk så game crew trykker send bare en gang.
+
+Unntaket for dette er meldinger til crew, dette vil være ticket-basert.
+
+4.6.1 Personlige meldinger
+==========================
+Personlige meldinger er typisk fra crew til deltakere, som svar på spørsmål
+brukerene måtte ha. 
+
+Det kan også være internt mellom crew. Det er opp til site-admin om dette
+tillates mellom vanlige brukere, og opp til event-admin om det er lov
+mellom deltakere på ett event. Dette kan gjøre det lettere for folk å
+løse plass-konflikter f.eks.
+
+4.6.2 Informasjonsmeldinger
+===========================
+Dette er typisk fra crew til deltakere, og kan gå til en klan, gruppe,
+eller deltakere med spesiell status. Den spesielle statusen vil være
+dynamisk. Nok en gang vil dette kun gjelde i det meldingen sendes:
+Systemet henter f.eks alle brukere som er på venteliste når du poster,
+men det er ingen kontroll på om de fortsatt er på venteliste når de
+leser meldingen.
+
 5. Prosjektstruktur
 ===================
 5.1 Filstruktur
