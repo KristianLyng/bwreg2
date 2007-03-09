@@ -38,6 +38,10 @@ Kravspesifikasjon for bwreg2
 5.2 PHP struktur
 5.3 Backup-system
 
+6. Statisk innhold
+6.1 Rettigheter
+6.2 Modifisering av statisk innhold
+6.3 CSS spesifikasjon
 
 1. Overordnet mål
 =================
@@ -407,3 +411,30 @@ kopieres også til en remote tjener for å forhindre tap om en harddisk går tapt.
 Det vil også være mulig for en site administrator å kjøre en backup on demand,
 men denne vil lagres lokalt på web-serveren intill den nattlige backupen 
 overfører denne backupen.
+
+6. Statisk innhold
+==================
+Statisk innhold er egentlig ikke statisk, men tanken er at dette f.eks kan
+være foreldreskrivet.
+
+Det skal være lett å opprette og fjerne slike sider, og det skal være en form
+for historie på hva som endres. Vanlige brukere skal ikke kunne editere slike
+sider.
+
+6.1 Rettigheter
+===============
+Genre-admin skal kunne definere rettigheter på slike sider, slik at f.eks
+game-crew skal kunne endre game-sidene.
+
+6.2 Modifisering av statisk innhold
+===================================
+Bruker språket vi nevnte tidligere, skal ikke være nødvendig å kunne HTML.
+
+6.3 CSS spesifikasjon
+=====================
+Se Documentation/CSS-Spec for detaljer.
+
+Tanken er at siden bygges opp av flere elementer: Meny, meny-element, 
+overskrift, nyhetselement... osv.
+
+Det skal være mulig å bytte CSS lett for genre-admin.
