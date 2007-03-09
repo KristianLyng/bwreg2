@@ -33,6 +33,10 @@ Kravspesifikasjon for bwreg2
 4.6.1 Personlige meldinger
 4.6.2 Informasjonsmeldinger
 
+5. Prosjektstruktur
+5.1 Filstruktur
+5.2 PHP struktur
+5.3 Backup-system
 
 
 1. Overordnet mål
@@ -221,3 +225,40 @@ bankkontonummer, kontakt-personer, og lignende.
 =======================
 Dette går ut på å kunne tildele folk crew-status og å fjerne det igjenn. 
 
+5. Prosjektstruktur
+===================
+5.1 Filstruktur
+===============
+Det vil være en README fil i roten av prosjektet, som vil forklare hvordan 
+man skal gå frem for å finne informasjonen man trenger.
+
+Det vil også være en Documentation/ katalog som inneholder all dokumentasjon.
+Dette vil være alt fra denne spesifikasjonen, til installasjonsrutiner, 
+detaljer om backupsystemet, osv. 
+
+Det vil være to kataloger for script. En for "servicescripts" og en for
+"installasjonsscript". Den første vil inneholde backupscript, og andre script
+man kan få bruk for mens systemet er i drift, mens installasjonsscript 
+katalogen naturlig nok er ment på installasjon, oppgradering og flytting.
+
+5.2 PHP struktur
+================
+Dette vil bli delt inn i moduler. Målet er at så få URI'er som mulig skal 
+presenteres til brukeren. 
+
+En katalog vil inneholde fellesfiler for alle modulene, f.eks informasjon
+om databasen, konfigurasjonsinformasjon og lignende. 
+
+(mer kommer)
+
+5.3 Backup-system
+=================
+Backupsystemet vil fungere ikke ulikt det vi har i dag med bwreg1. Dette betyr
+at det er delt. Først og fremst vil det ikke være nødvendig å kopiere webfilene
+som vi gjør i dag fordi de vil lagres i git, og på mer enn en maskin. 
+
+SQL dumps vil kjøres hver natt, og diff'er vil bli utført før de lagres. Disse
+kopieres også til en remote tjener for å forhindre tap om en harddisk går tapt.
+Det vil også være mulig for en site administrator å kjøre en backup on demand,
+men denne vil lagres lokalt på web-serveren intill den nattlige backupen 
+overfører denne backupen.
