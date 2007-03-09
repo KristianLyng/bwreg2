@@ -1,0 +1,47 @@
+1. Mål
+2. Elementer
+
+
+1. Mål
+======
+Hovedmålet med CSS koden til bwreg2 skal være å la designet være så fritt
+som mulig. Dette betyr at plassering av elementer ikke skal være definert
+i style sheetene, ikke i koden som benytter denne. 
+
+På denne måten er det trivielt å radikalt endre utseende. 
+
+
+2. Elementer
+=======================
+
+Menyer: Dette er boksen rundt hele menyen
+	Overskrift: Menyens overskrift. 
+	Element: Et meny-element. 
+	Det vil ikke være noen form for <br /> eller adnre tvungene linjeskift
+	mellom menyelementer. Det er opp til stylesheetet og støtte dette.
+	Det vil derimot være et linjeskift.
+
+Hovedsiden:
+	Tittel: Overskriften på hele siden ("BølerLAN 2007" f.eks).
+	Innhold: Hovedbulken av innholdet.
+	Kontroll1: Hovedkontrollen. Her vil typisk hovedmenyen være.
+	Kontroll2: Sekundærkontroll. Typisk brukt for innloggingslenker
+	           og lignende.
+	Kontroll3-10: Kontroll for crew og admins. Lavere verdi er mer
+	              vanlig (ie: Kontroll3 er laveste crew, kontroll10 er 
+				  site admin eller lignende).
+	Info1: Hovedinformasjonsboksen. Typisk hvor mange billetter som
+	       er solgt, pris og lignende.
+	Info2: Dagsorden. Hva som skjer. Gjøremål for crew, etc.
+	Info3: Personlig info. Vises kun når man er logget inn. Betalingsstatus
+	       ventelisteinfo, plass, gruppe, klan, crew. 
+	Info4: Crewinfo. Typisk meldinger til crew og oppgaver som må gjøres.
+	Info5-10: Ikke implemntert i starten, men bør støttes i stylesheets.
+
+Nyhetsboks - Boks til nyheter
+	Overskrift: Nyhetsoverskriften.
+	Undertittel: Inneholder forfatter og dato, samt kontroll-lenker for
+	             crew.
+	Innhold: Innholdet i nyheten.
+
+
