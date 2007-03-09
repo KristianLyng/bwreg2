@@ -11,10 +11,32 @@ Kravspesifikasjon for bwreg2
 2.2 Oversikt over individuelle databaser/tabeller
 2.3 Brukernivåer og rettigheter
 
+3. Administrasjon
+3.1 Generelt om administrasjonen
+3.2 Site administrasjon
+3.3 Genre administrasjon
+3.4 Event administrasjon
+3.5 Crew administrasjon
+
+4. Dynamisk innhold
+4.1 Nyheter
+4.2 Brukersystem
+4.2.1 Enkeltbrukere
+4.2.2 Grupper
+4.3 Bilettsystem
+4.3.1 Registrering
+4.3.2 Kontrollering
+4.3.3 Reservering
+4.4 Clan og composystem
+4.5 Avstemming
+4.6 Kommunikasjon
+4.6.1 Personlige meldinger
+4.6.2 Informasjonsmeldinger
 
 
 
 1. Overordnet mål
+=================
 
 BWreg er "BølerLAN Web registrering".
 
@@ -34,6 +56,7 @@ billettsalget åpner.
 
 
 1.1 BWreg (versjon 1)
+=====================
 
 Dagens BWReg, heretter kalt BWreg1, fungerer. BWReg1 ble laget for å tillate 
 plassreservering. Deretter ble det fremmet et ønske om at bwreg også ble brukt
@@ -51,6 +74,7 @@ som trengs å forbedres. Og det er bare de tingene vi vet om nå.
 
 
 1.2 Lisens
+==========
 
 For å ivareta BølerLAN sine fremtidige interesser finner jeg det logisk å
 benytte "GNU General Public Licensce"[1]. En lisens som er skapt for å ivareta
@@ -65,6 +89,7 @@ at de samme rettighetene ivaretas for fremtidige brukere.
 
 
 1.3 Antatt tidsbruk
+===================
 
 Et typisk tidsoverslag på et slik prosjekt ligger på rundt 100-250 timer 
 utvikling. Dette inkluderer ren koding, planlegging og et minimum av
@@ -75,8 +100,9 @@ Dette tilsvarer cirka den tiden som allerede er investert i BWReg1.
 
 
 2. Tekniske spesifikasjoner
-
+===========================
 2.1 Verktøy
+===========
 
 PHP4, MySQL og Apache vil bli brukt for å drive systemet. Det vil i så stor 
 grad som mulig skrives uavhengi av andre verktøy. Med unntak av backupscriptene.
@@ -88,7 +114,7 @@ BWReg2 vil forventes å kjøre på Linux.
 
 
 2.2 Oversikt over individuelle databaser/tabeller
-
+=================================================
 
 Brukerdatabase
  - Inneholder liste over brukere med navn, fødselsår, adresse, telefonnummer, 
@@ -123,6 +149,7 @@ Crews
  
 Crew list
  - En entry per crewmedlem.
+ - Level, definerer stilling innad i crew. (Sjef, vaktleder, normal, etc...)
 
 Permissions
  - EventID, Type, User, Crew
@@ -134,6 +161,7 @@ News
  - Content
 
 2.3 Brukernivåer og rettigheter
+===============================
 
 Eventusers crew-status-feltet definerer:
 	0: Vanlig bruker.
@@ -143,4 +171,53 @@ Eventusers crew-status-feltet definerer:
 	10: Vanlig crew.
 
 Permission-tabellen brukes for å dynamisk opprette rettigheter for content,
-news og andre ting.
+news og andre ting. Inkludert dynamiske sider.
+
+
+3. Administrasjon
+=================
+
+3.1 Generelt om administrasjonen
+================================
+Målet er at så lite som mulig skal måtte gjøres manuelt, og at tilnærmet lik
+alt skal kunne gjøres via web-interfacet. 
+
+Dette innebærer en form for kompleksistet som er betydelig tyngre enn dagens
+bwreg1, men åpner også for at samme bwreg skal kunne hoste flere events
+samtidig. 
+
+3.2 Site administrasjon
+=======================
+Denne oppgaven vil typisk tilfalle personen som installerer bwreg2. Oppgavene
+er få, og går stort set på å modifisere genres, samt overse backup.
+
+Backup kan, vel og merke, også overses av andre med administrator-rettigheter
+på event-nivå eller høyere.
+
+3.3 Genre administrasjon
+========================
+Et genre er f.eks "BølerLAN". Genre administrasjon sørger for felles forside,
+og definerer "current event." En administrator på dette nivået kan også 
+opprette nye events, f.eks "BølerLAN 07 Autumn". Fordelen med å lage "Genre"
+er for å ha et felles sted å lagre alt til en serie lan parties, som er det
+BølerLAN f.eks er. Ved hjelp av denne løsningen, kan man ha flere forskjellige
+serier lan-parties i samme system. 
+
+Definerer også utseende på websidene, f.eks menyene. 
+
+Kun events som er "current event" vil vises som nyheter, mens nyheter fra
+andre events i samme genre, vil vises i nyhetsarkivet. Nyheter trenger ikke
+å høre til et spesifikt event, men må høre til et genre. 
+
+Kompleksiteten dette introduserer er relativt liten, og gevinsten er ganske
+grei, om vi får andre som ønsker å dele vårt system.
+
+3.4 Event administrasjon
+========================
+Dette er det som idag er "site admin", i praksis. Tar seg av f.eks 
+bankkontonummer, kontakt-personer, og lignende. 
+
+3.5 Crew administrasjon
+=======================
+Dette går ut på å kunne tildele folk crew-status og å fjerne det igjenn. 
+
