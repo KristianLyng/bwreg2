@@ -1,0 +1,106 @@
+body {
+	background-color: gray;
+}
+* {
+ 	font-family: Trebuchet MS, arial, sans-serif;
+	margin: 0;
+ 	padding: 0;
+}
+
+#titl h1 { 
+	font-size: x-large;
+	color: blue;
+	text-align: center;
+}
+
+/* Footer */ 
+#footer {
+	width: 100%;
+	background-color: #9999cc;
+	text-align: center;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+}
+
+#footer h1 { 
+	font-size: small;
+}
+
+#footer p {
+	font-weight: normal;
+	font-size: xx-small;
+}
+
+
+/* Ctrl1 */ 
+
+#ctrl1 { 
+	width: 200px;
+	float: left;
+	background-color: silver;
+}
+#ctrl1 h1 {
+	font-size: large;
+}
+
+/* Ctrl2 */ 
+
+#ctrl2 { 
+	width: 200px;
+	float: left;
+	clear: left;
+	background-color: silver;
+}
+#ctrl2 h1 {
+	font-size: large;
+}
+
+/* Ctrl3 */ 
+
+#ctrl3 { 
+	width: 200px;
+	float: right;
+	background-color: silver;
+}
+#ctrl3 h1 {
+	font-size: large;
+}
+
+/* Ctrl4 */ 
+
+#ctrl4 { 
+	width: 200px;
+	height: 100%;
+	float: right;
+	clear: right;
+	background-color: silver;
+}
+#ctrl4 h1 {
+	font-size: large;
+}
+.infoboks {
+	background-color: white;
+	border-width: small;
+	border-style: dashed;
+	border-color: black;
+}
+.menuboks {
+	background-color: black;
+	margin: 1px;
+	padding: 1px;
+	color: white;
+}
+
+.menuboks h1 {
+	color: purple;
+	margin: 1px;
+	background-color: white;
+}
+
+.menuboks a {
+	display: block;
+	background-color: silver;
+	margin: 1px;
+	page-break-after: always;
+}
