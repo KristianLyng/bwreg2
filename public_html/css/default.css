@@ -123,17 +123,20 @@ body {
 
 #info4 {
 	float: right;
-	text-decoration: blink;
 	left: auto;
 	right: 0;
 	position: fixed;
 	z-index: 2;
-	width: 200px;
+	width: 300px;
 	margin: 5px;
 	background-color: red;
 	border-style: dashed;
 	border-width: medium;
 	border-color: black;
+}
+
+#info4 h1 {
+	text-decoration: blink;
 }
 
 #content { 
@@ -181,6 +184,28 @@ body {
 .infoboks p { 
 	display: block;
 }
+
+.menuboks ul {
+	list-style: none;
+}
+.menuboks li {
+}
+
+.menuboks li ul {
+	position: absolute;
+	padding: 2px;
+	left: -999em;
+}
+
+.menuboks li:hover ul {
+	left: auto;
+	padding: 0px;
+	border-style: dotted;
+	border-width: medium;
+	border-color: black;
+	background-color: white;
+}
+
 .menuboks {
 	background-color: black;
 	margin: 1px;
@@ -200,3 +225,24 @@ body {
 	margin: 1px;
 	page-break-after: always;
 }
+
+.menuboks li:hover ul a {
+	padding: 5px;
+}
+
+#info4 .menuboks a, #info4 .menuboks {
+	background-color: red;
+	color: blue;
+	text-decoration: none;
+}
+
+
+#info4 .menuboks li:hover ul {
+	left: auto;
+	padding: 0px;
+	border-style: dotted;
+	border-width: medium;
+	border-color: black;
+	background-color: red;
+}
+

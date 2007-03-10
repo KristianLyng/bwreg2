@@ -17,9 +17,10 @@ På denne måten er det trivielt å radikalt endre utseende.
 Menyer: Dette er boksen rundt hele menyen
 	Overskrift: Menyens overskrift. 
 	Element: Et meny-element. 
-	Det vil ikke være noen form for <br /> eller adnre tvungene linjeskift
-	mellom menyelementer. Det er opp til stylesheetet og støtte dette.
-	Det vil derimot være et linjeskift.
+	Menyer eksisterer i <ul></ul> lister, og kan være nøstet.
+	Det anbefales å bruke dropdown menyer i CSS'en her. Nøstingen
+	vil bli brukt til blant annet å gi en "dropdown" på advarsler
+	og slikt.
 
 Hovedsiden:
 	Tittel: Overskriften på hele siden ("BølerLAN 2007" f.eks).
