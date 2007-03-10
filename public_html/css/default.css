@@ -187,6 +187,10 @@ body {
 	list-style: none;
 }
 .menuboks li {
+	display: block;
+	background-color: silver;
+	margin: 1px;
+	color: black;
 }
 
 .menuboks li ul {
@@ -240,6 +244,9 @@ body {
 	text-decoration: overline underline;
 }
 
+#info4 .menuboks li {
+	background-color: red;
+}
 
 #info4 .menuboks li:hover ul {
 	left: auto;
