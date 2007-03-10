@@ -140,9 +140,7 @@ body {
 }
 
 #content { 
-	background-color: silver;
 	position: absolute;
-	bottom: 35px;
 	left: 215px;
 	right: 5px;
 	top: 45px;
@@ -230,10 +228,16 @@ body {
 	padding: 5px;
 }
 
-#info4 .menuboks a, #info4 .menuboks {
+#info4 .menuboks a {
 	background-color: red;
 	color: blue;
 	text-decoration: none;
+}
+
+#info4 .menuboks {
+	background-color: red;
+	color: black;
+	text-decoration: overline underline;
 }
 
 
