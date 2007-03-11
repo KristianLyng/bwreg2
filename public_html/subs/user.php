@@ -23,7 +23,7 @@ class userinfo
 		}
 		return $box->get();
 	}
-	
 }
+
 
 ?>

@@ -1,10 +1,8 @@
 <?php 
 
-include "subs/html.php";
-include "subs/user.php";
+include "subs/env.php";
 
 /* Create the objects */
-$page = new page("BWReg2 raw dev page", "This is the header of the page");
 
 $dropdown2 = new dropdown("Kristian Lyngstol");
 $menu1 = new menu("En undermeny");
@@ -18,6 +16,13 @@ $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
 $user = new userinfo();
+
+$test = $db->query("SHOW TABLES");
+$news1->add(str($test));
+if($_SESSION['foo'])
+	$news1->add(str("Hah: " . $_SESSION['foo']));
+else
+	$_SESSION['foo'] = $_GET['bar'];
 
 $user->firstname = "Kristian";
 $user->lastname = "Lyngstol";

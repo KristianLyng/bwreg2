@@ -43,7 +43,7 @@ class page extends box
 	var $ctrl4;
 	var $logo;
 	
-	function page($title, $header)
+	function page($title = "no title", $header = "no header")
 	{
 		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
 		$this->top1 .= "<html><head><title>";
