@@ -1,88 +1,6 @@
 <?
 
-/* These are some basic, generic elements used all over the place. Some of these
- * might get moved at a later date depending on the rest of the code.
- *
- * This marks the generic part of html.php
- * =========================================================================
- */
-/* Basic string class, need to have get() and getraw()
- * since this is what these classes end up using.
- * getraw() is get(), except when a menu is fetched. 
- */
-  class str {
-	var $data;
-	function str($data)
-	{
-		$this->data = $data;
-	}
-
-	function get()
-	{
-		return $this->data;
-	}
-	
-	function getraw()
-	{
-		return $this->data;
-	}
-}
-function &str($str)
-{
-	return new str($str);
-}
-/* The basic container type, most other classes extends this.
- */
-class box {
-	var $items;
-	var $nItems=0;
-
-	function box()
-	{
-	}
-	function add(&$item)
-	{
-		if(!is_object($item) || $item == NULL)
-		{
-			print "WARNING! \"" . $item . "\" added as object! ";
-			print "last object: " . $this->items[$this->nItems - 1]->get() . "\n";
-			$this->addst($item);
-		}
-		$this->items[$this->nItems++] =& $item;
-	}
-	function addst($item)
-	{
-		$this->items[$this->nItems++] =& new str($item);
-	}
-	function get()
-	{
-		$menu = "";
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-			$menu .= $this->items[$tmp]->get();
-		return $menu;
-	}
-	function getraw()
-	{
-		$menu = "";
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-		{
-			if(get_class($this->items[$tmp]) == "menu")
-			{
-				$menu .= $this->items[$tmp]->getraw();
-			}
-			else
-				$menu .= $this->items[$tmp]->get();
-		}
-		return $menu;
-	}
-	function output()
-	{
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-			print($this->items[$tmp]->get());
-	}
-}
-
-
+require_once("base.php");
 /* The following are the classes that actually make up the individual parts
  * of a web page. They are not elementary, because they usually contain
  * more than one html tag, or have the ability to store other advanced
@@ -250,6 +168,7 @@ class dropdown {
 	{
 		$this->root = new menu("");
 		$this->content = new menu($title);
+		$this->root->add($this->content);
 	}
 
 	function add(&$data)
@@ -262,12 +181,10 @@ class dropdown {
 	}
 	function get()
 	{
-		$this->root->add($this->content);
 		return $this->root->get();
 	}
 	function getraw()
 	{
-		$this->root->add($this->content);
 		return $this->root->getraw();
 	}
 }
@@ -335,17 +252,41 @@ class content extends namedbox {
 	}
 }
 
-class news extends namedbox {
+class userinfoboks extends namedbox {
+	function userinfoboks()
+	{
+		$this->namedbox("class","userinfo");
+	}
+}
+
+class news extends box {
+	var $header1;
+	var $header2;
 	function news($header1,$header2)
 	{
-		$this->namedbox("class", "news");
-		$this->add(h1($header1));
-		$this->add(h2($header2));
-		$this->addst("<div class=\"newscontent\">\n");
+		if(!is_object($header1))
+			$this->header1 =& str($header1);
+		else
+			$this->header1 =& $header1;
+		if(!is_object($header2))
+			$this->header2 =& str($header2);
+		else
+			$this->header2 =& $header2;
 	}
 	function get()
+	{	
+		$data = "<div class=\"news\">";
+		$data .= "<h1>" . $this->header1->get() . "</h1>";
+		$data .= "<h2>" . $this->header2->get() . "</h2>";
+		$data .= "<div class=\"newscontent\">\n";
+		$data .= parent::get();
+		$data .= "</div>\n";
+		
+		return $data . "</div>\n";
+	}
+	function getraw()
 	{
-		return parent::get() . "</div>\n";
+		return $this->get();
 	}
 }
 

@@ -1,20 +1,34 @@
 <?php 
 
 include "subs/html.php";
+include "subs/user.php";
 
 /* Create the objects */
 $page = new page("BWReg2 raw dev page", "This is the header of the page");
 
+$dropdown2 = new dropdown("Kristian Lyngstol");
 $menu1 = new menu("En undermeny");
 $menu2 = new menu("Petter");
 $menu3 = new menu("Enda en meny");
-$news1 = new news("Kristian Lyngstol", "cirka naa");
 $news2 = new news("Jesus", "tusen aar siden");
 $news3 = new news("Adam", "Tidenes morgen");
+$news1 = new news(&$dropdown2, "cirka naa");
+$user = new userinfo();
 $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
+$user = new userinfo();
 
+$user->firstname = "Kristian";
+$user->lastname = "Lyngstol";
+$user->phone = "31337";
+$user->extra = "Eid!";
+$user->mail = "kristian@foo.bar";
+$user->born = new dateStuff("1983","12","11","18");
+$dropdown2->add($user);
+$news1->add(&$dropdown2);
+$news3->add(&$dropdown2);
+$news1->add(p("test"));
 /* Popluate the content */
 $page->content->add(&$infoboks1);
 $page->content->add(&$news1);
