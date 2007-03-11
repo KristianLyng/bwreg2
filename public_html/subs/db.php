@@ -16,7 +16,7 @@ class database
 	function query($query, $cb = null)
 	{
 		$result = mysql_query($query); // or sql_error($query);
-		
+		$bla = false;	
 		while ($row = mysql_fetch_array($result))
 		{
 			if($cb == null)
@@ -25,9 +25,11 @@ class database
 				mysql_free_result($result);
 				return $ans;
 			}
+			$bla = true;
 			$cb->sqlcb($row);
 		}
 		mysql_free_result($result);
+		return $bla;
 	}
 }
 
