@@ -16,11 +16,26 @@ global $session;
 global $user;
 global $config;
 global $plugins;
-
+class down extends box
+{
+		function endit()
+		{
+			global $page;
+			for($tmp = 0; $tmp < $this->nItems; $tmp++)
+				$this->items[$tmp]->endit();
+			$page->output();
+		}
+}
+$down = new down();
 $config = new config();
 $db = new database();
 $session = new session();
 $plugins = new plugins();
 $page = new page();
-
+function down()
+{
+	global $down;
+	$down->endit();
+}
+register_shutdown_function(down);
 ?>

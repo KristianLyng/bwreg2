@@ -64,7 +64,5 @@ $news3->add(p("Fooooooo bar etc etc Knut. Dette er litt tamt..."));
 $news3->add(p("Fordelen er at dette nesten ikke krever html-kunskap, og php-filene blir html-frie"));
 
 
-/* Output the page */
-$page->output();
 ?>
 
