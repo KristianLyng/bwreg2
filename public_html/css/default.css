@@ -195,6 +195,10 @@ body {
 	border-width: thin;
 	border-style: dashed;
 	border-color: black;
+	margin: 0;
+	padding: 0;
+	font-size: normal;
+	font-weight: normal;
 }
 .infoboks p { 
 	display: block;
@@ -203,8 +207,13 @@ body {
 .userinfo h1{
 	font-size: large;
 	font-weight: bold;
-
 }
+
+.userinfo p {
+	font-size: small;
+	font-weight: normal;
+}
+
 .menuboks ul {
 	list-style: none;
 }
