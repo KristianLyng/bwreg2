@@ -42,11 +42,19 @@ body {
 }
 
 
+#logo {
+	width: 200px;
+	top:0;
+	float: left;
+	text-align: center;
+
+}
 /* Ctrl1 */ 
 
 #ctrl1 { 
 	width: 200px;
 	float: left;
+	clear: left;
 	margin: 5px;
 	background-color: silver;
 }
