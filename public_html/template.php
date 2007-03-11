@@ -45,10 +45,10 @@ $menu3->add($menu1);
 $infoboks1->add(p("Dette er en informativ infoboks ja."));
 $infoboks1->add(p("VELDIG informativ."));
 
-$menu1->add(htlink("foo", p("SomeItem")));
-$menu1->add(htlink("foo", p("SomeItem")));
+$menu1->add(htlink("foo", str("SomeItem")));
+$menu1->add(htlink("foo", str("SomeItem")));
 
-$menu2->add(htlink("foo", p("SomeItem")));
+$menu2->add(htlink("foo", str("SomeItem")));
 $menu2->add(htlink("abra",$somebox));
 
 $mul = new multiuserlist("Kri","per");
