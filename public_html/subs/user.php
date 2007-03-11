@@ -10,6 +10,14 @@ class userinfo
 	var $extra = "";
 	var $adress = "";
 	var $born = null;
+	function userinfo()
+	{
+		global $plugins;
+		for($tmp = 0; $tmp < $plugins->nUserinfo; $tmp++)
+		{
+			$plugins->userinfo[$tmp]->userinfo(&$this);
+		}
+	}
 	function get()
 	{
 		$box = new userinfoboks();
@@ -35,6 +43,11 @@ class user extends box
 	function user($token, $password = null)
 	{
 		$this->userinfo = new userinfo();
+		global $plugins;
+		for($tmp = 0; $tmp < $plugins->nUser; $tmp++)
+		{
+			$plugins->user[$tmp]->user(&$this);
+		}
 		if ($password != null)
 			$this->login($token,$password);
 		else if (is_string($token))
@@ -74,6 +87,12 @@ class user extends box
 		$this->userinfo->adress = $row[6];
 		$this->userinfo->phone = $row[7];
 		$this->userinfo->extra = $row[8];
+		
+		for($tmp = 0; $tmp < $this->nItems; $tmp++)
+		{
+			if(function_exists($this->items[$tmp]->sqlcb))
+				$this->items[$tmp]->sqlcb(&$this);
+		}
 	}
 }
 /* multiuser lets us search for and find multiple users.

@@ -10,14 +10,17 @@ require_once("subs/user.php");
 require_once("subs/config.php");
 require_once("subs/db.php");
 require_once("subs/session.php");
+require_once("subs/plugins.php");
 global $page;
 global $session;
 global $user;
 global $config;
+global $plugins;
 
 $config = new config();
-$page = new page();
 $db = new database();
 $session = new session();
+$plugins = new plugins();
+$page = new page();
 
 ?>
