@@ -187,16 +187,30 @@ body {
 	border-style: dashed;
 	border-color: black;
 }
+
+.userinfo {
+	width: 200px;
+	float: left;
+	background-color: white;
+	border-width: thin;
+	border-style: dashed;
+	border-color: black;
+}
 .infoboks p { 
 	display: block;
 }
 
+.userinfo h1{
+	font-size: large;
+	font-weight: bold;
+
+}
 .menuboks ul {
 	list-style: none;
 }
 .menuboks li {
 	display: block;
-	background-color: silver;
+	background-color: inherit;
 	margin: 1px;
 	color: black;
 }
@@ -215,14 +229,20 @@ body {
 	border-color: black;
 	background-color: white;
 }
-
+.news .menuboks
+{
+	background-color: inherit;
+}
+.news .menuboks li:hover ul 
+{
+	color: yellow;	
+}
 .menuboks {
-	background-color: black;
+	background-color: inherit;
 	margin: 1px;
 	padding: 1px;
 	color: white;
 }
-
 .menuboks h1 {
 	color: purple;
 	margin: 1px;
