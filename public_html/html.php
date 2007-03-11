@@ -2,6 +2,25 @@
 /* The basic container type, most other classes extends this.
  * Not sure why it's still based on an array, but oh well.
  */
+
+class str {
+	var $data;
+	function str($data)
+	{
+		$this->data = $data;
+	}
+
+	function get()
+	{
+		return $this->data;
+	}
+	
+	function getraw()
+	{
+		return $this->data;
+	}
+}
+
 class box {
 	var $items;
 	var $nItems=0;
@@ -9,18 +28,38 @@ class box {
 	function box()
 	{
 	}
-	function add($item)
+	function add(&$item)
 	{
-		$this->items[$this->nItems++] = $item;
+		if(!is_object($item) || $item == NULL)
+		{
+			$this->addst($item);
+		}
+		$this->items[$this->nItems++] =& $item;
+	}
+	function addst($item)
+	{
+		$this->items[$this->nItems++] =& new str($item);
 	}
 	function get()
 	{
 		$menu = "";
 		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
+			$menu .= $this->items[$tmp]->get();
+		return $menu;
+	}
+	function getraw()
+	{
+		$menu = "";
+		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
 		{
-			$menu .= $pre . $this->items[$tmp] . $post;
+			$menu .= $this->items[$tmp]->getraw();
 		}
 		return $menu;
+	}
+	function output()
+	{
+		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
+			$this->items[$tmp]->get();
 	}
 }
 
@@ -90,24 +129,16 @@ class page extends box
 	}
 	function merge()
 	{
-		if($this->ctrl1->nItems > 0)
-			$this->add($this->ctrl1->get());
-		if($this->ctrl2->nItems > 0)
-			$this->add($this->ctrl2->get());
-		if($this->ctrl3->nItems > 0)
-			$this->add($this->ctrl3->get());
-		if($this->ctrl4->nItems > 0)
-			$this->add($this->ctrl4->get());
-		if($this->info1->nItems > 0)
-			$this->add($this->info1->get());
-		if($this->info2->nItems > 0)
-			$this->add($this->info2->get());
-		if($this->info3->nItems > 0)
-			$this->add($this->info3->get());
-		if($this->info4->nItems > 0)
-			$this->add($this->info4->get());
-		$this->add($this->content->get());
-		$this->add($this->footer->get());
+		$this->add($this->ctrl1);
+		$this->add($this->ctrl2);
+		$this->add($this->ctrl3);
+		$this->add($this->ctrl4);
+		$this->add($this->info1);
+		$this->add($this->info2);
+		$this->add($this->info3);
+		$this->add($this->info4);
+		$this->add($this->content);
+		$this->add($this->footer);
 	}
 	function get() 
 	{
@@ -134,9 +165,17 @@ class menu extends box{
 	{
 		$this->title = $title;
 	}
-	function add($item)
+	function add(&$item)
 	{
-		parent::add("<li>" . $item . "</li>\n");
+		parent::addst("<li>");
+		parent::add($item);
+		parent::addst("</li>\n");
+	}
+	function addst($item)
+	{
+		parent::addst("<li>");
+		parent::addst($item);
+		parent::addst("</li>\n");
 	}
 	function get()
 	{
@@ -144,7 +183,7 @@ class menu extends box{
 		if ($this->title != "")
 			$menu .= "<h1>" . $this->title . "</h1>\n";
 		$menu .= "<ul>";
-		$menu .= parent::get();
+		$menu .= parent::getraw();
 		$menu .= "</ul>";
 		$menu .= "</div>\n";
 		return $menu;
@@ -171,18 +210,22 @@ class dropdown {
 		$this->content = new menu($title);
 	}
 
-	function add($data)
+	function add(&$data)
 	{
-		$this->content->add($data);
+		$this->content->add(&$data);
+	}
+	function addst($data)
+	{
+		$this->content->addst($data);
 	}
 	function get()
 	{
-		$this->root->add($this->content->getraw());
+		$this->root->add($this->content);
 		return $this->root->get();
 	}
 	function getraw()
 	{
-		$this->root->add($this->content->getraw());
+		$this->root->add($this->content);
 		return $this->root->getraw();
 	}
 }
@@ -214,12 +257,32 @@ class ctrl extends namedbox {
 	{
 		$this->namedbox("id", "ctrl" . $id);
 	}
+	function get() 
+	{
+		if($this->nItems > 0)
+			return parent::get();
+	}
+	function getraw() 
+	{
+		if($this->nItems > 0)
+			return parent::getraw();
+	}
 }
 
 class info extends namedbox {
 	function info($id)
 	{
 		$this->namedbox("id", "info" . $id);
+	}
+	function get() 
+	{
+		if($this->nItems > 0)
+			return parent::get();
+	}
+	function getraw() 
+	{
+		if($this->nItems > 0)
+			return parent::getraw();
 	}
 }
 
@@ -234,8 +297,8 @@ class news extends namedbox {
 	function news($header1,$header2)
 	{
 		$this->namedbox("class", "news");
-		$this->add("<h1>" . $header1 . "</h1>\n" . "<h2>" . $header2 . "</h2>\n");
-		$this->add("<div class=\"newscontent\">\n");
+		$this->addst("<h1>" . $header1 . "</h1>\n" . "<h2>" . $header2 . "</h2>\n");
+		$this->addst("<div class=\"newscontent\">\n");
 	}
 	function get()
 	{
