@@ -1,9 +1,9 @@
 <?
-/* The basic container type, most other classes extends this.
- * Not sure why it's still based on an array, but oh well.
- */
 
-class str {
+/* Basic string class, need to have get() and getraw()
+ * since this is what these classes end up using
+ */
+  class str {
 	var $data;
 	function str($data)
 	{
@@ -20,7 +20,12 @@ class str {
 		return $this->data;
 	}
 }
-
+function &str($str)
+{
+	return new str($str);
+}
+/* The basic container type, most other classes extends this.
+ */
 class box {
 	var $items;
 	var $nItems=0;
@@ -32,6 +37,8 @@ class box {
 	{
 		if(!is_object($item) || $item == NULL)
 		{
+			print "WARNING! \"" . $item . "\" added as object! ";
+			print "last object: " . $this->items[$this->nItems - 1]->get() . "\n";
 			$this->addst($item);
 		}
 		$this->items[$this->nItems++] =& $item;
@@ -86,7 +93,8 @@ class page extends box
 	var $ctrl2;
 	var $ctrl3;
 	var $ctrl4;
-
+	var $logo;
+	
 	function page($title, $header)
 	{
 		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
@@ -107,6 +115,7 @@ class page extends box
 		$this->info2 = new info("2");
 		$this->info3 = new info("3");
 		$this->info4 = new info("4");
+		$this->logo = new logo();
 	}
 	function set_css($css) 
 	{
@@ -129,6 +138,7 @@ class page extends box
 	}
 	function merge()
 	{
+		$this->add($this->logo);
 		$this->add($this->ctrl1);
 		$this->add($this->ctrl2);
 		$this->add($this->ctrl3);
@@ -139,6 +149,7 @@ class page extends box
 		$this->add($this->info4);
 		$this->add($this->content);
 		$this->add($this->footer);
+		
 	}
 	function get() 
 	{
@@ -319,6 +330,113 @@ class infoboks extends namedbox {
 		$this->namedbox("class", "infoboks");
 	}
 }
+class logo extends namedbox {
+	function logo()
+	{
+		$this->namedbox("id","logo");
+	}
+}
 
+class htmlobject {
+	var $open;
+	var $ctrl="";
+	var $content=NULL;
 
+	function htmlobject($open, $ctrl, &$content)
+	{
+		$this->open = $open;
+		$this->ctrl = $ctrl;
+		$this->content =& $content;
+
+	}
+
+	function get()
+	{
+		$string = "<" . $this->open;
+		if ($this->ctrl != "")
+			$string .= " " . $this->ctrl;
+		if($this->content == "" || $this->content == null)
+			$string .= " /";
+		$string .= ">";
+		if(is_object($this->content))
+			$string .= $this->content->get();
+		else
+			$string .= $this->content;
+			
+		if($this->content != "" && $this->content != null)
+			$string .= "</" . $this->open . ">";
+		$string .= "\n";
+		return $string;
+	}
+	function getraw()
+	{
+		return $this->get();
+	}
+	function open($open)
+	{
+		$this->open = $open;
+	}
+	function ctrl($ctrl)
+	{
+		$this->open = $ctrl;
+	}
+	function content($content)
+	{
+		$this->open = $content;
+	}
+}
+
+class htlink extends htmlobject
+{
+	function htlink($link, &$text)
+	{
+		$this->htmlobject("a","href=\"" . $link . "\"", $text);
+	}
+}
+
+function &htlink($link, &$text)
+{
+	return new htlink($link, $text);
+}
+
+function &img($url, $desc="")
+{
+	$obj = null;
+	return new htmlobject("img","src=\"" . $url . "\" alt=\"" . $desc . "\"",$obj);
+}
+function &p($content)
+{
+	$obj = null;
+	return new htmlobject("p","",$content,$obj);
+}
+function &h1($content)
+{
+	$obj = null;
+	return new htmlobject("h1","",$content,$obj);
+}
+function &h2($content)
+{
+	$obj = null;
+	return new htmlobject("h2","",$content,$obj);
+}
+function &h3($content)
+{
+	$obj = null;
+	return new htmlobject("h3","",$content,$obj);
+}
+function &h4($content)
+{
+	$obj = null;
+	return new htmlobject("h4","",$content,$obj);
+}
+function &h5($content)
+{
+	$obj = null;
+	return new htmlobject("h5","",$content,$obj);
+}
+function &h6($content)
+{
+	$obj = null;
+	return new htmlobject("h6","",$content,$obj);
+}
 ?>
