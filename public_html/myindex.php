@@ -1,6 +1,6 @@
 <?php 
 
-include "html.php";
+include "subs/html.php";
 
 /* Create the objects */
 $page = new page("BWReg2 raw dev page", "This is the header of the page");
