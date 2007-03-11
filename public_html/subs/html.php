@@ -1,7 +1,14 @@
 <?
 
+/* These are some basic, generic elements used all over the place. Some of these
+ * might get moved at a later date depending on the rest of the code.
+ *
+ * This marks the generic part of html.php
+ * =========================================================================
+ */
 /* Basic string class, need to have get() and getraw()
- * since this is what these classes end up using
+ * since this is what these classes end up using.
+ * getraw() is get(), except when a menu is fetched. 
  */
   class str {
 	var $data;
@@ -59,20 +66,43 @@ class box {
 		$menu = "";
 		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
 		{
-			$menu .= $this->items[$tmp]->getraw();
+			if(get_class($this->items[$tmp]) == "menu")
+			{
+				$menu .= $this->items[$tmp]->getraw();
+			}
+			else
+				$menu .= $this->items[$tmp]->get();
 		}
 		return $menu;
 	}
 	function output()
 	{
 		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-			$this->items[$tmp]->get();
+			print($this->items[$tmp]->get());
 	}
 }
 
+
+/* The following are the classes that actually make up the individual parts
+ * of a web page. They are not elementary, because they usually contain
+ * more than one html tag, or have the ability to store other advanced
+ * objects. Menus, diffrent layoout parts, the actual top-page class, 
+ * news-class, etc.
+ * This marks the core of the html.php
+ * ====================================================================
+ */
+
 /* The basic page. All pages need this. 
- * The HTML parts can probably be prettier...
-  */
+ * This could probably be a lot prettier, but this is generic and
+ * works quite well.
+ * The idea is that diffrent parts of bwreg will simply do 
+ * $page->content->add(foo) to add something to the content
+ * part, and that it's first come first serve, or CSS handles the order.
+ * This will only print info and controlboxes if they have actual content.
+ * This in turn makes it trivial to add things to the info4 warn-box without
+ * caring about anything except the object that's added in that part of the
+ * code. This lets us deal with hiding messages, not the actual box.
+ */
 class page extends box
 {
 	var $top1;
@@ -117,6 +147,7 @@ class page extends box
 		$this->info4 = new info("4");
 		$this->logo = new logo();
 	}
+
 	function set_css($css) 
 	{
 		$this->css = $css;
@@ -149,8 +180,8 @@ class page extends box
 		$this->add($this->info4);
 		$this->add($this->content);
 		$this->add($this->footer);
-		
 	}
+
 	function get() 
 	{
 		$data = $this->top1 . $this->htmltitle . $this->top2 . $this->get_css() . $this->top3;
@@ -167,7 +198,7 @@ class page extends box
 }
 
 /* This is a basic menu.
- * Use getraw() to nest them easily.
+ * You can add this recursivly,. They will use the getraw
  */
 class menu extends box{
 	var $title = "";
@@ -308,7 +339,8 @@ class news extends namedbox {
 	function news($header1,$header2)
 	{
 		$this->namedbox("class", "news");
-		$this->addst("<h1>" . $header1 . "</h1>\n" . "<h2>" . $header2 . "</h2>\n");
+		$this->add(h1($header1));
+		$this->add(h2($header2));
 		$this->addst("<div class=\"newscontent\">\n");
 	}
 	function get()
@@ -337,6 +369,13 @@ class logo extends namedbox {
 	}
 }
 
+
+/* A basic HTML object. 
+ * The create-functions are mostly used, since they are short to write
+ * and easy to read afterwards. 
+ * This marks the elementary part of html.php
+ * ====================================================================
+ */
 class htmlobject {
 	var $open;
 	var $ctrl="";
@@ -386,17 +425,9 @@ class htmlobject {
 	}
 }
 
-class htlink extends htmlobject
-{
-	function htlink($link, &$text)
-	{
-		$this->htmlobject("a","href=\"" . $link . "\"", $text);
-	}
-}
-
 function &htlink($link, &$text)
 {
-	return new htlink($link, $text);
+	return new htmlobject("a","href=\"" . $link . "\"", $text);
 }
 
 function &img($url, $desc="")
@@ -406,37 +437,30 @@ function &img($url, $desc="")
 }
 function &p($content)
 {
-	$obj = null;
-	return new htmlobject("p","",$content,$obj);
+	return new htmlobject("p","",$content);
 }
 function &h1($content)
 {
-	$obj = null;
-	return new htmlobject("h1","",$content,$obj);
+	return new htmlobject("h1","",$content);
 }
 function &h2($content)
 {
-	$obj = null;
-	return new htmlobject("h2","",$content,$obj);
+	return new htmlobject("h2","",$content);
 }
 function &h3($content)
 {
-	$obj = null;
-	return new htmlobject("h3","",$content,$obj);
+	return new htmlobject("h3","",$content);
 }
 function &h4($content)
 {
-	$obj = null;
-	return new htmlobject("h4","",$content,$obj);
+	return new htmlobject("h4","",$content);
 }
 function &h5($content)
 {
-	$obj = null;
-	return new htmlobject("h5","",$content,$obj);
+	return new htmlobject("h5","",$content);
 }
 function &h6($content)
 {
-	$obj = null;
-	return new htmlobject("h6","",$content,$obj);
+	return new htmlobject("h6","",$content);
 }
 ?>

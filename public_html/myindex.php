@@ -13,6 +13,7 @@ $news2 = new news("Jesus", "tusen aar siden");
 $news3 = new news("Adam", "Tidenes morgen");
 $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
+$somebox = new box();
 
 /* Popluate the content */
 $page->content->add(&$infoboks1);
@@ -29,11 +30,10 @@ $page->info4->add($dropdown);
 $page->info1->add(h1("Tam info"));
 $page->info1->add(p("This is quite boring"));
 
-$somebox = new box();
 
 $somebox->addst("Somepage!");
 $somebox->add(img("images/glider.png","glideralt"));
-$menu3->add(htlink("somepage",$somebox));
+$menu3->add(htlink("somepage",str("foo")));
 $menu3->add($menu2);
 $menu3->add($menu1);
 /* Populate them */
@@ -47,6 +47,7 @@ $menu1->add(htlink("foo", p("SomeItem")));
 $menu2->add(htlink("foo", p("Someother Item")));
 $menu2->add(htlink("foo", p("SomeItem other")));
 $menu2->add(htlink("foo", p("SomeItem")));
+$menu2->add(htlink("abra",$somebox));
 
 /* Populate the last menu with one normal item, and the two
  * other menus.
