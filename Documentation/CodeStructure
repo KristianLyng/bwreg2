@@ -1,0 +1,58 @@
+This document deals briefly with the overall layout of the
+bwreg2 system, but mostly with the php code in public_html.
+
+
+0. General layout
+1. public_html
+2. Core parts
+3. Modules
+
+
+0. General layout
+=================
+The general layout idea is to keep it clean over time, regardless of how
+much the system is extended.
+
+Documentation/ contains documentation.
+
+service_scripts/ contains backup scripts and possibly other scripts that
+can be usefull while bwreg is in use.
+
+install_scripts/ contains installation and upgrade scripts.
+
+sql/ will contain the sql creation files.
+
+1. public_html
+==============
+Only files that are actually accessed directly, not through includes, will be
+stored in the top of public_html.
+
+css/ will contain an arbitrary amount of CSS templates. default.css is the
+only one provided with the core package until someone else contributes.
+
+images/ will be used to store all sorts of images. 
+
+modules/ Will contain bwreg2 modules. Like TODO and similar systems.
+
+2. Core parts
+=============
+The core is centered around env.php, and fans out from there.
+
+It will start up bwreg by booting a few core structures, like the base config,
+database, create the top-page and the $me user, from sessions. 
+
+It does all this by pulling in from elsewhere. It should be kept extremly
+simple.
+
+3. Modules
+==========
+BWReg2 is based on the idea of future extensibility. We do this through
+modules. Modules can plug into some core functions. They do this by calling
+one single command: register_module($object).
+
+$object is an object that extends class "module", and essentialy specifies
+what hooks the module have. What this does is essentialy give the modules 
+the ability to add data to things such as the userinfo boxes automatically.
+This makes it possible to provide seating information, clan details and whatnot
+without core knowing about it, which makes for a cleaner and more extensible
+solution in the long run.
