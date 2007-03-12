@@ -1,5 +1,8 @@
 <?
- 
+/* This defines the database interface. 
+ * This is where the majority of changes would take place to
+ * accomodate diffrent databases.
+ */
 class database
 {
 	var $link;
@@ -13,9 +16,20 @@ class database
 		}
 		print("Couldn't connect to the database.");
 	}
+	function error($query)
+	{
+		global $me;
+		print "An SQL error occured while loading the page. \n";
+		print "Please contact the administrator if this happens again. \n";
+		if (is_object($me))
+		{
+				if($me->debug == true)
+					print "SQL query: $query\n";
+		}
+	}
 	function query($query, $cb = null)
 	{
-		$result = mysql_query($query); // or sql_error($query);
+		$result = mysql_query($query) or $this->error($query);
 		$bla = false;	
 		while ($row = mysql_fetch_array($result))
 		{
