@@ -20,6 +20,7 @@ $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
 $user = new user("kristian");
+$me = new user("kristian","e");
 $page->info2->add(p("Du er:"));
 $page->info2->add($me);
 $dropdown2->content->title = $user;

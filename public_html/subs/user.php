@@ -39,7 +39,7 @@ class user extends box
 	var $userinfo;
 	var $uid;
 	var $uname;
-	var $debug = false;
+	var $debug = true;
 	var $permissions;
 	function user($token = false, $password = null)
 	{
@@ -61,6 +61,19 @@ class user extends box
 
 	function login($user, $password)
 	{
+		global $db;
+		$myuser = $db->escape($user);
+		$mypass = $db->escapepass($password);
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uname = '";
+		$query .= $myuser;
+		$query .= "' AND pass = ";
+		$query .= $mypass;
+		$query .= ";";
+		$uid = $db->query($query,&$this);
+		if (!$uid) {
+			$uid = 0;
+			return false;
+		}
 		
 	}
 

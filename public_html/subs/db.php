@@ -49,6 +49,10 @@ class database
 	{
 			return mysql_escape_string($string);
 	}
+	function escapepass($string)
+	{
+			return "'" . mysql_escape_string($string) . "'";
+	}
 }
 
 ?>
