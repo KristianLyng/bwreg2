@@ -378,6 +378,49 @@ class htmlobject {
 	}
 }
 
+class form extends htmlobject
+{
+	var $fcontent;
+	function form($action = null,$method = "post")
+	{
+		global $page;
+		$this->fcontent = new box();
+		if($action == null)
+			$action = $page->url();
+		
+		$ctrl = "action=\"$action\" method=\"$method\"";
+		$this->htmlobject("form", $ctrl,&$this->fcontent);
+	}
+	function add(&$data)
+	{
+		$this->fcontent->add($data);
+	}
+}
+
+function ftext($name,$value = "",$length = false)
+{
+	$obj = null;
+	if($length != false)
+		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+	else
+		$mylength = "";
+	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" value=\"$value\"", $obj);
+}
+function fpass($name,$length = false)
+{
+	$obj = null;
+	if($length != false)
+		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+	else
+		$mylength = "";
+	return new htmlobject("input","type=\"password\" $mylength name=\"$name\"", $obj);
+}
+function fsubmit($value = "Submit", $name = "SubmitButton")
+{
+	$obj = null;
+	return new htmlobject("input","type=\"submit\" name=\"$name\" value=\"$value\"", $obj);
+}
+
 function &htlink($link, &$text)
 {
 	return new htmlobject("a","href=\"" . $link . "\"", $text);
