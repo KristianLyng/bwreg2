@@ -53,7 +53,7 @@ class page extends box
 		$this->top4 = "</div>\n";
 		$this->header = $header;
 		$this->bottom = "</body></html>\n";
-		$this->content = new content();
+		$this->content = content();
 		$this->footer = new footer();
 		$this->ctrl1 = new ctrl("1");
 		$this->ctrl2 = new ctrl("2");
@@ -261,11 +261,9 @@ class info extends namedbox {
 	}
 }
 
-class content extends namedbox {
-	function content()
-	{
-		$this->namedbox("id", "content");
-	}
+function &content()
+{
+	return new namedbox("id", "content");
 }
 
 class userinfoboks extends namedbox {

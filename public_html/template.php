@@ -31,9 +31,6 @@ if($event->location->id)
 	$page->info1->add(p($event->location->address));
 }
 
-$sometext = $wiki->transform("This is //cursive// and **bold** http://www.somelink.com");
-
-$news2->addst($sometext);
 $page->ctrl1->add($menu3);
 $page->footer->add(h1($user));
 $page->info4->add(h1("Advarsel"));

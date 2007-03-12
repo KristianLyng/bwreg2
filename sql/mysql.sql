@@ -5,6 +5,23 @@
 -- Server version	4.0.24_Debian-10sarge2-log
 
 --
+-- Table structure for table `content`
+--
+
+CREATE TABLE `content` (
+  `id` int(11) NOT NULL auto_increment,
+  `contentid` int(11) NOT NULL default '0',
+  `version` int(11) NOT NULL default '0',
+  `uid` int(11) NOT NULL default '0',
+  `modified` timestamp(14) NOT NULL,
+  `gid` int(11) NOT NULL default '0',
+  `permission` int(11) default NULL,
+  `content` text,
+  `title` varchar(20) default NULL,
+  PRIMARY KEY  (`id`)
+) TYPE=MyISAM;
+
+--
 -- Table structure for table `events`
 --
 

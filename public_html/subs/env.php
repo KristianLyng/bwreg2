@@ -12,6 +12,7 @@ require_once("subs/db.php");
 require_once("subs/session.php");
 require_once("subs/plugins.php");
 require_once("subs/events.php");
+require_once("subs/data.php");
 require_once("Text/Wiki.php");
 global $page;
 global $session;
@@ -38,16 +39,21 @@ function down()
 register_shutdown_function(down);
 
 $down = new down();
-$wiki = new Text_Wiki();
+$wiki =& new Text_Wiki();
+$wiki->setRenderConf('xhtml', 'wikilink', 'view_url', $_SERVER['PHP_SELF'] . '?page=');
+$wiki->setRenderConf('xhtml', 'wikilink', 'new_url', $_SERVER['PHP_SELF'] . '?page=');
+$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
+//$wiki->setRenderConf('xhtml', 'wikilink', 'new_text_pos', null);
+$session = new session();
 $config = new config();
 $db = new database();
-$session = new session();
 
 $plugins = new plugins();
 
 $page = new page();
-$me = new myuser();
 $event = new event();
+$me = new myuser();
+$page->content->add(new content());
 if ($event->gid == 0)
 	print "No such genre/event";
 

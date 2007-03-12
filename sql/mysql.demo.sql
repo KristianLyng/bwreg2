@@ -5,6 +5,31 @@
 -- Server version	4.0.24_Debian-10sarge2-log
 
 --
+-- Table structure for table `content`
+--
+
+CREATE TABLE `content` (
+  `id` int(11) NOT NULL auto_increment,
+  `contentid` int(11) NOT NULL default '0',
+  `version` int(11) NOT NULL default '0',
+  `uid` int(11) NOT NULL default '0',
+  `modified` timestamp(14) NOT NULL,
+  `gid` int(11) NOT NULL default '0',
+  `permission` int(11) default NULL,
+  `content` text,
+  `title` varchar(20) default NULL,
+  PRIMARY KEY  (`id`)
+) TYPE=MyISAM;
+
+--
+-- Dumping data for table `content`
+--
+
+INSERT INTO `content` VALUES (5,3,1,1,20070313000415,1,NULL,'+ Fin oversikt\n  \nOm man vil, kan man linke til forsiden sin slik: FrontPage \nEller bedre: [FrontPage Forsiden]\n','HitEn');
+INSERT INTO `content` VALUES (4,2,1,1,20070312235947,1,NULL,'+ Dette er en annen side\n\n\nBlir dette masse linjeskift?\n\nTilbake til [Forsiden] ?\n\nEventuelt [http://glug.grm.hia.no/~kristian/template.php?page=BølerLAN Forsiden]\n\nTil og med BølerLAN ?\n\n\n\nhmm...\n','DetteHer');
+INSERT INTO `content` VALUES (3,1,2,1,20070312235325,1,NULL,'+ Overskiften paa forsiden\n\nDette er vanlig tekst, **dette er ganske fett**\nVi kan skrive ganske firtt\nfritt til og med....\n\n++ Demo av lenker \n\n//lenker// er vistnok enkelt. Er DetteHer en lenke?\nHva med [HitEn Dette her da] ?\n','BølerLAN');
+
+--
 -- Table structure for table `events`
 --
 
