@@ -30,7 +30,7 @@ $page->content->add(&$news2);
 $page->content->add(&$news3);
 $page->logo->add(img("images/bolerlanlogo.png","BolerLAN"));
 $page->ctrl1->add($menu3);
-$page->footer->add(h1("copyright ME"));
+$page->footer->add(h1($user));
 $page->info4->add(h1("Advarsel"));
 $page->info4->add(p("Dette er en viktig infoboks som kan fjernes ved å fjerne det som gjør den skummel"));
 $page->info4->add($dropdown);
