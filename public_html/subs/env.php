@@ -11,6 +11,7 @@ require_once("subs/config.php");
 require_once("subs/db.php");
 require_once("subs/session.php");
 require_once("subs/plugins.php");
+require_once("events.php");
 global $page;
 global $session;
 global $user;
@@ -39,8 +40,18 @@ $down = new down();
 $config = new config();
 $db = new database();
 $session = new session();
+
 $plugins = new plugins();
+
 $page = new page();
 $me = new myuser();
+$event = new event();
+if ($event->gid == 0)
+	print "No such genre/event";
+
+$page->htmltitle = $event->title;
+$page->header = $event->title;
+$page->logo->add(img($event->logo,$event->title));
+
 $page->ctrl2->add($me);
 ?>

@@ -26,10 +26,13 @@ class database
 				if($me->debug == true)
 					print "SQL query: $query\n";
 		}
+		return false;
 	}
 	function query($query, $cb = null)
 	{
 		$result = mysql_query($query) or $this->error($query);
+		if (!$result)
+			return false;
 		$bla = false;	
 		while ($row = mysql_fetch_array($result))
 		{
