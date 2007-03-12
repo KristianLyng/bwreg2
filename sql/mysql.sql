@@ -1,25 +1,52 @@
--- MySQL dump 10.11
+-- MySQL dump 9.11
 --
 -- Host: localhost    Database: bwreg2
 -- ------------------------------------------------------
--- Server version	5.0.32-Debian_7-log
+-- Server version	4.0.24_Debian-10sarge2-log
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+--
+-- Table structure for table `events`
+--
+
+CREATE TABLE `events` (
+  `eid` int(11) NOT NULL auto_increment,
+  `gid` int(11) NOT NULL default '0',
+  `title` varchar(20) default NULL,
+  `logo` varchar(50) default NULL,
+  `description` varchar(100) default NULL,
+  `price` varchar(150) default NULL,
+  `location` int(11) default NULL,
+  `payment` varchar(150) default NULL,
+  `start` datetime default NULL,
+  `end` datetime default NULL,
+  `gname` varchar(10) default NULL,
+  PRIMARY KEY  (`eid`)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `location`
+--
+
+CREATE TABLE `location` (
+  `location` int(11) NOT NULL auto_increment,
+  `name` varchar(100) default NULL,
+  `address` varchar(200) default NULL,
+  `directions` text,
+  `maplink` varchar(200) default NULL,
+  `rows` int(11) default NULL,
+  `cols` int(11) default NULL,
+  `seats` int(11) default NULL,
+  `north` varchar(50) default NULL,
+  `south` varchar(50) default NULL,
+  `east` varchar(50) default NULL,
+  `west` varchar(50) default NULL,
+  PRIMARY KEY  (`location`)
+) TYPE=MyISAM;
 
 --
 -- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `uid` int(11) NOT NULL auto_increment,
   `uname` varchar(12) NOT NULL default '',
@@ -30,18 +57,7 @@ CREATE TABLE `users` (
   `adress` varchar(40) NOT NULL default '',
   `phone` varchar(12) NOT NULL default '',
   `extra` varchar(50) default NULL,
-  `pass` blob NOT NULL,
-  PRIMARY KEY  (`uid`),
-  KEY `names` (`lastname`,`firstname`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+  `pass` varchar(20) default NULL,
+  PRIMARY KEY  (`uid`)
+) TYPE=MyISAM;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2007-03-12 15:10:30
