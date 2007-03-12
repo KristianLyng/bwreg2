@@ -1,0 +1,5 @@
+BWReg2 currently uses:
+
+MySQL 4 or newer
+PHP4 or newer
+PEAR with the Text_Wiki module

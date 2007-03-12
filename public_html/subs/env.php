@@ -11,7 +11,8 @@ require_once("subs/config.php");
 require_once("subs/db.php");
 require_once("subs/session.php");
 require_once("subs/plugins.php");
-require_once("events.php");
+require_once("subs/events.php");
+require_once("Text/Wiki.php");
 global $page;
 global $session;
 global $user;
@@ -37,6 +38,7 @@ function down()
 register_shutdown_function(down);
 
 $down = new down();
+$wiki = new Text_Wiki();
 $config = new config();
 $db = new database();
 $session = new session();

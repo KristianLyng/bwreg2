@@ -8,7 +8,6 @@ include "subs/env.php";
  * the functionality this page demonstrates will be used internally
  * in other parts of bwreg2 as they are developed.
  */
-
 $dropdown2 = new dropdown("");
 $menu1 = new menu("En undermeny");
 $menu2 = new menu("Petter");
@@ -31,6 +30,10 @@ if($event->location->id)
 	$page->info1->add(p($event->location->name));
 	$page->info1->add(p($event->location->address));
 }
+
+$sometext = $wiki->transform("This is //cursive// and **bold** http://www.somelink.com");
+
+$news2->addst($sometext);
 $page->ctrl1->add($menu3);
 $page->footer->add(h1($user));
 $page->info4->add(h1("Advarsel"));
