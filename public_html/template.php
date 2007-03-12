@@ -52,7 +52,7 @@ $menu1->add(htlink("foo", str("SomeItem")));
 $menu2->add(htlink("foo", str("SomeItem")));
 $menu2->add(htlink("abra",$somebox));
 
-$mul = new multiuserlist("Kri","per");
+$mul = new multiuserlist(false,"K","S");
 $news2->add(p("Dette er resultatet av et enkelt søk i databasen:"));
 $news2->add($mul);
 

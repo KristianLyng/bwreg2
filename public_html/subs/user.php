@@ -108,6 +108,11 @@ class user extends box
 	{
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
+
+	function getname()
+	{
+			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
+	}
 }
 /* multiuser lets us search for and find multiple users.
  * It adds one user per result. It will be further extended
@@ -124,13 +129,16 @@ class oneuser extends user
 class multiuser extends user 
 {
 	var $pre;
-	function multiuser($fname,$lname)
+	function multiuser($any,$fname,$lname)
 	{
 		global $db;
 		$this->userinfo = new userinfo();
 		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE firstname like '";
 		$query .= $fname;
-		$query .= "%' or lastname like '";
+		if ($any)
+				$query .= "%' or lastname like '";
+		else
+				$query .= "%' and lastname like '";
 		$query .= $lname;
 		$query .= "%';";
 		$db->query($query, &$this);
@@ -150,10 +158,10 @@ class multiuser extends user
 
 class multiuserlist extends multiuser
 {
-	function multiuserlist($fname, $lname)
+	function multiuserlist($any, $fname, $lname)
 	{
 		$this->userinfo = new userinfo();
-		$this->multiuser($fname,$lname);
+		$this->multiuser($any,$fname,$lname);
 	}
 
 	function get()
@@ -161,7 +169,7 @@ class multiuserlist extends multiuser
 		$box = new box();
 		for($tmp = 0; $tmp < $this->nItems; $tmp++) 
 		{
-			$dropdown = new dropdown($this->items[$tmp]->userinfo->firstname);
+			$dropdown = new dropdown($this->items[$tmp]->getname());
 			$dropdown->add($this->items[$tmp]->userinfo);
 			$box->add(&$dropdown);
 			unset($dropdown);
