@@ -20,9 +20,6 @@ $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
 $user = new user("kristian");
-$me = new user("kristian","e");
-$page->info2->add(p("Du er:"));
-$page->info2->add($me);
 $dropdown2->content->title = $user;
 $dropdown2->add($user->userinfo);
 $page->content->add(&$infoboks1);
@@ -56,7 +53,8 @@ $menu2->add(htlink("abra",$somebox));
 $mul = new multiuserlist(false,"K","S");
 $news2->add(p("Dette er resultatet av et enkelt søk i databasen:"));
 $news2->add($mul);
-
+$news3->add(p("Info om innlogget bruker:"));
+$news3->add($me->userinfo);
 $dropdown->add(htlink("foo.html",str("Read")));
 $dropdown->add(htlink("bar.html",str("Hide")));
 

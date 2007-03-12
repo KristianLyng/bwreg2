@@ -41,5 +41,6 @@ $db = new database();
 $session = new session();
 $plugins = new plugins();
 $page = new page();
-$me = new user();
+$me = new myuser();
+$page->ctrl2->add($me);
 ?>

@@ -71,7 +71,8 @@ class user extends box
 		$query .= ";";
 		$uid = $db->query($query,&$this);
 		if (!$uid) {
-			$uid = 0;
+			$this->uid = 0;
+			$this->userinfo = new userinfo();
 			return false;
 		}
 		
@@ -79,8 +80,9 @@ class user extends box
 
 	function guest()
 	{
-			$this->uid = false;
-			$this->uname = false;
+		$this->uid = false;
+		$this->uname = false;
+		$this->userinfo = new userinfo();
 	}
 
 	function c_uname($user)
@@ -125,6 +127,60 @@ class user extends box
 	function getname()
 	{
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
+	}
+}
+
+class myuser extends user
+{
+	var $failed = true; 
+	function myuser()
+	{
+		$this->userinfo = new userinfo();
+		if ($_POST['action'] == 'logout')
+			$this->logout();
+		if($_SESSION['uname'] && $_SESSION['pass'] ) 
+			$this->login($_SESSION['uname'],$_SESSION['pass']);
+		 else if ($_POST['uname'] && $_POST['pass']) {
+			$_SESSION['uname'] = $_POST['uname'];
+			$_SESSION['pass'] = $_POST['pass'];
+			$this->login($_POST['uname'],$_POST['pass']);
+		} else
+			$this->failed = false;
+		if($this->uid == 0)
+			$this->logout();
+	}
+	function logout()
+	{
+		$_SESSION['uname'] = null;
+		$_SESSION['pass'] = null;
+		$this->guest();
+	}
+	function print_box()
+	{
+		$string = "<form action=\"template.php\" method=\"post\">";
+		$string .= "<input type=text value=uname name=uname>";
+		$string .= "<input type=password value=pass name=pass>";
+		$string .= "<input type=submit>";
+		$string .= "</form>";
+		return $string;
+	}
+	function print_logout()
+	{
+		$string = "<form action=\"template.php\" method=\"post\">";
+		$string .= "<input name=action value=logout type=submit>";
+		$string .= "</form>";
+		return $string;
+	}
+	function get()
+	{
+		if($this->failed && $this->uid == 0) {
+			return "Login failed" . $this->print_box();
+		} else if ($this->uid > 0) {
+			$string = "Logged in as: " . parent::get() . "\n";
+			return $string . $this->print_logout();
+		} else {
+			return $this->print_box();
+		}
 	}
 }
 /* multiuser lets us search for and find multiple users.
