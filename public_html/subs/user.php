@@ -136,7 +136,7 @@ class myuser extends user
 	function myuser()
 	{
 		parent::user();
-		if ($_POST['action'] == 'Logout')
+		if ($_REQUEST['action'] == 'Logout')
 			$this->logout();
 		if($_SESSION['uname'] && $_SESSION['pass'] ) 
 			$this->login($_SESSION['uname'],$_SESSION['pass']);
@@ -157,15 +157,15 @@ class myuser extends user
 	}
 	function print_box()
 	{
-		$form = new form("template.php");
+		$form = new form();
 		$form->add(ftext("uname","uname",8));
 		$form->add(fpass("pass",8));
-		$form->add(fsubmit("Login"));
+		$form->add(fsubmit("Login", "action"));
 		return $form->get();
 	}
 	function print_logout()
 	{
-		$form = new form("template.php");
+		$form = new form();
 		$form->add(fsubmit("Logout","action"));
 		return $form->get();
 	}

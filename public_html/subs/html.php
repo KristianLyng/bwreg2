@@ -113,6 +113,10 @@ class page extends box
 		$this->merge();
 		print($this->get());
 	}
+	function url()
+	{
+		return $_SERVER['PHP_SELF'];
+	}
 }
 
 /* This is a basic menu.
