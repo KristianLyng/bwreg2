@@ -135,7 +135,7 @@ class myuser extends user
 	var $failed = true; 
 	function myuser()
 	{
-		$this->userinfo = new userinfo();
+		parent::user();
 		if ($_POST['action'] == 'logout')
 			$this->logout();
 		if($_SESSION['uname'] && $_SESSION['pass'] ) 
