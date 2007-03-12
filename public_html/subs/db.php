@@ -45,6 +45,10 @@ class database
 		mysql_free_result($result);
 		return $bla;
 	}
+	function escape($string)
+	{
+			return mysql_escape_string($string);
+	}
 }
 
 ?>
