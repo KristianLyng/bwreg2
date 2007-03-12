@@ -140,8 +140,15 @@ class menu extends box{
 	function get()
 	{
 		$menu = "<div class=\"menuboks\">\n";
-		if ($this->title != "")
-			$menu .= "<h1>" . $this->title . "</h1>\n";
+		if ($this->title != "" && $this->title != null)
+		{
+			$menu .= "<h1>";
+			if(is_object($this->title))
+				$menu .= $this->title->get();
+			else
+				$menu .= $this->title;
+			$menu .= "</h1>\n";
+		}
 		$menu .= "<ul>";
 		$menu .= parent::getraw();
 		$menu .= "</ul>";
@@ -151,7 +158,12 @@ class menu extends box{
 
 	function getraw()
 	{
-		return $this->title . "<ul>\n" . parent::get() . "</ul>";
+		if(is_object($this->title))
+				$string = $this->title->get();
+		else
+				$string = $this->title;
+
+		return $string . "<ul>\n" . parent::get() . "</ul>";
 	}
 
 	function output()

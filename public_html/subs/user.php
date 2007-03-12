@@ -3,7 +3,7 @@ require_once("subs/base.php");
 require_once("subs/html.php");
 class userinfo 
 {
-	var $firstname = "";
+	var $firstname = "Anonymous";
 	var $lastname = "";
 	var $phone = "";
 	var $mail = "";
@@ -39,8 +39,9 @@ class user extends box
 	var $userinfo;
 	var $uid;
 	var $uname;
-
-	function user($token, $password = null)
+	var $debug = false;
+	var $permissions;
+	function user($token = false, $password = null)
 	{
 		$this->userinfo = new userinfo();
 		global $plugins;
@@ -54,12 +55,21 @@ class user extends box
 			$this->c_uname($token);
 		else if (is_int($token))
 			$this->c_uid($token);
+		else
+			$this->guest();
 	}
 
 	function login($user, $password)
 	{
 		
 	}
+
+	function guest()
+	{
+			$this->uid = false;
+			$this->uname = false;
+	}
+
 	function c_uname($user)
 	{
 		global $db;
@@ -93,6 +103,10 @@ class user extends box
 			if(function_exists($this->items[$tmp]->sqlcb))
 				$this->items[$tmp]->sqlcb(&$this);
 		}
+	}
+	function get()
+	{
+			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
 }
 /* multiuser lets us search for and find multiple users.

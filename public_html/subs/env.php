@@ -16,6 +16,7 @@ global $session;
 global $user;
 global $config;
 global $plugins;
+global $me;
 class down extends box
 {
 		function endit()
@@ -26,16 +27,19 @@ class down extends box
 			$page->output();
 		}
 }
+function down()
+{
+	global $down;
+	$down->endit();
+}
+
+register_shutdown_function(down);
+
 $down = new down();
 $config = new config();
 $db = new database();
 $session = new session();
 $plugins = new plugins();
 $page = new page();
-function down()
-{
-	global $down;
-	$down->endit();
-}
-register_shutdown_function(down);
+$me = new user();
 ?>

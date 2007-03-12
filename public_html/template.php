@@ -20,14 +20,15 @@ $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
 $user = new user("kristian");
-
-$dropdown2->content->title = $user->userinfo->firstname;
+$page->info2->add(p("Du er:"));
+$page->info2->add($me);
+$dropdown2->content->title = $user;
 $dropdown2->add($user->userinfo);
 $page->content->add(&$infoboks1);
 $page->content->add(&$news1);
 $page->content->add(&$news2);
 $page->content->add(&$news3);
-$page->logo->add(img("images/bolerlanlogo.png","BølerLANÆ"));
+$page->logo->add(img("images/bolerlanlogo.png","BolerLAN"));
 $page->ctrl1->add($menu3);
 $page->footer->add(h1("copyright ME"));
 $page->info4->add(h1("Advarsel"));
