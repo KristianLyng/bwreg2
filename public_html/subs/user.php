@@ -129,7 +129,7 @@ class user extends box
 	{
 		global $db;
 		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uname = '";
-		$query .= $user;
+		$query .= $db->escape($user);
 		$query .= "';";
 		return $db->query($query, &$this);
 	}
@@ -137,7 +137,7 @@ class user extends box
 	{
 		global $db;
 		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uid = '";
-		$query .= $uid;
+		$query .= $db->escape($uid);
 		$query .= "';";
 		return $db->query($query, $this);
 	}
@@ -208,7 +208,7 @@ class myuser extends user
 	{
 		global $page;
 		$url = $page->url();
-		$url .= "?action=Logout";
+		$url .= "?page=Logout&action=Logout";
 		$object = htlink($url, str("Logout"));
 		return $object->get();
 	}
@@ -243,12 +243,12 @@ class multiuser extends user
 		global $db;
 		$this->userinfo = new userinfo();
 		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE firstname like '";
-		$query .= $fname;
+		$query .= $db->escape($fname);
 		if ($any)
 				$query .= "%' or lastname like '";
 		else
 				$query .= "%' and lastname like '";
-		$query .= $lname;
+		$query .= $db->escape($lname);
 		$query .= "%';";
 		$db->query($query, &$this);
 	}
