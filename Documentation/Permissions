@@ -7,7 +7,7 @@ eid EventID (null means genre at large)
 resource Specific resource (other items link here), null means event at large.
 resource_name Human readable name of the resource.
 permission Defines what the group can do. (Read/Write/Modify)
-group Group
+groupid Group
 
 Resource can typically be "Game" with permission set to rwm and group set
 to the GameCrew group, while another entry with might be identical, but with
@@ -19,7 +19,7 @@ Groups
 ======
 A group is generic, it will be used for diffrent purposes.
 
-group Uniqe group ID
+groupid Uniqe group ID
 gid Genre (not null)
 eid Event (null means the group isn't bound to a specific event).
 group_name Genre/Event-uniqe human readable name of the Group.
@@ -27,7 +27,7 @@ owner Uid of the group admin.
 
 Group members
 =============
-group Link to the group table
+groupid Link to the group table
 uid Link to the user table
 level Defines the right of the user. How this is used is up to the 
       individual modules implementing groups. (Reservation will want
