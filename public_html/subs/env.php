@@ -63,11 +63,9 @@ $me = new myuser();
 $maincontent = new content();
 if(!isset($maincontent->content))
 {
-	$page->info4->add(h1("Page not found"));
-	$page->info4->add(p("Couldn't find the page. This might be just a mishap on a dynamic page, but shouldn't happen."));
-	if($me->permission('BWReg2') != "")
-		$page->info4->add(p("You are an admin..."));
-	$page->info4->addst($wiki->transform("[FrontPage Back to the front page]"));
+	$page->info4->add(new content("ErrorPageNotFound"));
+	if(strstr($me->permission($maincontent->permission),"w"))
+		$page->info4->add(new content("ErrorPageNotFoundAdmin"));
 } else
 	$page->content->add(new content());
 if ($event->gid == 0)

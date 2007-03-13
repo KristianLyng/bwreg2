@@ -17,7 +17,7 @@ CREATE TABLE `content` (
   `gid` int(11) NOT NULL default '0',
   `permission` int(11) default NULL,
   `content` text,
-  `title` varchar(20) default NULL,
+  `title` varchar(50) NOT NULL default '',
   `read_permission` int(11) default NULL,
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM;

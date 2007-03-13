@@ -17,7 +17,7 @@ CREATE TABLE `content` (
   `gid` int(11) NOT NULL default '0',
   `permission` int(11) default NULL,
   `content` text,
-  `title` varchar(20) default NULL,
+  `title` varchar(50) NOT NULL default '',
   `read_permission` int(11) default NULL,
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM;
@@ -32,6 +32,8 @@ INSERT INTO `content` VALUES (3,1,2,1,20070312225325,1,NULL,'+ Overskiften paa f
 INSERT INTO `content` VALUES (6,4,2,1,20070312234329,1,NULL,'+ SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n','DetteHer',NULL);
 INSERT INTO `content` VALUES (7,4,2,1,20070312234636,1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer',NULL);
 INSERT INTO `content` VALUES (8,4,3,1,20070313140355,1,1,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer',NULL);
+INSERT INTO `content` VALUES (9,5,1,1,20070313162725,1,NULL,'+ Denne siden finnes ikke\nSiden du forsoeker og naa eksisterer ikke, dette skal ikke skje.\n\n [FrontPage Tilbake til forsiden]\n','ErrorPageNotFound',NULL);
+INSERT INTO `content` VALUES (12,6,1,1,20070313163149,1,NULL,'++ Du kan lage denne siden!\nBidra til at ting fungerer...','ErrorPageNotFoundAdmin',1);
 
 --
 -- Table structure for table `events`
@@ -143,6 +145,7 @@ CREATE TABLE `permissions` (
 --
 
 INSERT INTO `permissions` VALUES (0,0,1,'BWReg2','rwm',1);
+INSERT INTO `permissions` VALUES (1,0,2,'blanContentCreators','rwm',1);
 
 --
 -- Table structure for table `users`
