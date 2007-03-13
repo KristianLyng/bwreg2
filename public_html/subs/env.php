@@ -43,6 +43,13 @@ $wiki =& new Text_Wiki();
 $wiki->setRenderConf('xhtml', 'wikilink', 'view_url', $_SERVER['PHP_SELF'] . '?page=');
 $wiki->setRenderConf('xhtml', 'wikilink', 'new_url', $_SERVER['PHP_SELF'] . '?page=');
 $wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
+$sites = array(
+"news" => $_SERVER['PHP_SELF'] . '?page=News?news=%s', 
+"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo?user=%s');
+	
+
+$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
+$wiki->setRenderConf('xhtml', 'interwiki','target', null);
 //$wiki->setRenderConf('xhtml', 'wikilink', 'new_text_pos', null);
 $session = new session();
 $config = new config();
@@ -53,7 +60,14 @@ $plugins = new plugins();
 $page = new page();
 $event = new event();
 $me = new myuser();
-$page->content->add(new content());
+$maincontent = new content();
+if(!isset($maincontent->content))
+{
+	$page->info4->add(h1("Page not found"));
+	$page->info4->add(p("Couldn't find the page. This might be just a mishap on a dynamic page, but shouldn't happen."));
+	$page->info4->addst($wiki->transform("[FrontPage Back to the front page]"));
+} else
+	$page->content->add(new content());
 if ($event->gid == 0)
 	print "No such genre/event";
 

@@ -28,6 +28,9 @@ CREATE TABLE `content` (
 INSERT INTO `content` VALUES (5,3,1,1,20070313000415,1,NULL,'+ Fin oversikt\n  \nOm man vil, kan man linke til forsiden sin slik: FrontPage \nEller bedre: [FrontPage Forsiden]\n','HitEn');
 INSERT INTO `content` VALUES (4,2,1,1,20070312235947,1,NULL,'+ Dette er en annen side\n\n\nBlir dette masse linjeskift?\n\nTilbake til [Forsiden] ?\n\nEventuelt [http://glug.grm.hia.no/~kristian/template.php?page=BølerLAN Forsiden]\n\nTil og med BølerLAN ?\n\n\n\nhmm...\n','DetteHer');
 INSERT INTO `content` VALUES (3,1,2,1,20070312235325,1,NULL,'+ Overskiften paa forsiden\n\nDette er vanlig tekst, **dette er ganske fett**\nVi kan skrive ganske firtt\nfritt til og med....\n\n++ Demo av lenker \n\n//lenker// er vistnok enkelt. Er DetteHer en lenke?\nHva med [HitEn Dette her da] ?\n','BølerLAN');
+INSERT INTO `content` VALUES (6,4,2,1,20070313004329,1,NULL,'+ SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n','DetteHer');
+INSERT INTO `content` VALUES (7,4,2,1,20070313004636,1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
+INSERT INTO `content` VALUES (8,4,3,1,20070313004716,1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
 
 --
 -- Table structure for table `events`

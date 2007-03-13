@@ -33,9 +33,6 @@ if($event->location->id)
 
 $page->ctrl1->add($menu3);
 $page->footer->add(h1($user));
-$page->info4->add(h1("Advarsel"));
-$page->info4->add(p("Dette er en viktig infoboks som kan fjernes ved å fjerne det som gjør den skummel"));
-$page->info4->add($dropdown);
 
 $somebox->addst("Somepage!");
 $somebox->add(img("images/glider.png","glideralt"));
@@ -57,8 +54,6 @@ $news2->add(p("Dette er resultatet av et enkelt søk i databasen:"));
 $news2->add($mul);
 $news3->add(p("Info om innlogget bruker:"));
 $news3->add($me->userinfo);
-$dropdown->add(htlink("foo.html",str("Read")));
-$dropdown->add(htlink("bar.html",str("Hide")));
 
 
 $news1->add(p("Fooooooo bar etc etc"));
