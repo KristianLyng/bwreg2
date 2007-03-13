@@ -206,17 +206,18 @@ class myuser extends user
 	}
 	function print_logout()
 	{
-		$form = new form();
-		$form->add(fsubmit("Logout","action"));
-		return $form->get();
+		global $page;
+		$url = $page->url();
+		$url .= "?action=Logout";
+		$object = htlink($url, str("Logout"));
+		return $object->get();
 	}
 	function get()
 	{
 		if($this->failed && $this->uid == 0) {
 			return "Login failed" . $this->print_box();
 		} else if ($this->uid > 0) {
-			$string = "Logged in as: " . parent::get() . "\n";
-			return $string . $this->print_logout();
+			return parent::get() . " " . $this->print_logout();
 		} else {
 			return $this->print_box();
 		}

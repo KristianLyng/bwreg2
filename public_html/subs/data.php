@@ -7,13 +7,14 @@ class content
 	var $gid;
 	var $title;
 	var $permission;
+	var $read_permission;
 	function content($contentid = false)
 	{
 		global $db;
 		global $event;
 		global $me;
 		global $page;
-		$query = "SELECT content,version,title,gid,permission FROM content WHERE gid='";
+		$query = "SELECT content,version,title,gid,permission,read_permission FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
 		{
@@ -39,7 +40,7 @@ class content
 		}
 		$query .= "' ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
-		if ($this->permission != null && !strstr($me->permission($this->permission),"r"))
+		if ($this->read_permission != null && !strstr($me->permission($this->permission),"r"))
 		{
 			$this->content = "+ Permission denied";
 		}
@@ -51,6 +52,7 @@ class content
 		$this->gid = $row['gid'];
 		$this->title = $row['title'];
 		$this->permission = $row['permission'];
+		$this->read_permission = $row['read_permission'];
 	}
 
 	function get()

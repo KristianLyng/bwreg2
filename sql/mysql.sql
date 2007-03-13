@@ -18,19 +18,9 @@ CREATE TABLE `content` (
   `permission` int(11) default NULL,
   `content` text,
   `title` varchar(20) default NULL,
+  `read_permission` int(11) default NULL,
   PRIMARY KEY  (`id`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `content`
---
-
-INSERT INTO `content` VALUES (5,3,1,1,20070312230415,1,NULL,'+ Fin oversikt\n  \nOm man vil, kan man linke til forsiden sin slik: FrontPage \nEller bedre: [FrontPage Forsiden]\n','HitEn');
-INSERT INTO `content` VALUES (4,2,1,1,20070312225947,1,NULL,'+ Dette er en annen side\n\n\nBlir dette masse linjeskift?\n\nTilbake til [Forsiden] ?\n\nEventuelt [http://glug.grm.hia.no/~kristian/template.php?page=BølerLAN Forsiden]\n\nTil og med BølerLAN ?\n\n\n\nhmm...\n','DetteHer');
-INSERT INTO `content` VALUES (3,1,2,1,20070312225325,1,NULL,'+ Overskiften paa forsiden\n\nDette er vanlig tekst, **dette er ganske fett**\nVi kan skrive ganske firtt\nfritt til og med....\n\n++ Demo av lenker \n\n//lenker// er vistnok enkelt. Er DetteHer en lenke?\nHva med [HitEn Dette her da] ?\n','BølerLAN');
-INSERT INTO `content` VALUES (6,4,2,1,20070312234329,1,NULL,'+ SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n','DetteHer');
-INSERT INTO `content` VALUES (7,4,2,1,20070312234636,1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
-INSERT INTO `content` VALUES (8,4,3,1,20070313140355,1,1,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
 
 --
 -- Table structure for table `events`
@@ -52,13 +42,6 @@ CREATE TABLE `events` (
 ) TYPE=MyISAM;
 
 --
--- Dumping data for table `events`
---
-
-INSERT INTO `events` VALUES (1,1,'BølerLAN','images/bolerlanlogo.png','BølerLAN er tidenes beste LAN party',NULL,1,NULL,NULL,NULL,'blan');
-INSERT INTO `events` VALUES (2,2,'JallaLAN','images/glider.png',NULL,NULL,NULL,NULL,NULL,NULL,'jallalan');
-
---
 -- Table structure for table `group_members`
 --
 
@@ -68,13 +51,6 @@ CREATE TABLE `group_members` (
   `level` int(11) default NULL,
   `role` varchar(20) default NULL
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `group_members`
---
-
-INSERT INTO `group_members` VALUES (1,1,10,'Developer');
-INSERT INTO `group_members` VALUES (2,1,10,'Developer');
 
 --
 -- Table structure for table `groups`
@@ -89,13 +65,6 @@ CREATE TABLE `groups` (
   `owner` int(11) NOT NULL default '0',
   PRIMARY KEY  (`groupid`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `groups`
---
-
-INSERT INTO `groups` VALUES (1,0,0,'BWReg Admins','The superusers of BWReg',1);
-INSERT INTO `groups` VALUES (2,1,0,'BolerLAN Admins','The superusers of BolerLAN',1);
 
 --
 -- Table structure for table `location`
@@ -118,12 +87,6 @@ CREATE TABLE `location` (
 ) TYPE=MyISAM;
 
 --
--- Dumping data for table `location`
---
-
-INSERT INTO `location` VALUES (1,'Skullerud Skole','SkullerudSkoleAddresse','Gaa av paa skullerud T','<img src=\"images/skullerud1.png\" />',8,12,96,'Scene / Crew','Inngang','Kantine/Jentegardrobe','Guttegardrobe/Sovesal');
-
---
 -- Table structure for table `permissions`
 --
 
@@ -135,12 +98,6 @@ CREATE TABLE `permissions` (
   `permissions` varchar(5) default NULL,
   `groupid` int(11) NOT NULL default '0'
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `permissions`
---
-
-INSERT INTO `permissions` VALUES (0,0,1,'BWReg2','rwm',1);
 
 --
 -- Table structure for table `users`
@@ -159,11 +116,4 @@ CREATE TABLE `users` (
   `pass` varchar(20) default NULL,
   PRIMARY KEY  (`uid`)
 ) TYPE=MyISAM;
-
---
--- Dumping data for table `users`
---
-
-INSERT INTO `users` VALUES (1,'kristian','Kristian','Lyngstol','kristianlyng@gmail.com',1983,'Langretta 10','99014497','Admin/crew/whatever','hei');
-INSERT INTO `users` VALUES (2,'kristian2','Kristoffer','asfyngstol','kristianlyng@gmail.com',1983,'Langretta 10','99014497','Admin/crew/whatever',NULL);
 
