@@ -36,3 +36,23 @@ role Description of the persons role in the group ("Seater", "Camper",
      "GameCrew Chief", "Clown", ....).
 
 
+Use in PHP
+==========
+The User class will read in permissions for the user, and store it
+in a sane way. Other parts of the code should only need to do
+$user->permission(id) to get the permission that user has for the
+specific resource. 
+
+As it can be usefull to store detailed permission and group info,
+the User class should do this so it is easily printable, and the
+get() methods should compare against $me's permissions when printing
+info about a user.
+
+It is each modules responsibility to check for permissions, the user
+class simply supplies the means to do it. It is not (yet?) predefined
+how the level field of the group_members is to be treated, but the
+general rule is that it should be used for internal group management.
+Meaning that a user with an elevated level, could have the ability to
+affect the status of other users (sign them up for compos, reserve
+seats, etc), but they would have the same permissions on shared resources
+like content pages, news, todo lists and similar. 
