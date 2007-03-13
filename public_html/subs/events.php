@@ -19,7 +19,10 @@ class event
 		if($gid == null)
 		{
 			if ($_REQUEST['gid'])
+			{
 				$gid = $_REQUEST['gid'];
+				$_SESSION['gid'] = $gid;
+			}
 			else if ($_SESSION['gid'])
 				$gid = $_SESSION['gid'];
 			else
@@ -43,7 +46,8 @@ class event
 			"north," .
 			"south," .
 			"east," .
-			"west " .
+			"west, " .
+			"css " . 
 			"FROM events left join location on " . 
 			" events.location = location.location WHERE gid = '";
 		$query .= $db->escape($gid);
@@ -69,6 +73,7 @@ class event
 		$this->logo = $row['logo'];
 		$this->gname = $row['gname'];
 		$this->location = new location($row);
+		$this->css = $row['css'];
 	}
 }
 

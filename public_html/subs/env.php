@@ -76,6 +76,7 @@ if ($event->gid == 0)
 $page->htmltitle = $event->title;
 $page->header = $event->title;
 $page->logo->add(img($event->logo,$event->title));
+$page->set_css($event->css);
 
 $page->ctrl2->add($me);
 ?>

@@ -49,6 +49,7 @@ CREATE TABLE `events` (
   `start` datetime default NULL,
   `end` datetime default NULL,
   `gname` varchar(10) default NULL,
+  `css` varchar(50) default 'default.css',
   PRIMARY KEY  (`eid`)
 ) TYPE=MyISAM;
 
@@ -56,8 +57,8 @@ CREATE TABLE `events` (
 -- Dumping data for table `events`
 --
 
-INSERT INTO `events` VALUES (1,1,'BølerLAN','images/bolerlanlogo.png','BølerLAN er tidenes beste LAN party',NULL,1,NULL,NULL,NULL,'blan');
-INSERT INTO `events` VALUES (2,2,'JallaLAN','images/glider.png',NULL,NULL,NULL,NULL,NULL,NULL,'jallalan');
+INSERT INTO `events` VALUES (1,1,'BølerLAN','images/bolerlanlogo.png','BølerLAN er tidenes beste LAN party',NULL,1,NULL,NULL,NULL,'blan','default.css');
+INSERT INTO `events` VALUES (2,2,'JallaLAN','images/glider.png',NULL,NULL,NULL,NULL,NULL,NULL,'jallalan','css/default.css');
 
 --
 -- Table structure for table `group_members`

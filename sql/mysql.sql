@@ -38,6 +38,7 @@ CREATE TABLE `events` (
   `start` datetime default NULL,
   `end` datetime default NULL,
   `gname` varchar(10) default NULL,
+  `css` varchar(50) default 'default.css',
   PRIMARY KEY  (`eid`)
 ) TYPE=MyISAM;
 
