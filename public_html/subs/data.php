@@ -31,13 +31,18 @@ class content
 			if(isset($pg) && $pg != "FrontPage")
 			{
 				$query .= $db->escape($pg);
+				$this->title = $pg;
 			}
 			else
+			{
 				$query .= $db->escape($event->title);
+				$this->title = $event->title;
+			}
 
 		} else {
 			$query .= "' AND title = '";
 			$query .= $db->escape($contentid);
+			$this->title = $contentid;
 		}
 		$query .= "' ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
@@ -55,7 +60,13 @@ class content
 		$this->permission = $row['permission'];
 		$this->read_permission = $row['read_permission'];
 	}
-
+	function &editlink() {
+		global $page;
+		$box = new infoboks();
+		$box->add(htlink($page ."?action=EditContent&page=" . $this->title,
+			str("Editer denne siden")));
+		return $box;
+	}
 	function get()
 	{
 		global $wiki;

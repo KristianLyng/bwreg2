@@ -71,6 +71,9 @@ if(!isset($maincontent->content))
 if ($event->gid == 0)
 	print "No such genre/event";
 
+if(strstr($me->permission($maincontent->permission),"w"))
+	$page->info2->add($maincontent->editlink());
+
 $page->htmltitle = $event->title;
 $page->header = $event->title;
 $page->logo->add(img($event->logo,$event->title));
