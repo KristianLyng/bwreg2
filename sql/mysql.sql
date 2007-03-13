@@ -1,39 +1,30 @@
--- MySQL dump 10.11
+-- MySQL dump 9.11
 --
 -- Host: localhost    Database: bwreg2
 -- ------------------------------------------------------
--- Server version	5.0.32-Debian_7-log
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO,MYSQL40' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- Server version	4.0.24_Debian-10sarge2-log
 
 --
 -- Table structure for table `content`
 --
 
-DROP TABLE IF EXISTS `content`;
 CREATE TABLE `content` (
-  `id` int(11) NOT NULL auto_increment,
-  `contentid` int(11) NOT NULL default '0',
+  `contentid` int(11) NOT NULL auto_increment,
   `version` int(11) NOT NULL default '0',
   `uid` int(11) NOT NULL default '0',
-  `modified` timestamp NOT NULL,
+  `modified` timestamp(14) NOT NULL,
   `gid` int(11) NOT NULL default '0',
   `permission` int(11) default NULL,
   `content` text,
   `title` varchar(50) NOT NULL default '',
   `read_permission` int(11) default NULL,
-  PRIMARY KEY  (`id`)
-) TYPE=MyISAM AUTO_INCREMENT=13;
+  UNIQUE KEY `contentindex` (`contentid`,`version`,`gid`)
+) TYPE=MyISAM;
 
 --
 -- Table structure for table `events`
 --
 
-DROP TABLE IF EXISTS `events`;
 CREATE TABLE `events` (
   `eid` int(11) NOT NULL auto_increment,
   `gid` int(11) NOT NULL default '0',
@@ -48,13 +39,12 @@ CREATE TABLE `events` (
   `gname` varchar(10) default NULL,
   `css` varchar(50) default 'default.css',
   PRIMARY KEY  (`eid`)
-) TYPE=MyISAM AUTO_INCREMENT=3;
+) TYPE=MyISAM;
 
 --
 -- Table structure for table `group_members`
 --
 
-DROP TABLE IF EXISTS `group_members`;
 CREATE TABLE `group_members` (
   `groupid` int(11) NOT NULL default '0',
   `uid` int(11) NOT NULL default '0',
@@ -66,7 +56,6 @@ CREATE TABLE `group_members` (
 -- Table structure for table `groups`
 --
 
-DROP TABLE IF EXISTS `groups`;
 CREATE TABLE `groups` (
   `groupid` int(11) NOT NULL auto_increment,
   `gid` int(11) default NULL,
@@ -75,13 +64,12 @@ CREATE TABLE `groups` (
   `group_description` text,
   `owner` int(11) NOT NULL default '0',
   PRIMARY KEY  (`groupid`)
-) TYPE=MyISAM AUTO_INCREMENT=3;
+) TYPE=MyISAM;
 
 --
 -- Table structure for table `location`
 --
 
-DROP TABLE IF EXISTS `location`;
 CREATE TABLE `location` (
   `location` int(11) NOT NULL auto_increment,
   `name` varchar(100) default NULL,
@@ -96,13 +84,12 @@ CREATE TABLE `location` (
   `east` varchar(50) default NULL,
   `west` varchar(50) default NULL,
   PRIMARY KEY  (`location`)
-) TYPE=MyISAM AUTO_INCREMENT=2;
+) TYPE=MyISAM;
 
 --
 -- Table structure for table `permissions`
 --
 
-DROP TABLE IF EXISTS `permissions`;
 CREATE TABLE `permissions` (
   `gid` int(11) NOT NULL default '0',
   `eid` int(11) default NULL,
@@ -116,7 +103,6 @@ CREATE TABLE `permissions` (
 -- Table structure for table `users`
 --
 
-DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `uid` int(11) NOT NULL auto_increment,
   `uname` varchar(12) NOT NULL default '',
@@ -129,12 +115,5 @@ CREATE TABLE `users` (
   `extra` varchar(50) default NULL,
   `pass` varchar(20) default NULL,
   PRIMARY KEY  (`uid`)
-) TYPE=MyISAM AUTO_INCREMENT=3;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+) TYPE=MyISAM;
 
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2007-03-13 17:11:44

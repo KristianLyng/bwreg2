@@ -379,7 +379,6 @@ class htmlobject {
 		$this->open = $content;
 	}
 }
-
 class form extends htmlobject
 {
 	var $fcontent;
@@ -399,6 +398,12 @@ class form extends htmlobject
 	}
 }
 
+function textarea($name, $value = "", $cols="80", $rows = "30")
+{
+	$ctrl="name=\"$name\" cols=\"$cols\" rows=\"$rows\"";
+	return new htmlobject("textarea",$ctrl,$value);
+}
+
 function ftext($name,$value = "",$length = false)
 {
 	$obj = null;
@@ -408,6 +413,7 @@ function ftext($name,$value = "",$length = false)
 		$mylength = "";
 	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" value=\"$value\"", $obj);
 }
+
 function fpass($name,$length = false)
 {
 	$obj = null;
@@ -421,6 +427,11 @@ function fsubmit($value = "Submit", $name = "SubmitButton")
 {
 	$obj = null;
 	return new htmlobject("input","type=\"submit\" name=\"$name\" value=\"$value\"", $obj);
+}
+function fhidden($action, $name = "action")
+{
+	$obj = null;
+	return new htmlobject("input","type=\"hidden\" name=\"$name\" value=\"$action\"", $obj);
 }
 
 function &htlink($link, &$text)

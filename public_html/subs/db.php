@@ -28,6 +28,10 @@ class database
 		}
 		return false;
 	}
+	function insert($query)
+	{
+		return mysql_query($query) or $this->error($query);
+	}
 	function query($query, $cb = null)
 	{
 		$result = mysql_query($query) or $this->error($query);

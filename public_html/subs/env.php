@@ -20,6 +20,7 @@ global $user;
 global $config;
 global $plugins;
 global $me;
+global $maincontent;
 class down extends box
 {
 		function endit()
@@ -28,6 +29,7 @@ class down extends box
 			for($tmp = 0; $tmp < $this->nItems; $tmp++)
 				$this->items[$tmp]->endit();
 			$page->output();
+			$_SESSION['action'] = $session->action;
 		}
 }
 function down()
@@ -44,8 +46,8 @@ $wiki->setRenderConf('xhtml', 'wikilink', 'view_url', $_SERVER['PHP_SELF'] . '?p
 $wiki->setRenderConf('xhtml', 'wikilink', 'new_url', $_SERVER['PHP_SELF'] . '?page=');
 $wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
 $sites = array(
-"news" => $_SERVER['PHP_SELF'] . '?page=News?news=%s', 
-"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo?user=%s');
+"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
+"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
 	
 
 $wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
@@ -66,8 +68,8 @@ if(!isset($maincontent->content))
 	$page->info4->add(new content("ErrorPageNotFound"));
 	if(strstr($me->permission($maincontent->permission),"w"))
 		$page->info4->add(new content("ErrorPageNotFoundAdmin"));
-} else
-	$page->content->add(new content());
+} 
+$page->content->add(new content());
 if ($event->gid == 0)
 	print "No such genre/event";
 

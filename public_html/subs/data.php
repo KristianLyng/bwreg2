@@ -6,7 +6,8 @@ class content
 	var $version;
 	var $gid;
 	var $title;
-	var $permission = 1;
+	var $contentid;
+	var $permission;
 	var $read_permission;
 	function content($contentid = false)
 	{
@@ -15,7 +16,7 @@ class content
 		global $me;
 		global $page;
 		$this->permission = $event->gname . "ContentCreators";
-		$query = "SELECT content,version,title,gid,permission,read_permission FROM content WHERE gid='";
+		$query = "SELECT content,version,title,gid,permission,read_permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
 		{
@@ -59,20 +60,74 @@ class content
 		$this->title = $row['title'];
 		$this->permission = $row['permission'];
 		$this->read_permission = $row['read_permission'];
+		$this->contentid = $row['contentid'];
 	}
 	function &editlink() {
 		global $page;
 		$box = new infoboks();
-		$box->add(htlink($page ."?action=EditContent&page=" . $this->title,
+		$box->add(htlink($page->url() ."?action=EditContent&page=" . $this->title,
 			str("Editer denne siden")));
 		return $box;
+	}
+	function editbox()
+	{
+		global $page;
+		global $me;
+		if (!strstr($me->permission($this->permission),"w"))
+			return ;
+		$box = new form();
+		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
+		$box->add(fhidden($this->version, "version"));
+		$box->add(fhidden("EditContentSave"));
+		$box->add(fhidden($this->title, "title"));
+		$box->add(fsubmit("Save changes"));
+		return $box->get();
 	}
 	function get()
 	{
 		global $wiki;
 		global $page;
 		global $me;
-		return $wiki->transform($this->content);
+		global $session;
+		global $db;
+		global $event;
+		global $maincontent;
+		if ($session->action == "EditContent" && $session->page == $this->title)
+			return $this->editbox();
+		else if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title)
+		{
+			$version = $_REQUEST['version'];
+			$content = html_entity_decode($_REQUEST['content'], ENT_NOQUOTES);
+			$title = $_REQUEST['title'];
+			if ($version != $this->version)
+			{
+				return "Error!";
+			}
+			if (!strstr($me->permission($this->permission), "w"))
+				return "Error perm";
+
+			$myversion = $db->escape($version);
+			$myversion++;
+			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,read_permission,uid) VALUES('";
+			$query .= $db->escape($event->gid);
+			$query .= "','";
+			$query .= $myversion . "','";
+			$query .= $db->escape($title) . "','";
+			$query .= $db->escape($content) . "','";
+			$query .= $db->escape($this->contentid) . "','";
+			if ($this->content)
+				$query .= $db->escape($this->permission) . "',";
+			else
+				$query .= "2', "; // FIXME
+			if ($this->read_permission)
+				$query .= "'" . $db->escape($this->read_permission) . "'," . $me->uid . ");";
+			else
+				$query .= "NULL," . $me->uid . ");";
+			$db->insert($query);
+			$this->content = $content;
+			$session->action = "";
+		}
+		return $wiki->transform(utf8_decode($this->content));
 	}
 }
 ?>
