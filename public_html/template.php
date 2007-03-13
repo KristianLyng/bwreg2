@@ -1,5 +1,4 @@
 <?php 
-
 include "subs/env.php";
 
 /* This page is a sort of template/demo of the 
@@ -13,20 +12,11 @@ $menu1 = new menu("En undermeny");
 $menu2 = new menu("Petter");
 $menu3 = new menu("Enda en meny");
 $news1 = new news(&$dropdown2, "cirka naa");
-$news2 = new news("Jesus", "tusen aar siden");
 $news3 = new news("Adam", "Tidenes morgen");
-$infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
-$page->content->add(&$infoboks1);
 $page->content->add(&$news1);
-$page->content->add(&$news2);
 $page->content->add(&$news3);
-if($event->location->id)
-{
-	$page->info1->add(p($event->location->name));
-	$page->info1->add(p($event->location->address));
-}
 
 $page->ctrl1->add($menu3);
 
@@ -36,26 +26,14 @@ $menu3->add(htlink("somepage",str("foo")));
 $menu3->add($menu2);
 $menu3->add($menu1);
 
-$infoboks1->add(p("Dette er en informativ infoboks ja."));
-$infoboks1->add(p("VELDIG informativ."));
-
 $menu1->add(htlink("foo", str("SomeItem")));
 $menu1->add(htlink("foo", str("SomeItem")));
 
 $menu2->add(htlink("foo", str("SomeItem")));
 $menu2->add(htlink("abra",$somebox));
 
-$mul = new multiuserlist(false,"K","S");
-$news2->add(p("Dette er resultatet av et enkelt søk i databasen:"));
-$news2->add($mul);
-$news3->add(p("Info om innlogget bruker:"));
-$news3->add($me->userinfo);
-
-
 $news1->add(p("Fooooooo bar etc etc"));
 $news3->add(p("Fooooooo bar etc etc Knut. Dette er litt tamt..."));
 $news3->add(p("Fordelen er at dette nesten ikke krever html-kunskap, og php-filene blir html-frie"));
 
-
 ?>
-
