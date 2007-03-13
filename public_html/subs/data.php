@@ -1,16 +1,19 @@
 <?
-
+require_once("subs/html.php");
 class content
 {
 	var $content;
 	var $version;
 	var $gid;
 	var $title;
+	var $permission;
 	function content($contentid = false)
 	{
 		global $db;
 		global $event;
-		$query = "SELECT content,version,title,gid FROM content WHERE gid='";
+		global $me;
+		global $page;
+		$query = "SELECT content,version,title,gid,permission FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
 		{
@@ -36,6 +39,10 @@ class content
 		}
 		$query .= "' ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
+		if ($this->permission != null && !strstr($me->permission($this->permission),"r"))
+		{
+			$this->content = "+ Permission denied";
+		}
 	}
 	function sqlcb($row)
 	{
@@ -43,11 +50,14 @@ class content
 		$this->version = $row['version'];
 		$this->gid = $row['gid'];
 		$this->title = $row['title'];
+		$this->permission = $row['permission'];
 	}
 
 	function get()
 	{
 		global $wiki;
+		global $page;
+		global $me;
 		return $wiki->transform($this->content);
 	}
 }

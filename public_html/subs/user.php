@@ -34,13 +34,45 @@ class userinfo
 	}
 }
 
+class permissions 
+{
+	var $list;
+
+
+	function permissions($uid)
+	{
+		global $db;
+		if(!isset($uid) or $uid == "")
+			return;
+		$query = "SELECT " . 
+			 "permissions.resource, " . 
+			 "permissions.resource_name, " .
+			 "permissions.permissions, " .
+			 "permissions.eid, " .
+			 "permissions.gid " . 
+			 "FROM permissions LEFT JOIN groups ON groups.groupid = permissions.groupid " .
+			 "LEFT JOIN group_members ON group_members.groupid = groups.groupid " .
+			 "WHERE group_members.uid = '";
+		if (!is_int($uid))
+			$query .= $db->escape($uid);
+		else
+			$query .= $uid;
+		$query .= "';";
+		$db->query($query,&$this);
+	}
+	function sqlcb($row)
+	{
+		$this->list[$row['resource_name']] = $row['permissions'];
+		$this->list[$row['resource']] = $row['permissions'];
+	}
+}
 class user extends box
 {
 	var $userinfo;
 	var $uid;
 	var $uname;
 	var $debug = true;
-	var $permissions;
+	var $perms;
 	function user($token = false, $password = null)
 	{
 		$this->userinfo = new userinfo();
@@ -57,8 +89,16 @@ class user extends box
 			$this->c_uid($token);
 		else
 			$this->guest();
+		$this->perms =& new permissions($this->uid);
 	}
-
+	function permission($param)
+	{
+		if (isset($this->perms->list[$param]))
+		{
+			return $this->perms->list[$param];
+		}
+		return false;
+	}
 	function login($user, $password)
 	{
 		global $db;
@@ -134,7 +174,7 @@ class myuser extends user
 {
 	var $failed = true; 
 	function myuser()
-	{
+	{	
 		parent::user();
 		if ($_REQUEST['action'] == 'Logout')
 			$this->logout();
@@ -148,6 +188,7 @@ class myuser extends user
 			$this->failed = false;
 		if($this->uid == 0)
 			$this->logout();
+		$this->perms =& new permissions($this->uid);
 	}
 	function logout()
 	{

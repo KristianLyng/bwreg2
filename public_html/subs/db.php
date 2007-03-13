@@ -43,6 +43,7 @@ class database
 				return $ans;
 			}
 			$bla = true;
+			
 			$cb->sqlcb($row);
 		}
 		mysql_free_result($result);

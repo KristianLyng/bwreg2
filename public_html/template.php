@@ -18,9 +18,6 @@ $news3 = new news("Adam", "Tidenes morgen");
 $infoboks1 = new infoboks();
 $dropdown = new dropdown("Action");
 $somebox = new box();
-$user = new user("kristian");
-$dropdown2->content->title = $user;
-$dropdown2->add($user->userinfo);
 $page->content->add(&$infoboks1);
 $page->content->add(&$news1);
 $page->content->add(&$news2);
@@ -32,7 +29,6 @@ if($event->location->id)
 }
 
 $page->ctrl1->add($menu3);
-$page->footer->add(h1($user));
 
 $somebox->addst("Somepage!");
 $somebox->add(img("images/glider.png","glideralt"));
