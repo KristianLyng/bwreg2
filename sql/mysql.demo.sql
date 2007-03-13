@@ -3,16 +3,11 @@
 -- Host: localhost    Database: bwreg2
 -- ------------------------------------------------------
 -- Server version	5.0.32-Debian_7-log
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO,MYSQL40' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
@@ -25,13 +20,13 @@ CREATE TABLE `content` (
   `contentid` int(11) NOT NULL default '0',
   `version` int(11) NOT NULL default '0',
   `uid` int(11) NOT NULL default '0',
-  `modified` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  `modified` timestamp NOT NULL,
   `gid` int(11) NOT NULL default '0',
   `permission` int(11) default NULL,
   `content` text,
   `title` varchar(20) default NULL,
   PRIMARY KEY  (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) TYPE=MyISAM AUTO_INCREMENT=9;
 
 --
 -- Dumping data for table `content`
@@ -39,7 +34,7 @@ CREATE TABLE `content` (
 
 LOCK TABLES `content` WRITE;
 /*!40000 ALTER TABLE `content` DISABLE KEYS */;
-INSERT INTO `content` VALUES (5,3,1,1,'2007-03-12 23:04:15',1,NULL,'+ Fin oversikt\n  \nOm man vil, kan man linke til forsiden sin slik: FrontPage \nEller bedre: [FrontPage Forsiden]\n','HitEn'),(4,2,1,1,'2007-03-12 22:59:47',1,NULL,'+ Dette er en annen side\n\n\nBlir dette masse linjeskift?\n\nTilbake til [Forsiden] ?\n\nEventuelt [http://glug.grm.hia.no/~kristian/template.php?page=BÃ¸lerLAN Forsiden]\n\nTil og med BÃ¸lerLAN ?\n\n\n\nhmm...\n','DetteHer'),(3,1,2,1,'2007-03-12 22:53:25',1,NULL,'+ Overskiften paa forsiden\n\nDette er vanlig tekst, **dette er ganske fett**\nVi kan skrive ganske firtt\nfritt til og med....\n\n++ Demo av lenker \n\n//lenker// er vistnok enkelt. Er DetteHer en lenke?\nHva med [HitEn Dette her da] ?\n','BÃ¸lerLAN'),(6,4,2,1,'2007-03-12 23:43:29',1,NULL,'+ SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n','DetteHer'),(7,4,2,1,'2007-03-12 23:46:36',1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer'),(8,4,3,1,'2007-03-12 23:47:16',1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
+INSERT INTO `content` VALUES (5,3,1,1,'2007-03-12 23:04:15',1,NULL,'+ Fin oversikt\n  \nOm man vil, kan man linke til forsiden sin slik: FrontPage \nEller bedre: [FrontPage Forsiden]\n','HitEn'),(4,2,1,1,'2007-03-12 22:59:47',1,NULL,'+ Dette er en annen side\n\n\nBlir dette masse linjeskift?\n\nTilbake til [Forsiden] ?\n\nEventuelt [http://glug.grm.hia.no/~kristian/template.php?page=BølerLAN Forsiden]\n\nTil og med BølerLAN ?\n\n\n\nhmm...\n','DetteHer'),(3,1,2,1,'2007-03-12 22:53:25',1,NULL,'+ Overskiften paa forsiden\n\nDette er vanlig tekst, **dette er ganske fett**\nVi kan skrive ganske firtt\nfritt til og med....\n\n++ Demo av lenker \n\n//lenker// er vistnok enkelt. Er DetteHer en lenke?\nHva med [HitEn Dette her da] ?\n','BølerLAN'),(6,4,2,1,'2007-03-12 23:43:29',1,NULL,'+ SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n','DetteHer'),(7,4,2,1,'2007-03-12 23:46:36',1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer'),(8,4,3,1,'2007-03-12 23:47:16',1,NULL,'+ !SubWikier\nLink til brukere: user:Kristian \nLink til news : news:PetterEierDeg\n[FrontPage Tilbake til forsiden]\n','DetteHer');
 /*!40000 ALTER TABLE `content` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -61,7 +56,7 @@ CREATE TABLE `events` (
   `end` datetime default NULL,
   `gname` varchar(10) default NULL,
   PRIMARY KEY  (`eid`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) TYPE=MyISAM AUTO_INCREMENT=3;
 
 --
 -- Dumping data for table `events`
@@ -69,7 +64,7 @@ CREATE TABLE `events` (
 
 LOCK TABLES `events` WRITE;
 /*!40000 ALTER TABLE `events` DISABLE KEYS */;
-INSERT INTO `events` VALUES (1,1,'BÃ¸lerLAN','images/bolerlanlogo.png','BÃ¸lerLAN er tidenes beste LAN party',NULL,1,NULL,NULL,NULL,'blan'),(2,2,'JallaLAN','images/glider.png',NULL,NULL,NULL,NULL,NULL,NULL,'jallalan');
+INSERT INTO `events` VALUES (1,1,'BølerLAN','images/bolerlanlogo.png','BølerLAN er tidenes beste LAN party',NULL,1,NULL,NULL,NULL,'blan'),(2,2,'JallaLAN','images/glider.png',NULL,NULL,NULL,NULL,NULL,NULL,'jallalan');
 /*!40000 ALTER TABLE `events` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -83,7 +78,7 @@ CREATE TABLE `group_members` (
   `uid` int(11) NOT NULL,
   `level` int(11) default NULL,
   `role` varchar(20) default NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) TYPE=MyISAM;
 
 --
 -- Dumping data for table `group_members`
@@ -107,7 +102,7 @@ CREATE TABLE `groups` (
   `group_description` text,
   `owner` int(11) NOT NULL,
   PRIMARY KEY  (`groupid`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) TYPE=MyISAM;
 
 --
 -- Dumping data for table `groups`
@@ -137,7 +132,7 @@ CREATE TABLE `location` (
   `east` varchar(50) default NULL,
   `west` varchar(50) default NULL,
   PRIMARY KEY  (`location`)
-) ENGINE=MyISAM AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) TYPE=MyISAM AUTO_INCREMENT=2;
 
 --
 -- Dumping data for table `location`
@@ -161,7 +156,7 @@ CREATE TABLE `permissions` (
   `resource_name` varchar(20) default NULL,
   `permissions` varchar(5) default NULL,
   `groupid` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+) TYPE=MyISAM;
 
 --
 -- Dumping data for table `permissions`
@@ -189,7 +184,7 @@ CREATE TABLE `users` (
   `extra` varchar(50) default NULL,
   `pass` varchar(20) default NULL,
   PRIMARY KEY  (`uid`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) TYPE=MyISAM AUTO_INCREMENT=3;
 
 --
 -- Dumping data for table `users`
@@ -205,9 +200,6 @@ UNLOCK TABLES;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2007-03-13  9:55:21
+-- Dump completed on 2007-03-13 10:38:52
