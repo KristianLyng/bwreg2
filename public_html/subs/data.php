@@ -18,6 +18,7 @@ class content
 	var $permission;
 	var $read_permission;
 	var $main;
+	var $render;
 	function content($contentid = false)
 	{
 		global $db;
@@ -25,6 +26,7 @@ class content
 		global $me;
 		global $page;
 		global $session;
+		$this->render = true;
 		$this->permission = $event->gname . "ContentCreators";
 		$query = "SELECT content,version,title,gid,permission,read_permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
@@ -63,8 +65,60 @@ class content
 		{
 			$this->content = null;
 		}
+		global $actionevent;
+		$actionevent->add("EditContentSave", &$this);
+		$actionevent->add("EditContent",&$this);
 		if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
 			$page->setrefresh();
+	}
+	function actioncb($action)
+	{
+		global $page;
+		global $me;
+		global $session;
+		global $db;
+		global $event;
+		global $maincontent;
+		print "HEI! Action: $action ";
+		if ($action == "EditContent" && $session->page == $this->title && $this->main)
+		{
+			echo "Fnoo!";
+			$this->content = $this->editbox();
+			$this->render = false;
+		}
+		else if ($action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
+		{
+			$version = $_REQUEST['version'];
+			$content = html_entity_decode($_REQUEST['content'], ENT_NOQUOTES);
+			$title = $_REQUEST['title'];
+			if ($version != $this->version)
+			{
+				return "Error!";
+			}
+			if (!strstr($me->permission($this->permission), "w"))
+				return "Error perm";
+
+			$myversion = $db->escape($version);
+			$myversion++;
+			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,read_permission,uid) VALUES('";
+			$query .= $db->escape($event->gid);
+			$query .= "','";
+			$query .= $myversion . "','";
+			$query .= $db->escape($title) . "','";
+			$query .= $db->escape($content) . "','";
+			$query .= $db->escape($this->contentid) . "','";
+			if ($this->content)
+				$query .= $db->escape($this->permission) . "',";
+			else
+				$query .= "2', "; // FIXME
+			if ($this->read_permission)
+				$query .= "'" . $db->escape($this->read_permission) . "'," . $me->uid . ");";
+			else
+				$query .= "NULL," . $me->uid . ");";
+			$db->insert($query);
+			$this->content = $content;
+			$session->action = "";
+		}
 	}
 	function sqlcb($row)
 	{
@@ -100,48 +154,10 @@ class content
 	function get()
 	{
 		global $wiki;
-		global $page;
-		global $me;
-		global $session;
-		global $db;
-		global $event;
-		global $maincontent;
-		if ($session->action == "EditContent" && $session->page == $this->title && $this->main)
-			return $this->editbox();
-		else if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
-		{
-			$version = $_REQUEST['version'];
-			$content = html_entity_decode($_REQUEST['content'], ENT_NOQUOTES);
-			$title = $_REQUEST['title'];
-			if ($version != $this->version)
-			{
-				return "Error!";
-			}
-			if (!strstr($me->permission($this->permission), "w"))
-				return "Error perm";
-
-			$myversion = $db->escape($version);
-			$myversion++;
-			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,read_permission,uid) VALUES('";
-			$query .= $db->escape($event->gid);
-			$query .= "','";
-			$query .= $myversion . "','";
-			$query .= $db->escape($title) . "','";
-			$query .= $db->escape($content) . "','";
-			$query .= $db->escape($this->contentid) . "','";
-			if ($this->content)
-				$query .= $db->escape($this->permission) . "',";
-			else
-				$query .= "2', "; // FIXME
-			if ($this->read_permission)
-				$query .= "'" . $db->escape($this->read_permission) . "'," . $me->uid . ");";
-			else
-				$query .= "NULL," . $me->uid . ");";
-			$db->insert($query);
-			$this->content = $content;
-			$session->action = "";
-		}
-		return $wiki->transform(utf8_decode($this->content));
+		if($this->render == true)
+			return $wiki->transform(utf8_decode($this->content));
+		else 
+			return $this->content;
 	}
 }
 ?>

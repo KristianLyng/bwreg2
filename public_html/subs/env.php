@@ -20,6 +20,7 @@ global $config;
 global $plugins;
 global $me;
 global $maincontent;
+global $actionevent;
 class down extends box
 {
 		function endit()
@@ -60,6 +61,7 @@ function down()
 	$session = new session();
 	$config = new config();
 	$db = new database();
+	$actionevent = new actioncontainer();
 
 /* Possibly load plugins (Nonfunctional at themoment */
 	$plugins = new plugins();
@@ -100,6 +102,31 @@ function down()
 	$menu->add(new content($event->gname . "Menu"));
 	$page->ctrl1->add(&$menu);
 
+/* Handle actions */
+	$actionevent->handle($session->action);
+class actioncontainer
+{
+		var $actions;
+		function actioncontainer()
+		{
+				$this->actions = array();
+		}
+		function add($action, &$object)
+		{
+				if (!isset($this->actions[$action]))
+						$this->actions[$action] = array();
+				array_push($this->actions[$action] , $object);
+		}
+		function handle($action)
+		{
+				if (!isset($this->actions[$action]))
+						return;
+				while ($handle = array_pop($this->actions[$action]))
+				{
+						$handle->actioncb($action);
+				}
+		}
+}
 /* Enviromental classes too small for their own file
  */
 class session
@@ -114,5 +141,4 @@ class session
 		$this->page = $_REQUEST['page'] ? $_REQUEST['page'] : $_SESSION['page'];
 	}
 }
-
 ?>
