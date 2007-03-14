@@ -16,6 +16,7 @@ class content
 		global $event;
 		global $me;
 		global $page;
+		global $session;
 		$this->permission = $event->gname . "ContentCreators";
 		$query = "SELECT content,version,title,gid,permission,read_permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
@@ -54,6 +55,8 @@ class content
 		{
 			$this->content = null;
 		}
+		if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
+			$page->setrefresh();
 	}
 	function sqlcb($row)
 	{

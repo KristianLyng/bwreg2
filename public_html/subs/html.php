@@ -28,9 +28,11 @@ class page extends box
 	var $top2;
 	var $css = "default.css";
 	var $top3;
-	var $header = "No header";
 	var $top4;
+	var $header = "No header";
+	var $top5;
 	var $bottom = "</body></html>";
+	
 	var $content; 
 	var $footer;
 	var $info1;
@@ -49,8 +51,8 @@ class page extends box
 		$this->top1 .= "<html><head><title>";
 		$this->htmltitle =  "$title";
 		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n";
-		$this->top3 = "</head><body><div id=\"titl\">\n";
-		$this->top4 = "</div>\n";
+		$this->top4 = "</head><body><div id=\"titl\">\n";
+		$this->top5 = "</div>\n";
 		$this->header = $header;
 		$this->bottom = "</body></html>\n";
 		$this->content = content();
@@ -99,11 +101,16 @@ class page extends box
 		$this->add($this->content);
 		$this->add($this->footer);
 	}
-
+	function setrefresh($target = null, $time = 1)
+	{
+		if(!$target)
+			$target = $this->url();
+		$this->top3 = "<META http-equiv=\"refresh\" content=\"$time;URL=$target\">";
+	}
 	function get() 
 	{
 		$data = $this->top1 . $this->htmltitle . $this->top2 . $this->get_css() . $this->top3;
-		$data .= $this->get_header() . $this->top4;
+		$data .= $this->top4 . $this->get_header() . $this->top5;
 		$data .= parent::get();
 		$data .= $this->bottom;
 		return $data;
