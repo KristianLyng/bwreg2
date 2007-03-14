@@ -50,6 +50,7 @@ function down()
 	$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
 	$sites = array(
 		"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
+		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
