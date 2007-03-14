@@ -321,6 +321,16 @@ class footer extends namedbox {
 	{
 		$this->namedbox("id", "footer");
 	}
+	function get() 
+	{
+		if($this->nItems > 0)
+			return parent::get();
+	}
+	function getraw() 
+	{
+		if($this->nItems > 0)
+			return parent::getraw();
+	}
 }
 
 class infoboks extends namedbox {
