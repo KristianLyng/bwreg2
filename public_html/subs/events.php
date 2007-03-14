@@ -1,5 +1,8 @@
 <?
-
+/* This file deals with getting event-specific information.
+ * That means it's used a lot, for things like the header of
+ * the page, and as a reference for content
+ */
 class event
 {
 	var $gid;

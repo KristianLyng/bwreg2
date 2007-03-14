@@ -1,5 +1,8 @@
 <?
 
+/* This file will eventually deal with setting up a plugin enviroment.
+ * At the moment, it doesn't really do anything usefull.
+ */
 
 class plugin
 {

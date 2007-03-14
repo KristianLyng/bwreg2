@@ -9,7 +9,6 @@ require_once("subs/html.php");
 require_once("subs/user.php");
 require_once("subs/config.php");
 require_once("subs/db.php");
-require_once("subs/session.php");
 require_once("subs/plugins.php");
 require_once("subs/events.php");
 require_once("subs/data.php");
@@ -99,5 +98,20 @@ function down()
 	$menu = new menuboks($event->title);
 	$menu->add(new content($event->gname . "Menu"));
 	$page->ctrl1->add(&$menu);
+
+/* Enviromental classes too small for their own file
+ */
+class session
+{
+	var $action;
+	var $page;
+	function session()
+	{
+		session_start();
+		header("Cache-control: private");
+		$this->action = $_REQUEST['action'] ? $_REQUEST['action'] : $_SESSION['action'];
+		$this->page = $_REQUEST['page'] ? $_REQUEST['page'] : $_SESSION['page'];
+	}
+}
 
 ?>

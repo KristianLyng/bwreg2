@@ -1,5 +1,13 @@
 <?
+
+/* This file deals with content. 
+ * That includes news and general content. 
+ * It will be one of the main work horses of bwreg2, and is critically
+ * important.
+ */
+
 require_once("subs/html.php");
+
 class content
 {
 	var $content;
