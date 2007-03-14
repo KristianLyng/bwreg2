@@ -38,48 +38,66 @@ function down()
 	$down->endit();
 }
 
-register_shutdown_function(down);
+/* Make sure we render and update action when the page is done */
+	register_shutdown_function(down);
+	$down = new down();
 
-$down = new down();
-$wiki =& new Text_Wiki();
-$wiki->setRenderConf('xhtml', 'wikilink', 'view_url', $_SERVER['PHP_SELF'] . '?page=');
-$wiki->setRenderConf('xhtml', 'wikilink', 'new_url', $_SERVER['PHP_SELF'] . '?page=');
-$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
-$sites = array(
-"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
-"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
-	
+/* Set up the wiki-object */
+	$wiki =& new Text_Wiki();
+	$wiki->setRenderConf('xhtml', 'wikilink', 'view_url', 
+						 $_SERVER['PHP_SELF'] . '?page=');
+	$wiki->setRenderConf('xhtml', 'wikilink', 'new_url', 
+						 $_SERVER['PHP_SELF'] . '?page=');
+	$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
+	$sites = array(
+		"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
+		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
+	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
+	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
+	$wiki->setRenderConf('xhtml', 'url','target', null);
 
-$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
-$wiki->setRenderConf('xhtml', 'interwiki','target', null);
-$wiki->setRenderConf('xhtml', 'url','target', null);
-$session = new session();
-$config = new config();
-$db = new database();
+/* Set up the basic enviroment */
+	$session = new session();
+	$config = new config();
+	$db = new database();
 
-$plugins = new plugins();
+/* Possibly load plugins (Nonfunctional at themoment */
+	$plugins = new plugins();
 
-$page = new page();
-$event = new event();
-$me = new myuser();
-$maincontent = new content();
-if(!isset($maincontent->content))
-{
-	$page->info4->add(new content("ErrorPageNotFound"));
+/* Create the default top page */
+	$page = new page();
+
+/* Create event-specific data (Re-populates part of $page) */
+	$event = new event();
+	if ($event->gid == 0)
+		print "No such genre/event";
+	$page->htmltitle = $event->title;
+	$page->header = $event->title;
+	$page->logo->add(img($event->logo,$event->title));
+	$page->set_css($event->css);
+
+/* Create information about the logged in user */
+	$me = new myuser();
+
+/* Add login/logout information to the second control box */
+	$page->ctrl2->add($me);
+
+/* Get the content of the currently selected page and add it to $page */
+	$maincontent = new content();
+	if(!isset($maincontent->content))
+	{
+		$page->info4->add(new content("ErrorPageNotFound"));
+		if(strstr($me->permission($maincontent->permission),"w"))
+			$page->info4->add(new content("ErrorPageNotFoundAdmin"));
+	} 
+	$page->content->add(new content());
+
 	if(strstr($me->permission($maincontent->permission),"w"))
-		$page->info4->add(new content("ErrorPageNotFoundAdmin"));
-} 
-$page->content->add(new content());
-if ($event->gid == 0)
-	print "No such genre/event";
+		$page->info2->add($maincontent->editlink());
 
-if(strstr($me->permission($maincontent->permission),"w"))
-	$page->info2->add($maincontent->editlink());
+/* Populate the menu */
+	$menu = new menuboks($event->title);
+	$menu->add(new content($event->gname . "Menu"));
+	$page->ctrl1->add(&$menu);
 
-$page->htmltitle = $event->title;
-$page->header = $event->title;
-$page->logo->add(img($event->logo,$event->title));
-$page->set_css($event->css);
-
-$page->ctrl2->add($me);
 ?>

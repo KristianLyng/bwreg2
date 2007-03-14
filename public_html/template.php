@@ -7,8 +7,5 @@ include "subs/env.php";
  * the functionality this page demonstrates will be used internally
  * in other parts of bwreg2 as they are developed.
  */
-$menu1 = new menuboks($event->title);
-$menu1->add(new content($event->gname . "Menu"));
-$page->ctrl1->add(&$menu1);
 
 ?>
