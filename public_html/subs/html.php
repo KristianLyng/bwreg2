@@ -175,7 +175,12 @@ class menu extends box{
 		print($this->get());
 	}
 }
-
+class menuboks extends namedbox {
+	function menuboks($title)
+	{
+		parent::namedbox("class","menuboks");
+	}
+}
 class dropdown {
 	var $root;
 	var $content;

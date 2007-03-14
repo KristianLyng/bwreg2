@@ -52,7 +52,7 @@ $sites = array(
 
 $wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 $wiki->setRenderConf('xhtml', 'interwiki','target', null);
-//$wiki->setRenderConf('xhtml', 'wikilink', 'new_text_pos', null);
+$wiki->setRenderConf('xhtml', 'url','target', null);
 $session = new session();
 $config = new config();
 $db = new database();

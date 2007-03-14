@@ -9,6 +9,7 @@ class content
 	var $contentid;
 	var $permission;
 	var $read_permission;
+	var $main;
 	function content($contentid = false)
 	{
 		global $db;
@@ -39,11 +40,13 @@ class content
 				$query .= $db->escape($event->title);
 				$this->title = $event->title;
 			}
+			$this->main = true;
 
 		} else {
 			$query .= "' AND title = '";
 			$query .= $db->escape($contentid);
 			$this->title = $contentid;
+			$this->main = false;
 		}
 		$query .= "' ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
@@ -92,9 +95,9 @@ class content
 		global $db;
 		global $event;
 		global $maincontent;
-		if ($session->action == "EditContent" && $session->page == $this->title)
+		if ($session->action == "EditContent" && $session->page == $this->title && $this->main)
 			return $this->editbox();
-		else if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title)
+		else if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
 		{
 			$version = $_REQUEST['version'];
 			$content = html_entity_decode($_REQUEST['content'], ENT_NOQUOTES);

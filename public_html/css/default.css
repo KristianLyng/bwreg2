@@ -152,6 +152,7 @@ body {
 	left: 215px;
 	right: 5px;
 	top: 45px;
+	margin: 5;
 }
 
 .news { 
@@ -274,7 +275,10 @@ body {
 	color: blue;
 	text-decoration: none;
 }
+p {
+	padding-bottom: 10px;
 
+}
 #info4 .menuboks {
 	background-color: red;
 	color: black;
@@ -294,3 +298,112 @@ body {
 	background-color: red;
 }
 
+table.nav_table {
+	width: 100%;
+}
+		
+td.tabs_marginal {
+	background: white;
+	border-bottom: 1px solid black;
+}
+			
+td {
+background: #aaa;
+border-top: 1px solid black;
+border-left: 1px solid black;
+border-right: 1px solid black;
+border-bottom: 1px solid black;
+text-align: center;
+}
+
+td {
+background: #ddd;
+border-top: 1px solid black;
+border-left: 1px solid black;
+border-right: 1px solid black;
+border-bottom: none;
+text-align: center;
+font-weight: bold;
+}
+
+td {
+background: #ddd;
+border-bottom: 1px solid black;
+}
+
+td {
+background: #ddd;
+border-bottom: 1px solid black;
+text-align: center;
+}
+
+td {
+background: #ddd;
+border-bottom: 1px solid black;
+text-align: center;
+font-weight: bold;
+}
+
+td {
+font-weight: normal;
+}
+
+td {
+font-weight: normal;
+}
+
+table {
+border-spacing: 0px;
+border: 1px solid gray;
+}
+
+tr {
+}
+
+th {
+margin: 1px;
+border: 1px solid silver;
+padding: 4px;
+font-weight: bold;
+}
+
+td {
+margin: 1px;
+border: 1px solid silver;
+padding: 4px;
+}
+
+th {
+text-align: right;
+padding: 4px;
+}
+
+td {
+text-align: left;
+padding: 4px;
+}
+
+legend {
+font-size: 120%;
+}
+
+label {
+font-weight: bold;
+}
+
+#toc {
+border: 1px solid #ccc;
+background-color: #eee;
+padding: 0.5em;
+margin-bottom: 0em;
+padding-left: 1.5em;
+float: left;
+}
+
+#toc_item a {
+font-size: 90%;
+margin-top: 0.5em;
+}
+#toc strong {
+	margin-left: -1em;
+}
