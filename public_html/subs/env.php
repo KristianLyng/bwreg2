@@ -20,14 +20,14 @@ global $config;
 global $plugins;
 global $me;
 global $maincontent;
-global $actionevent;
+$execaction = array();
 class down extends box
 {
 		function endit()
 		{
 			global $page;
-			for($tmp = 0; $tmp < $this->nItems; $tmp++)
-				$this->items[$tmp]->endit();
+			foreach($items as $item)
+				$item->endit();
 			$page->output();
 			$_SESSION['action'] = $session->action;
 		}
@@ -36,6 +36,11 @@ function down()
 {
 	global $down;
 	$down->endit();
+}
+function add_action($action, &$object)
+{
+	global $execaction;
+	$execaction[$action] =& $object;
 }
 
 /* Make sure we render and update action when the page is done */
@@ -61,7 +66,6 @@ function down()
 	$session = new session();
 	$config = new config();
 	$db = new database();
-	$actionevent = new actioncontainer();
 
 /* Possibly load plugins (Nonfunctional at themoment */
 	$plugins = new plugins();
@@ -85,14 +89,14 @@ function down()
 	$page->ctrl2->add($me);
 
 /* Get the content of the currently selected page and add it to $page */
-	$maincontent = new content();
+	$maincontent =& new content();
 	if(!isset($maincontent->content))
 	{
 		$page->info4->add(new content("ErrorPageNotFound"));
 		if(strstr($me->permission($maincontent->permission),"w"))
 			$page->info4->add(new content("ErrorPageNotFoundAdmin"));
 	} 
-	$page->content->add(new content());
+	$page->content->add($maincontent);
 
 	if(strstr($me->permission($maincontent->permission),"w"))
 		$page->info2->add($maincontent->editlink());
@@ -103,30 +107,13 @@ function down()
 	$page->ctrl1->add(&$menu);
 
 /* Handle actions */
-	$actionevent->handle($session->action);
-class actioncontainer
-{
-		var $actions;
-		function actioncontainer()
-		{
-				$this->actions = array();
-		}
-		function add($action, &$object)
-		{
-				if (!isset($this->actions[$action]))
-						$this->actions[$action] = array();
-				array_push($this->actions[$action] , $object);
-		}
-		function handle($action)
-		{
-				if (!isset($this->actions[$action]))
-						return;
-				while ($handle = array_pop($this->actions[$action]))
-				{
-						$handle->actioncb($action);
-				}
-		}
-}
+	if (isset($execaction[$session->action]))
+	{
+		$execaction[$session->action]->actioncb($session->action);
+//		foreach ($execaction[$session->action] as $handle)
+//			$handle->actioncb($session->action, &$handle);
+//		$maincontent->actioncb($session->action, $handle);
+	}
 /* Enviromental classes too small for their own file
  */
 class session

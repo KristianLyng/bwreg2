@@ -18,7 +18,6 @@ class content
 	var $permission;
 	var $read_permission;
 	var $main;
-	var $render;
 	function content($contentid = false)
 	{
 		global $db;
@@ -26,7 +25,7 @@ class content
 		global $me;
 		global $page;
 		global $session;
-		$this->render = true;
+		$this->renderme = true;
 		$this->permission = $event->gname . "ContentCreators";
 		$query = "SELECT content,version,title,gid,permission,read_permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
@@ -52,7 +51,6 @@ class content
 				$this->title = $event->title;
 			}
 			$this->main = true;
-
 		} else {
 			$query .= "' AND title = '";
 			$query .= $db->escape($contentid);
@@ -65,11 +63,11 @@ class content
 		{
 			$this->content = null;
 		}
-		global $actionevent;
-		$actionevent->add("EditContentSave", &$this);
-		$actionevent->add("EditContent",&$this);
-		if ($session->action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
-			$page->setrefresh();
+		global $execaction;
+		$this->lastedit =& $execaction["EditContent"];
+		$this->lastsave =& $execaction["EditContentSave"];
+		add_action("EditContentSave", $this);
+		add_action("EditContent",$this);
 	}
 	function actioncb($action)
 	{
@@ -79,12 +77,10 @@ class content
 		global $db;
 		global $event;
 		global $maincontent;
-		print "HEI! Action: $action ";
-		if ($action == "EditContent" && $session->page == $this->title && $this->main)
+		if ($action == "EditContent" && $this->main)
 		{
-			echo "Fnoo!";
 			$this->content = $this->editbox();
-			$this->render = false;
+			$this->renderme = false;
 		}
 		else if ($action == "EditContentSave" && $_REQUEST['title'] == $this->title && $this->main == true)
 		{
@@ -118,8 +114,16 @@ class content
 			$db->insert($query);
 			$this->content = $content;
 			$session->action = "";
+			$page->setrefresh();
 		}
+		if($action == "EditContent")
+		{
+			if (is_object($this->lastedit))
+				$this->lastedit->actioncb($action);
+		} else if (is_object($this->lastsave))
+				$this->lastsave->actioncb($action);
 	}
+
 	function sqlcb($row)
 	{
 		$this->content = $row['content'];
@@ -130,6 +134,7 @@ class content
 		$this->read_permission = $row['read_permission'];
 		$this->contentid = $row['contentid'];
 	}
+
 	function &editlink() {
 		global $page;
 		$box = new infoboks();
@@ -137,6 +142,7 @@ class content
 			str("Editer denne siden")));
 		return $box;
 	}
+
 	function editbox()
 	{
 		global $page;
@@ -154,9 +160,10 @@ class content
 	function get()
 	{
 		global $wiki;
-		if($this->render == true)
+		if($this->renderme)
+		{
 			return $wiki->transform(utf8_decode($this->content));
-		else 
+		}
 			return $this->content;
 	}
 }

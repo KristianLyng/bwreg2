@@ -29,7 +29,6 @@ function &str($str)
  */
 class box {
 	var $items;
-	var $nItems=0;
 
 	function box()
 	{
@@ -39,40 +38,37 @@ class box {
 		if(!is_object($item) || $item == NULL)
 		{
 			print "WARNING! \"" . $item . "\" added as object! ";
-			print "last object: " . $this->items[$this->nItems - 1]->get() . "\n";
 			$this->addst($item);
 		} else 
-			$this->items[$this->nItems++] =& $item;
+			$this->items[] =& $item;
 	}
 	function addst($item)
 	{
-		$this->items[$this->nItems++] =& new str($item);
+		$this->items[] =& new str($item);
 	}
 	function get()
 	{
 		$menu = "";
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-			$menu .= $this->items[$tmp]->get();
+		foreach ($this->items as $item)
+			$menu .= $item->get();
 		return $menu;
 	}
 	function getraw()
 	{
 		$menu = "";
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
+		foreach ($this->items as $item)
 		{
-			if(get_class($this->items[$tmp]) == "menu")
-			{
-				$menu .= $this->items[$tmp]->getraw();
-			}
+			if(get_class($item) == "menu")
+				$menu .= $item->getraw();
 			else
-				$menu .= $this->items[$tmp]->get();
+				$menu .= $item->get();
 		}
 		return $menu;
 	}
 	function output()
 	{
-		for ($tmp = 0; $tmp < $this->nItems; $tmp++)
-			print($this->items[$tmp]->get());
+		foreach ($this->items as $item)
+			print($item->get());
 	}
 }
 

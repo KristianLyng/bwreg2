@@ -55,7 +55,7 @@ class page extends box
 		$this->top5 = "</div>\n";
 		$this->header = $header;
 		$this->bottom = "</body></html>\n";
-		$this->content = content();
+		$this->content = new namedbox("id", "content");
 		$this->footer = new footer();
 		$this->ctrl1 = new ctrl("1");
 		$this->ctrl2 = new ctrl("2");
@@ -246,12 +246,12 @@ class ctrl extends namedbox {
 	}
 	function get() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::get();
 	}
 	function getraw() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::getraw();
 	}
 }
@@ -263,20 +263,16 @@ class info extends namedbox {
 	}
 	function get() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::get();
 	}
 	function getraw() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::getraw();
 	}
 }
 
-function &content()
-{
-	return new namedbox("id", "content");
-}
 
 class userinfoboks extends namedbox {
 	function userinfoboks()
@@ -323,12 +319,12 @@ class footer extends namedbox {
 	}
 	function get() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::get();
 	}
 	function getraw() 
 	{
-		if($this->nItems > 0)
+		if(isset($this->items))
 			return parent::getraw();
 	}
 }
