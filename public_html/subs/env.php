@@ -94,9 +94,9 @@ function add_action($action, &$object)
 	$maincontent =& new content();
 	if(!isset($maincontent->content))
 	{
-		$page->info4->add(new content("ErrorPageNotFound"));
+		$page->warn->add(new content("ErrorPageNotFound"));
 		if(strstr($me->permission($maincontent->permission),"w"))
-			$page->info4->add(new content("ErrorPageNotFoundAdmin"));
+			$page->warn->add(new content("ErrorPageNotFoundAdmin"));
 	} 
 	$page->content->add($maincontent);
 

@@ -17,7 +17,7 @@ require_once("base.php");
  * $page->content->add(foo) to add something to the content
  * part, and that it's first come first serve, or CSS handles the order.
  * This will only print info and controlboxes if they have actual content.
- * This in turn makes it trivial to add things to the info4 warn-box without
+ * This in turn makes it trivial to add things to the warn-box without
  * caring about anything except the object that's added in that part of the
  * code. This lets us deal with hiding messages, not the actual box.
  */
@@ -38,7 +38,7 @@ class page extends box
 	var $info1;
 	var $info2;
 	var $info3;
-	var $info4;
+	var $warn;
 	var $ctrl1;
 	var $ctrl2;
 	var $ctrl3;
@@ -64,7 +64,7 @@ class page extends box
 		$this->info1 = new info("1");
 		$this->info2 = new info("2");
 		$this->info3 = new info("3");
-		$this->info4 = new info("4");
+		$this->warn = new info("warn");
 		$this->logo = new logo();
 	}
 
@@ -97,7 +97,7 @@ class page extends box
 		$this->add($this->info1);
 		$this->add($this->info2);
 		$this->add($this->info3);
-		$this->add($this->info4);
+		$this->add($this->warn);
 		$this->add($this->content);
 		$this->add($this->footer);
 	}
