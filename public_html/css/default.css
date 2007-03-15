@@ -261,7 +261,7 @@ body {
 
 .menuboks a {
 	display: block;
-	background-color: silver;
+	background-color: inherit;
 	margin: 1px;
 	page-break-after: always;
 }

@@ -57,6 +57,8 @@ function add_action($action, &$object)
 	$sites = array(
 		"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
 		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
+		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
+		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
@@ -98,8 +100,6 @@ function add_action($action, &$object)
 	} 
 	$page->content->add($maincontent);
 
-	if(strstr($me->permission($maincontent->permission),"w"))
-		$page->info2->add($maincontent->editlink());
 
 /* Populate the menu */
 	$menu = new menuboks($event->title);

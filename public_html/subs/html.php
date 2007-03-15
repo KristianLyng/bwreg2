@@ -132,7 +132,7 @@ class page extends box
 class menu extends box{
 	var $title = "";
 
-	function menu($title)
+	function menu($title = "")
 	{
 		$this->title = $title;
 	}
