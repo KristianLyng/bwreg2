@@ -90,16 +90,11 @@ class content
 		{
 			$this->content = null;
 		}
-		$this->lastedit =& $execaction["EditContent"];
-		$this->lastsave =& $execaction["EditContentSave"];
-		$this->lastdiff =& $execaction["ContentDiff"];
-		$this->lasthist =& $execaction["ContentHistory"];
-		$this->lastgetversion =& $execaction["ContentGetVersion"];
-		add_action("EditContentSave", $this);
-		add_action("EditContent",$this);
-		add_action("ContentDiff", $this);
-		add_action("ContentHistory", $this);
-		add_action("ContentGetVersion", $this);
+		$this->lastedit =& add_action("EditContent",$this);
+		$this->lastsave =& add_action("EditContentSave", $this);
+		$this->lastdiff =& add_action("ContentDiff", $this);
+		$this->lasthist =& add_action("ContentHistory", $this);
+		$this->lastgetversion =& add_action("ContentGetVersion", $this);
 		if($this->main)
 		{
 			if(strstr($me->permission($this->permission),"w"))

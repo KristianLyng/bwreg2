@@ -80,6 +80,10 @@ class event
 	}
 }
 
+/* Quite obviously, this is describes a location.
+ * It is meant mainly for reading, after the event class has
+ * created it.
+ */
 class location
 {
 	var $id;

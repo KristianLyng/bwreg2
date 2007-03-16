@@ -27,10 +27,12 @@ function down()
 	$page->output();
 	$_SESSION['action'] = $session->action;
 }
-function add_action($action, &$object)
+function &add_action($action, &$object)
 {
 	global $execaction;
+	$tmp =& $execaction[$action];
 	$execaction[$action] =& $object;
+	return $tmp;
 }
 
 /* Make sure we render and update action when the page is done */
