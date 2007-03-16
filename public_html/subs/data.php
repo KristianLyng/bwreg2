@@ -141,15 +141,12 @@ class content
 			$query .= $myversion . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($content) . "','";
-			$query .= $db->escape($this->contentid) . "','";
-			if ($this->content)
-				$query .= $db->escape($this->permission) . "',";
-			else
-				$query .= "2', "; // FIXME
-			if ($this->read_permission)
-				$query .= "'" . $db->escape($this->read_permission) . "'," . $me->uid . ");";
-			else
-				$query .= "NULL," . $me->uid . ");";
+			$query .= $db->escape($this->contentid) . "',";
+			$query .= $db->escape($_REQUEST['permission']) . ",";
+			$query .= $db->escape($_REQUEST['read_permission']) . ",'";
+			$query .= $db->escape($me->uid) . "'";
+			$query .= ");";
+			
 			$db->insert($query);
 			$this->content = $content;
 			$session->action = "";
@@ -243,6 +240,16 @@ class content
 			return ;
 		$box = new form();
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
+		$permlist = "<br /> Read access: <select name=\"read_permission\">";
+		$permlist .= "<option value=\"NULL\">All</option>";
+		print $this->read_permission;
+		$permlist .= $me->list_perms($this->read_permission);
+		$permlist .= "</select>";
+		$permlist .= "<br /> Write access: <select name=\"permission\">";
+		$permlist .= $me->list_perms($this->permission);
+		$permlist .= "</select>";
+		
+		$box->add(str($permlist));
 		$box->add(fhidden($this->version, "version"));
 		$box->add(fhidden("EditContentSave"));
 		$box->add(fhidden($this->title, "title"));

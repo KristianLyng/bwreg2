@@ -21,21 +21,11 @@ global $plugins;
 global $me;
 global $maincontent;
 $execaction = array();
-class down extends box
-{
-		function endit()
-		{
-			global $page;
-//			foreach($items as $item)
-//				$item->endit();
-			$page->output();
-			$_SESSION['action'] = $session->action;
-		}
-}
 function down()
 {
-	global $down;
-	$down->endit();
+	global $page;
+	$page->output();
+	$_SESSION['action'] = $session->action;
 }
 function add_action($action, &$object)
 {
@@ -45,7 +35,6 @@ function add_action($action, &$object)
 
 /* Make sure we render and update action when the page is done */
 	register_shutdown_function(down);
-	$down = new down();
 
 /* Set up the wiki-object */
 	$wiki =& new Text_Wiki();
@@ -105,15 +94,14 @@ function add_action($action, &$object)
 	$menu = new menuboks($event->title);
 	$menu->add(new content($event->gname . "Menu"));
 	$page->ctrl1->add(&$menu);
+	$menucrew = new menuboks($event->title);
+	$menucrew->add(new content($event->gname . "CrewMenu"));
+	$page->ctrl1->add(&$menucrew);
 
 /* Handle actions */
 	if (isset($execaction[$session->action]))
-	{
 		$execaction[$session->action]->actioncb($session->action);
-//		foreach ($execaction[$session->action] as $handle)
-//			$handle->actioncb($session->action, &$handle);
-//		$maincontent->actioncb($session->action, $handle);
-	}
+
 /* Enviromental classes too small for their own file
  */
 class session

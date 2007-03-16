@@ -37,7 +37,7 @@ class userinfo
 class permissions 
 {
 	var $list;
-
+	var $keys; 
 
 	function permissions($uid)
 	{
@@ -64,6 +64,7 @@ class permissions
 	{
 		$this->list[$row['resource_name']] = $row['permissions'];
 		$this->list[$row['resource']] = $row['permissions'];
+		$this->keys[$row['resource']] = $row['resource_name'];
 	}
 }
 class user extends box
@@ -98,6 +99,18 @@ class user extends box
 			return $this->perms->list[$param];
 		}
 		return false;
+	}
+	function list_perms($checker)
+	{
+		foreach ($this->perms->keys as $param => $value)
+		{
+			$string .= "<option value=\"" . $param . "\"";
+			if ( $param == $checker )
+				$string .= " selected ";
+			$string .= ">" . $value . "</option>\n";
+			
+		}
+		return $string;
 	}
 	function login($user, $password)
 	{
