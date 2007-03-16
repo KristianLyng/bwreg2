@@ -1,6 +1,15 @@
 <?
 require_once("subs/base.php");
 require_once("subs/html.php");
+
+/* This file deals with users and permissions for said users 
+ * It is one of the most important files, and contains the classes for
+ * improtant objects such as $me.
+ */
+
+/* Userinfo object. Plugins get noticed when this is created and a get
+ * is called. 
+ */
 class userinfo 
 {
 	var $firstname = "Anonymous";
@@ -10,14 +19,17 @@ class userinfo
 	var $extra = "";
 	var $adress = "";
 	var $born = null;
+	var $pluginextra; // Plugins add userinfo stuff here.
 	function userinfo()
 	{
 		global $plugins;
+		$this->pluginextra = new box();
 		for($tmp = 0; $tmp < $plugins->nUserinfo; $tmp++)
 		{
 			$plugins->userinfo[$tmp]->userinfo(&$this);
 		}
 	}
+
 	function get()
 	{
 		$box = new userinfoboks();
@@ -26,14 +38,17 @@ class userinfo
 		$box->add(p("extra: " . $this->extra));
 		if($this->born != null)
 		$box->add(p("born: " . $this->born->get()));
-		for($tmp = 0; $tmp < $this->nItems; $tmp++)
-		{
-			$box->add($this->items[$tmp]);
-		}
+		$box->add($this->pluginextra);
 		return $box->get();
 	}
 }
 
+/* permissions class contains a list with the permissions a user has
+ * on a named resource. It also contains a $keys array with a list of
+ * all the named resources the user has access to in a more easily
+ * read fashion (checking is done with $list, but listing of resources
+ * is done with $keys. This mostly happens through the user object)
+ */
 class permissions 
 {
 	var $list;
@@ -67,6 +82,10 @@ class permissions
 		$this->keys[$row['resource']] = $row['resource_name'];
 	}
 }
+
+/* A generic user.
+ * This gets all information about a user.
+ */
 class user extends box
 {
 	var $userinfo;
@@ -78,10 +97,6 @@ class user extends box
 	{
 		$this->userinfo = new userinfo();
 		global $plugins;
-		for($tmp = 0; $tmp < $plugins->nUser; $tmp++)
-		{
-			$plugins->user[$tmp]->user(&$this);
-		}
 		if ($password != null)
 			$this->login($token,$password);
 		else if (is_string($token))
@@ -91,13 +106,13 @@ class user extends box
 		else
 			$this->guest();
 		$this->perms =& new permissions($this->uid);
+		for($tmp = 0; $tmp < $plugins->nUser; $tmp++)
+			$plugins->user[$tmp]->user(&$this);
 	}
 	function permission($param)
 	{
 		if (isset($this->perms->list[$param]))
-		{
 			return $this->perms->list[$param];
-		}
 		return false;
 	}
 	function list_perms($checker)
@@ -128,7 +143,6 @@ class user extends box
 			$this->userinfo = new userinfo();
 			return false;
 		}
-		
 	}
 
 	function guest()
@@ -172,6 +186,7 @@ class user extends box
 				$this->items[$tmp]->sqlcb(&$this);
 		}
 	}
+
 	function get()
 	{
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
@@ -183,6 +198,10 @@ class user extends box
 	}
 }
 
+/* Class for $me.
+ * Contains the current user. Logs in if necesarry and provides
+ * the login box etc.
+ */
 class myuser extends user
 {
 	var $failed = true; 
@@ -236,6 +255,7 @@ class myuser extends user
 		}
 	}
 }
+
 /* multiuser lets us search for and find multiple users.
  * It adds one user per result. It will be further extended
  * for modules that add other search-parameters and whatnot.
