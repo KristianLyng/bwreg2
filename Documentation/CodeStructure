@@ -44,6 +44,11 @@ database, create the top-page and the $me user, from sessions.
 It does all this by pulling in from elsewhere. It should be kept extremly
 simple.
 
+Right before outputting the page, it calls action handlers. This means that
+by the time a plugin (or core module like data.php) gets to handle an action,
+everything is set up, but not yet rendered. This lets actionhandlers use the 
+full extent of the enviroment set up by env.php. 
+
 3. Modules
 ==========
 BWReg2 is based on the idea of future extensibility. We do this through

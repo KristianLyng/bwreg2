@@ -26,8 +26,8 @@ class down extends box
 		function endit()
 		{
 			global $page;
-			foreach($items as $item)
-				$item->endit();
+//			foreach($items as $item)
+//				$item->endit();
 			$page->output();
 			$_SESSION['action'] = $session->action;
 		}
@@ -59,7 +59,7 @@ function add_action($action, &$object)
 		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
 		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
-		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&user=%s');
+		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
 	$wiki->setRenderConf('xhtml', 'url','target', null);
