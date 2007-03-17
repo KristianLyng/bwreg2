@@ -43,6 +43,22 @@ class userinfo
 	}
 }
 
+class perm 
+{
+	var $gid;
+	var $eid;
+	var $resourceid;
+	var $resource;
+	var $permission;
+	function perm($gid, $eid, $resourceid, $resource, $permission)
+	{
+		$this->gid = $gid;
+		$this->eid = $eid;
+		$this->resourceid = $resourceid;
+		$this->resource = $resource;
+		$this->permission = $permission;
+	}
+}
 /* permissions class contains a list with the permissions a user has
  * on a named resource. It also contains a $keys array with a list of
  * all the named resources the user has access to in a more easily
@@ -77,9 +93,45 @@ class permissions
 	}
 	function sqlcb($row)
 	{
-		$this->list[$row['resource_name']] = $row['permissions'];
-		$this->list[$row['resource']] = $row['permissions'];
 		$this->keys[$row['resource']] = $row['resource_name'];
+		$this->list[] = new perm($row['gid'], $row['eid'], $row['resource'], $row['resource_name'], $row['permissions']);
+	}
+
+	function find($resource, $gid = null, $eid = null)
+	{
+		global $event;
+		if ($gid == null)
+			$gid = $event->gid;
+		if ($eid == null)
+			$eid = $event->eid;
+
+		$current = null;
+		foreach ($this->list as $item)
+		{
+			if ($item->resource == $resource || $item->resourceid == $resource)
+			{
+				if ($item->gid == $gid || $item->gid == 0 && ($item->eid == 0 || $item->eid == $eid))
+					$current = $this->greater($item,$current);
+			}
+		}
+		if ($current == null)
+		{
+			return null;
+		}
+		
+		return $current->permission;
+	}
+	function greater($perm1, $perm2)
+	{
+		if($perm2 == null)
+			return $perm1;
+		if(strstr($perm1,"rwm") && !strstr($perm2,"rwm"))
+			return $perm1;
+		if(strstr($perm2,"rwm") && !strstr($perm1,"rwm"))
+			return $perm2;
+		if($perm1->eid == 0 && $perm2->eid != 0)
+			return $perm1;
+		return $perm2;
 	}
 }
 
@@ -139,10 +191,11 @@ class user extends box
 			$page->content->add(str("Ditt navn: " . $my->firstname));
 		}
 	}
-	function permission($param)
+	function permission($param, $eid = null, $gid = null)
 	{
-		if (isset($this->perms->list[$param]))
-			return $this->perms->list[$param];
+		$perm = $this->perms->find($param, "$gid", "$eid");
+		if($perm != null)
+			return $perm;
 		return false;
 	}
 	function list_perms($checker)

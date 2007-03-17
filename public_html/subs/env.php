@@ -66,6 +66,12 @@ function &add_action($action, &$object)
 /* Create the default top page */
 	$page = new page();
 
+/* Create information about the logged in user */
+	$me = new myuser();
+
+/* Add login/logout information to the second control box */
+	$page->ctrl2->add($me);
+	
 /* Create event-specific data (Re-populates part of $page) */
 	$event = new event();
 	if ($event->gid == 0)
@@ -74,12 +80,6 @@ function &add_action($action, &$object)
 	$page->header = $event->title;
 	$page->logo->add(img($event->logo,$event->title));
 	$page->set_css($event->css);
-
-/* Create information about the logged in user */
-	$me = new myuser();
-
-/* Add login/logout information to the second control box */
-	$page->ctrl2->add($me);
 
 /* Get the content of the currently selected page and add it to $page */
 	$maincontent =& new content();

@@ -3,6 +3,35 @@
  * That means it's used a lot, for things like the header of
  * the page, and as a reference for content
  */
+
+class genrectrl
+{
+	function genrectrl()
+	{
+		$this->lastshow = add_action("BWReg2ShowGenreAdmin",&$this);
+		
+	}
+	function actioncb($action)
+	{
+		global $page;
+		if($action == "BWReg2ShowGenreAdmin")
+		{
+			$page->content->addst("This is under construction");
+			if (is_object($this->lastshow))
+				$this->lastshow->actioncb($action);
+		}
+	}
+	function get()
+	{
+		$link = htlink($page->url . "?page=BWReg2GenreAdmin&action=BWReg2ShowGenreAdmin", str("Genre Admin"));
+		
+		return "<br />" . $link->get();
+	}
+	function getraw()
+	{
+
+	}
+}
 class event
 {
 	var $gid;
@@ -65,6 +94,11 @@ class event
 		$query .= " ORDER BY eid DESC LIMIT 1;";
 		if(!$db->query($query,&$this))
 			return false;
+		global $page;
+		global $me;
+
+		if(strstr($me->permission("BWReg2",0,0),"rwm"))
+			$page->ctrl2->add(new genrectrl());
 	}
 
 	function sqlcb($row)
