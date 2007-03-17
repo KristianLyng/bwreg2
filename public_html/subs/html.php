@@ -416,6 +416,11 @@ class form extends htmlobject
 	}
 }
 
+function htmlbr()
+{
+	$obj = null;
+	return new htmlobject("br","",$obj);
+}
 function textarea($name, $value = "", $cols="80", $rows = "30")
 {
 	$ctrl="name=\"$name\" cols=\"$cols\" rows=\"$rows\"";
