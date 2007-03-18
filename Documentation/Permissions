@@ -56,3 +56,19 @@ Meaning that a user with an elevated level, could have the ability to
 affect the status of other users (sign them up for compos, reserve
 seats, etc), but they would have the same permissions on shared resources
 like content pages, news, todo lists and similar. 
+
+Administration
+==============
+A bwreg admin is a user in a group with access to the BWReg2 resource of gid
+and eid 0. BWReg2 admins can create new genres and assign groups to any 
+resource. This ensures that the BWReg2 admin can make sure a genre has a
+valid set of admins even if all current admins of that genre suddenly goes
+missing.
+
+A BWreg2 admin can also delete permissions, and genres. This is not 
+recommended, and any sort of data associated with the genre will be left 
+intact.
+
+A genre admin is a user in a group with permissions to the genre-shortname
+resource and eid 0. Typically blan or jallalan. A genre admin can typically
+create new events and assign groups to the genre-specific resources. 
