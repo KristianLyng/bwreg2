@@ -141,12 +141,21 @@ class permissions
 	}
 	function find_resource_rights($right)
 	{	
-		$return = false;
+		$return = array();
 		if (!isset($this->list))
 			return false;
 		foreach ($this->list as $item)
 			if (strstr($item->permission,$right))
-				$return[] = $item->resource;
+			{
+				$add = true;
+				foreach ($return as $retitem)
+					if ($retitem == $item->resource)
+							$add = false;
+				if($add)
+					$return[] = $item->resource;
+			}
+
+		
 		return $return;
 	}
 	function greater($perm1, $perm2)
@@ -342,7 +351,7 @@ class myuser extends user
 	}
 	/* Finds resources this user can modify and add a link
 	 * to the administration interface. Todo:
-	 * Make real links, check for uniqe hits. Make it usefull...
+	 * Make real links. Make it usefull...
 	 */
 	function find_resource_rights()
 	{
@@ -350,8 +359,14 @@ class myuser extends user
 		if ($resources == false)
 			return;
 		global $page;
+		$menu = new dropdown("Resource Control");
 		foreach ($resources as $item)
-			$page->ctrl2->add(p("Admin: $item"));
+		{
+			$link = $page->url() . "?action=ResourceControl&resource=";
+			$link .= $item . "&page=ResourceControl";
+			$menu->add(htlink($link,str($item)));
+		}
+		$page->ctrl3->add($menu);
 	}
 	function logout()
 	{

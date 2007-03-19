@@ -234,7 +234,7 @@ li {
 }
 
 .menuboks li:hover ul {
-	left: auto;
+	left: 20px;
 	padding: 0px;
 	border-style: dotted;
 	border-width: medium;
@@ -279,7 +279,6 @@ li {
 }
 p {
 	padding-bottom: 10px;
-
 }
 #infowarn .menuboks {
 	background-color: red;
@@ -310,101 +309,101 @@ td.tabs_marginal {
 }
 			
 td {
-background: #aaa;
-border-top: 1px solid black;
-border-left: 1px solid black;
-border-right: 1px solid black;
-border-bottom: 1px solid black;
-text-align: center;
+	background: #aaa;
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	text-align: center;
 }
 
 td {
-background: #ddd;
-border-top: 1px solid black;
-border-left: 1px solid black;
-border-right: 1px solid black;
-border-bottom: none;
-text-align: center;
-font-weight: bold;
+	background: #ddd;
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+	border-right: 1px solid black;
+	border-bottom: none;
+	text-align: center;
+	font-weight: bold;
 }
 
 td {
-background: #ddd;
-border-bottom: 1px solid black;
+	background: #ddd;
+	border-bottom: 1px solid black;
 }
 
 td {
-background: #ddd;
-border-bottom: 1px solid black;
-text-align: center;
+	background: #ddd;
+	border-bottom: 1px solid black;
+	text-align: center;
 }
 
 td {
-background: #ddd;
-border-bottom: 1px solid black;
-text-align: center;
-font-weight: bold;
+	background: #ddd;
+	border-bottom: 1px solid black;
+	text-align: center;
+	font-weight: bold;
 }
 
 td {
-font-weight: normal;
+	font-weight: normal;
 }
 
 td {
-font-weight: normal;
+	font-weight: normal;
 }
 
 table {
-border-spacing: 0px;
-border: 1px solid gray;
+	border-spacing: 0px;
+	border: 1px solid gray;
 }
 
 tr {
 }
 
 th {
-margin: 1px;
-border: 1px solid silver;
-padding: 4px;
-font-weight: bold;
+	margin: 1px;
+	border: 1px solid silver;
+	padding: 4px;
+	font-weight: bold;
 }
 
 td {
-margin: 1px;
-border: 1px solid silver;
-padding: 4px;
+	margin: 1px;
+	border: 1px solid silver;
+	padding: 4px;
 }
 
 th {
-text-align: right;
-padding: 4px;
+	text-align: right;
+	padding: 4px;
 }
 
 td {
-text-align: left;
-padding: 4px;
+	text-align: left;
+	padding: 4px;
 }
 
 legend {
-font-size: 120%;
+	font-size: 120%;
 }
 
 label {
-font-weight: bold;
+	font-weight: bold;
 }
 
 #toc {
-border: 1px solid #ccc;
-background-color: #eee;
-padding: 0.5em;
-margin-bottom: 0em;
-padding-left: 1.5em;
-float: left;
+	border: 1px solid #ccc;
+	background-color: #eee;
+	padding: 0.5em;
+	margin-bottom: 0em;
+	padding-left: 1.5em;
+	float: left;
 }
 
 #toc_item a {
-font-size: 90%;
-margin-top: 0.5em;
+	font-size: 90%;
+	margin-top: 0.5em;
 }
 #toc strong {
 	margin-left: -1em;

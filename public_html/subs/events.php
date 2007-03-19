@@ -41,9 +41,11 @@ class genrectrl
 	}
 	function get()
 	{
-		$link = htlink($page->url . "?page=BWReg2GenreAdmin&action=BWReg2ShowGenreAdmin", str("Genre Admin"));
+		global $page;
+		$menu = new dropdown("BWReg2 Control");
+		$menu->add(htlink($page->url . "?page=BWReg2GenreAdmin&action=BWReg2ShowGenreAdmin", str("List Genres")));
 		
-		return "<br />" . $link->get();
+		return $menu->get();
 	}
 	function getraw()
 	{
@@ -116,7 +118,7 @@ class event
 		global $me;
 
 		if(strstr($me->permission("BWReg2",0,0),"rw"))
-			$page->ctrl2->add(new genrectrl());
+			$page->ctrl3->add(new genrectrl());
 	}
 
 	function sqlcb($row)
