@@ -165,11 +165,9 @@ class content
 			$page->setrefresh();
 		}
 		if($action == "EditContent") {
-			if (is_object($this->lastedit))
-				$this->lastedit->actioncb($action);
+			next_action($action,$this->lastedit);
 		} else if ($action == "EditContentSave") {
-			if (is_object($this->lastsave))
-				$this->lastsave->actioncb($action);
+			next_action($action,$this->lastsave);
 		} else if ($action == "ContentDiff") {
 			global $maincontent;
 			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w"))
@@ -185,13 +183,11 @@ class content
 
 				
 			}
-			if (is_object($this->lastdiff))
-				$this->lastdiff->actioncb($action);
+			next_action($action,$this->lastdiff);
 		} else if ($action == "ContentHistory") {
 			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w") && $me->permission($this->permission) != "")
 				$this->content = $this->gethistory();
-			if (is_object($this->lasthist))
-				$this->lasthist->actioncb($action);
+			next_actio($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
 			global $maincontent;
 			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w"))
@@ -202,13 +198,8 @@ class content
 					$this->content = $newcontent->content;
 				}
 			}
-			
-			if (is_object($this->lastgetversion))
-				$this->lastgetversion->actioncb($action);
-		
+			next_action($action,$this->lastgetversion);
 		}
-		
-		
 	}
 
 	function sqlcb($row)

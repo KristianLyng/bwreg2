@@ -113,6 +113,20 @@ class permissions
 		$this->list[] = new perm($row['gid'], $row['eid'], $row['resource'], $row['resource_name'], $row['permissions']);
 	}
 
+	function find_specific_resource($resource)
+	{
+		if (!isset($this->list))
+			return null;
+		$current = null;
+		foreach ($this->list as $item)
+		{
+			if ($item->resource == $resource)
+			{
+				$current = $this->greater($item,$current);
+			}
+		}
+		return $current;
+	}
 	function find($resource, $gid = null, $eid = null)
 	{
 		global $event;
@@ -209,8 +223,7 @@ class user extends box
 		{
 			$my = new newuser();
 			$page->content->add($my->set_form());
-			if(is_object($this->lastnewform))
-				$this->lastnewform->actioncb($action);
+			next_action($action,$this->lastnewform);
 		}
 		else if ($action == "NewUserStore")
 		{
@@ -219,13 +232,14 @@ class user extends box
 			{
 				$page->warn->add(h1("Registreringen feilet"));
 				$page->warn->add(p($my->error));
-				if(is_object($this->lastuserstore))
-					$this->lastuserstore->actioncb($action);
+				next_action($action, $this->lastuserstore);
 				return;
 			}
 			$page->content->add(h1("Registreringen lyktes!"));
 			$page->content->add(p("(Egentlig ikke... hysj"));
 			$page->content->add(str("Ditt navn: " . $my->firstname));
+			next_action($action, $this->lastuserstore);
+			
 		}
 	}
 	function permission($param, $eid = null, $gid = null)
@@ -318,6 +332,34 @@ class user extends box
 	}
 }
 
+/* Class for displaying and applying resource control changes */
+class resourcectrl
+{
+	var $perm;
+	function resourcectrl($resource)
+	{
+		global $me;
+		$perm = $me->perms->find_specific_resource($resource);
+		if(!strstr($perm->permission, "m"))
+			return ;
+		$this->perm = $perm;
+		//SELECT permissions.gid,permissions.eid,resource_name,groups.group_name FROM permissions,groups where permissions.groupid = groups.groupid;
+
+	}
+	function sqlcb($row)
+	{
+	}
+	function get()
+	{
+		if (!isset($this->perm))
+			return "No such group or you don't have permission to modify it";
+		$box = new box();
+		$box->add(h1($this->perm->resource));
+		$box->add(p("GID: " . $this->perm->gid . " EID: " . $this->perm->eid));
+		return $box->get();
+	}
+}
+
 /* Class for $me.
  * Contains the current user. Logs in if necesarry and provides
  * the login box etc.
@@ -358,6 +400,7 @@ class myuser extends user
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
+		$this->lastresourcectrl = add_action("ResourceControl", &$this);
 		global $page;
 		$menu = new dropdown("Resource Control");
 		foreach ($resources as $item)
@@ -367,6 +410,15 @@ class myuser extends user
 			$menu->add(htlink($link,str($item)));
 		}
 		$page->ctrl3->add($menu);
+	}
+	function actioncb($action)
+	{
+		if ($action == "ResourceControl")
+		{
+			global $page;
+			$page->content->add(new resourcectrl($_REQUEST['resource']));
+			next_action($action,$this->lastresourcectrl);
+		}
 	}
 	function logout()
 	{

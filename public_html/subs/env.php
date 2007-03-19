@@ -53,6 +53,12 @@ function &add_action($action, &$object)
 	return $tmp;
 }
 
+function next_action($action, &$object)
+{
+	if(is_object($object))
+		$object->actioncb($action);
+}
+
 /* Make sure we render and update action when the page is done */
 	register_shutdown_function(down);
 
