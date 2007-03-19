@@ -72,3 +72,17 @@ intact.
 A genre admin is a user in a group with permissions to the genre-shortname
 resource and eid 0. Typically blan or jallalan. A genre admin can typically
 create new events and assign groups to the genre-specific resources. 
+
+An event admin is an admin with permissions to the genre-shortname resource
+with the apropriate eid set. Typically blan/gid:1/eid:1 for instance.
+An event admin can create event-specific resource groups and assign
+groups to the event-specific groups. 
+
+If a user only has rw permissions on a resource, he or she can only modify
+the resource it self. In other words, you need the 'm' permission to grant
+permissions to a resource. In most cases, administrators only want to hand
+out "rw" permissions. The exception beeing when the admin wants to delegate
+administration of a resource to another group of users.
+
+This goes for any resource at any level, meaning that a user with RW to
+the BWReg2 resource, can not grant others permissions to that resource.
