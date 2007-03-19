@@ -1,0 +1,41 @@
+This is BWReg2, BolerLAN Web Registration 2.
+
+1. Quickinstall
+2. Directory layout
+3. Core features
+
+1. Quickinstall
+===============
+There is no proper way of installing BWReg2 at this point, but the 
+following should give you something to work with:
+ 1. Copy (or link) public_html somewhere. Possibly rename template.php
+    to index.php
+ 2. Create a MySQL user and insert the login info into 
+    public_html/subs/config.php
+ 3. Run mysql -uuser -ppassword db < sql/mysql.demo.sql 
+
+ This will give you a demonstration of BWReg2, with some random content
+ and a user. Using sql/mysql.sql will work too, but you'll need to manually
+ create a user and set up the initial pages to get something usable. 
+ By the time this is production-ready, there will be a more proper installation
+ procedure.
+
+2. Directory layout
+===================
+Documentation/  - Documentaiton of BWReg2. Consult this when in doubt.
+public_html/ - Files to make public
+sql/ - SQL Schema files, mainly MySQL atm.
+
+3. Core features
+================
+- Host multiple genre of events (Multiple LAN parties sharing the same
+  solution). The genre's are independent, but the users are shared. 
+- ACL based permission control for maximum flexibility.
+- Dynamic content. Even most error messages are stored in the database. 
+  For convenience, a Wiki-markup is used for this. Who has access to what
+  is easily defined based on ACL's. Customizing the menus is trivial.
+- Dynamic event control. Just finished BolerLAN 07 winter and want to get
+  started on the next lan? Just create a new event and data associated with
+  the previous event is no longer cluttering the front page and similar.
+- Easy registration of groups for administration purposes and others. 
+
