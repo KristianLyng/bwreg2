@@ -115,7 +115,7 @@ class event
 		global $page;
 		global $me;
 
-		if(strstr($me->permission("BWReg2",0,0),"rwm"))
+		if(strstr($me->permission("BWReg2",0,0),"rw"))
 			$page->ctrl2->add(new genrectrl());
 	}
 

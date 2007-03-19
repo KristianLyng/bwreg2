@@ -122,6 +122,8 @@ class permissions
 			$eid = $event->eid;
 
 		$current = null;
+		if (!isset($this->list))
+			return null;
 		foreach ($this->list as $item)
 		{
 			if ($item->resource == $resource || $item->resourceid == $resource)
@@ -136,6 +138,16 @@ class permissions
 		}
 		
 		return $current->permission;
+	}
+	function find_resource_rights($right)
+	{	
+		$return = false;
+		if (!isset($this->list))
+			return false;
+		foreach ($this->list as $item)
+			if (strstr($item->permission,$right))
+				$return[] = $item->resource;
+		return $return;
 	}
 	function greater($perm1, $perm2)
 	{
@@ -326,6 +338,20 @@ class myuser extends user
 			$this->logout();
 		}
 		$this->perms =& new permissions($this->uid);
+		$this->find_resource_rights();
+	}
+	/* Finds resources this user can modify and add a link
+	 * to the administration interface. Todo:
+	 * Make real links, check for uniqe hits. Make it usefull...
+	 */
+	function find_resource_rights()
+	{
+		$resources = $this->perms->find_resource_rights("m");
+		if ($resources == false)
+			return;
+		global $page;
+		foreach ($resources as $item)
+			$page->ctrl2->add(p("Admin: $item"));
 	}
 	function logout()
 	{
