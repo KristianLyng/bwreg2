@@ -68,6 +68,8 @@ class box {
 	function get()
 	{
 		$menu = "";
+		if(!isset($this->items))
+				return $menu;
 		foreach ($this->items as $item)
 			$menu .= $item->get();
 		return $menu;

@@ -232,7 +232,6 @@ class content
 			$dropdown->add($user->userinfo);
 			$box->addst($dropdown->get());
 			$box->addst("</td></tr>");
-			$user = null;
 		}
 		$box->addst("</table>");
 		$this->renderme = false;
