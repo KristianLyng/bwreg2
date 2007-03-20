@@ -50,10 +50,12 @@ class userinfo
 	{
 		$box = new userinfoboks();
 		$box->add(h1(htlink("mailto:" . $this->mail, str($this->firstname . " " . $this->lastname))));
-		$box->add(p("phone: " . $this->phone));
-		$box->add(p("extra: " . $this->extra));
-		if($this->born != null)
-		$box->add(p("born: " . $this->born->get()));
+		$box->add(str("phone: " . $this->phone));
+		$box->add(htmlbr());
+		$box->add(str("extra: " . $this->extra));
+		$box->add(htmlbr());
+		if($this->born != null && $this->born != 0)
+		$box->add(str("born: " . $this->born->get()));
 		$box->add($this->pluginextra);
 		return $box->get();
 	}
@@ -336,18 +338,24 @@ class user extends box
 class resourcectrl
 {
 	var $perm;
+	var $list;
 	function resourcectrl($resource)
 	{
 		global $me;
+		global $db;
 		$perm = $me->perms->find_specific_resource($resource);
 		if(!strstr($perm->permission, "m"))
 			return ;
 		$this->perm = $perm;
-		//SELECT permissions.gid,permissions.eid,resource_name,groups.group_name FROM permissions,groups where permissions.groupid = groups.groupid;
-
+		$query = "SELECT permissions.gid,groups.group_name FROM permissions,groups where permissions.groupid = groups.groupid AND ";
+		$query .= "resource_name = '" . $db->escape($resource) . "' ";
+		$query .= "AND permissions.gid = '" . $db->escape($perm->gid) . "' ";
+		$query .= "AND permissions.eid = '" . $db->escape($perm->eid) . "';";
+		$db->query($query,&$this);
 	}
 	function sqlcb($row)
 	{
+		$this->list[] = $row['group_name'];
 	}
 	function get()
 	{
@@ -355,7 +363,11 @@ class resourcectrl
 			return "No such group or you don't have permission to modify it";
 		$box = new box();
 		$box->add(h1($this->perm->resource));
+		$menu = new menu("Member groups");
+		foreach ($this->list as $group)
+			$menu->add(str($group));
 		$box->add(p("GID: " . $this->perm->gid . " EID: " . $this->perm->eid));
+		$box->add($menu);
 		return $box->get();
 	}
 }

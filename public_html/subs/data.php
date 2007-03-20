@@ -33,7 +33,7 @@ class contenthistory
 	{
 		global $event;
 		global $db;
-		$query = "SELECT title, gid, version, modified,users.firstname, users.lastname FROM content,users WHERE content.uid = users.uid AND ";
+		$query = "SELECT title, gid, version, modified,users.uname, users.firstname, users.lastname FROM content,users WHERE content.uid = users.uid AND ";
 		$query .= "title = '" . $db->escape($title) . "' AND gid = '" . $event->gid . "' ORDER BY version DESC;";
 		$db->query($query, &$this);
 	}
@@ -44,6 +44,7 @@ class contenthistory
 		$myarray['gid'] = $row['gid'];
 		$myarray['title'] = $row['title'];
 		$myarray['author'] = $row['firstname'] . " " . $row['lastname'];
+		$myarray['uname'] = $row['uname'];
 		$this->data[] = $myarray;
 	}
 }
@@ -187,7 +188,7 @@ class content
 		} else if ($action == "ContentHistory") {
 			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w") && $me->permission($this->permission) != "")
 				$this->content = $this->gethistory();
-			next_actio($action,$this->lasthist);
+			next_action($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
 			global $maincontent;
 			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w"))
@@ -216,11 +217,25 @@ class content
 	{
 		$history = new contenthistory($this->title);
 		$box = new box();
-		$box->addst("|| **Version** || **Timestamp** || **Author** ||\n");
+		global $page;
+		$box->addst("<table><tr><td><b>Version</b></td><td><b>Timestamp</b></td><td><b>Author</b></td></tr>\n");
 		foreach ($history->data as $data)
 		{
-			$box->addst("|| [version:" . $data['version'] . " "  . $data['version'] . "] [diff:" . $data['version'] . " diff]" . "|| " . $data['timestamp'] . " || " . $data['author'] . "||\n");
+			$box->addst("<tr><td>");
+			$box->add(htlink($page->url() . "?action=ContentGetVersion&version=" . $data['version'], str($data['version'])));
+			$box->add(htlink($page->url() . "?action=ContentDiff&version= "  . $data['version'], str("diff")));
+			$box->addst("</td><td>");
+			$box->add(str($data['timestamp']));
+			$box->addst("</td><td>");
+			$user = new user($data['uname']);
+			$dropdown = new dropdown($user->get());
+			$dropdown->add($user->userinfo);
+			$box->addst($dropdown->get());
+			$box->addst("</td></tr>");
+			$user = null;
 		}
+		$box->addst("</table>");
+		$this->renderme = false;
 		return $box->get();
 	}
 	function &editlink() {
@@ -245,7 +260,6 @@ class content
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
 		$permlist = "<br /> Read access: <select name=\"read_permission\">";
 		$permlist .= "<option value=\"NULL\">All</option>";
-		print $this->read_permission;
 		$permlist .= $me->list_perms($this->read_permission);
 		$permlist .= "</select>";
 		$permlist .= "<br /> Write access: <select name=\"permission\">";

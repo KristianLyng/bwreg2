@@ -234,7 +234,7 @@ li {
 }
 
 .menuboks li:hover ul {
-	left: 20px;
+	left: auto;
 	padding: 0px;
 	border-style: dotted;
 	border-width: medium;
