@@ -26,7 +26,7 @@ CREATE TABLE `content` (
 --
 
 CREATE TABLE `events` (
-  `eid` int(11) NOT NULL auto_increment,
+  `eid` int(11) NOT NULL default '0',
   `gid` int(11) NOT NULL default '0',
   `title` varchar(20) default NULL,
   `logo` varchar(50) default NULL,
@@ -59,7 +59,6 @@ CREATE TABLE `group_members` (
 CREATE TABLE `groups` (
   `groupid` int(11) NOT NULL auto_increment,
   `gid` int(11) default NULL,
-  `eid` int(11) default NULL,
   `group_name` varchar(20) default NULL,
   `group_description` text,
   `owner` int(11) NOT NULL default '0',
@@ -94,7 +93,7 @@ CREATE TABLE `permissions` (
   `gid` int(11) NOT NULL default '0',
   `eid` int(11) default NULL,
   `resource` int(11) default NULL,
-  `resource_name` varchar(20) default NULL,
+  `resource_name` varchar(50) default NULL,
   `permissions` varchar(5) default NULL,
   `groupid` int(11) NOT NULL default '0'
 ) TYPE=MyISAM;
