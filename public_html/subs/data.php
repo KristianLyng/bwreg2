@@ -186,7 +186,7 @@ class content
 			}
 			next_action($action,$this->lastdiff);
 		} else if ($action == "ContentHistory") {
-			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w") && $me->permission($this->permission) != "")
+			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w") && $me->permission($this->permission) != "" && $this->main)
 				$this->content = $this->gethistory();
 			next_action($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
