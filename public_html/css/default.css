@@ -145,7 +145,7 @@ li {
 	border-color: black;
 }
 
-# h1 {
+#infowarn h1 {
 	text-decoration: blink;
 }
 
@@ -194,10 +194,6 @@ li {
 .userinfo {
 	width: 200px;
 	float: left;
-	background-color: white;
-	border-width: thin;
-	border-style: dashed;
-	border-color: black;
 	margin: 0;
 	padding: 0;
 	font-size: medium;
@@ -223,23 +219,23 @@ li {
 .menuboks li {
 	display: block;
 	background-color: inherit;
-	margin: 1px;
+	margin: 0px;
 	color: black;
 }
 
 .menuboks li ul {
 	position: absolute;
-	padding: 2px;
+	padding: 0px;
 	left: -999em;
 }
 
 .menuboks li:hover ul {
 	left: auto;
 	padding: 0px;
-	border-style: dotted;
+	border-style: solid;
 	border-width: medium;
 	border-color: black;
-	background-color: white;
+	background-color: silver;
 }
 .news .menuboks
 {
@@ -253,23 +249,23 @@ li {
 	background-color: inherit;
 	margin: 1px;
 	padding: 1px;
-	color: white;
 }
 .menuboks h1 {
 	color: purple;
-	margin: 1px;
+	margin-top: 1px;
+	margin-bottom: 1px;
+	margin-left: 1px;
+	margin-right: 1px;
 	background-color: white;
 }
 
 .menuboks a {
-	display: block;
 	background-color: inherit;
-	margin: 1px;
-	page-break-after: always;
 }
 
 .menuboks li:hover ul a {
-	padding: 5px;
+	padding: 0px;
+	margin: 0px;
 }
 
 #infowarn .menuboks a {
