@@ -178,9 +178,9 @@ class permissions
 	{
 		if($perm2 == null)
 			return $perm1;
-		if(strstr($perm1,"rwm") && !strstr($perm2,"rwm"))
+		if(strstr($perm1->permission,"rwm") && !strstr($perm2->permission,"rwm"))
 			return $perm1;
-		if(strstr($perm2,"rwm") && !strstr($perm1,"rwm"))
+		if(strstr($perm2->permission,"rwm") && !strstr($perm1->permission,"rwm"))
 			return $perm2;
 		if($perm1->eid == 0 && $perm2->eid != 0)
 			return $perm1;
@@ -333,6 +333,100 @@ class user extends box
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
 }
+class group
+{
+	function group($name, $id, $gid, $desc)
+	{
+		$this->name = $name;
+		$this->id = $id;
+		$this->gid = $gid;
+		$this->desc = $desc;
+	}
+	function get()
+	{
+		return $this->name;
+	}
+}
+
+class groupresctrl extends group
+{
+	function groupresctrl($resource, $eid, $name, $id, $gid, $desc, $permissions)
+	{
+		$this->resource = $resource;
+		$this->eid = $eid;
+		$this->permissions = $permissions;
+		parent::group($name,$id,$gid,$desc);
+	}
+	function get()
+	{
+		global $page;
+		$url = $page->url() . "?action=ResourceRmGroup&resource=";
+		$url .= $this->resource . "&ourgid=";
+		$url .= $this->gid . "&oureid=";
+		$url .= $this->eid . "&groupid=";
+		$url .= $this->id;
+		$text = $this->name . "  - " . $this->permissions . " ";
+		$link = htlink($url,str("Remove"));
+		return $text . $link->get();
+	}
+}
+
+class grouplist
+{
+	var $list;
+	function grouplist($gid)
+	{
+		global $db;
+		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
+		$query .= $db->escape($gid) . "';";
+		$db->query($query,&$this);
+	}
+	function sqlcb($row)
+	{
+		$this->list[] = new group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
+	}
+	function get()
+	{
+		return "Not implemented";
+	}
+}
+
+class grouplistresadd extends grouplist
+{
+	function grouplistresadd($gid, $eid, $resource)
+	{
+		$this->resource = $resource;
+		$this->gid = $gid;
+		$this->eid = $eid;
+		parent::grouplist($gid);
+	}
+	function get()
+	{
+		if (!isset($this->list))
+			return "....";
+		$form = new form();
+		$form->add(fhidden("ResourceAddGroup"));
+		$form->add(fhidden($this->resource, "resource"));
+		$form->add(fhidden($this->gid,"ourgid"));
+		$form->add(fhidden($this->eid,"oureid"));
+		$form->add(str("<select name=\"groupid\">"));
+		foreach ($this->list as $group)
+		{
+			$string = "<option value=\"" . $group->id;
+			$string .= "\">" . $group->name . "(";
+			$string .= $group->desc . ")</option>\n";
+			$form->add(str($string));
+		}
+		$form->add(str("</select>\n"));
+		$form->add(str("<select name=\"permissions\">\n"));
+		$form->add(str("<option value=\"r\">Read Only</option>\n"));
+		$form->add(str("<option value=\"rw\">Read/Write</option>\n"));
+		$form->add(str("<option value=\"rwm\">Read/Write/Modify</option>\n"));
+		$form->add(str("</select>\n"));
+		$form->add(fsubmit("Add"));
+		return $form->get();
+	}
+}
 
 /* Class for displaying and applying resource control changes */
 class resourcectrl
@@ -347,15 +441,16 @@ class resourcectrl
 		if(!strstr($perm->permission, "m"))
 			return ;
 		$this->perm = $perm;
-		$query = "SELECT permissions.gid,groups.group_name FROM permissions,groups where permissions.groupid = groups.groupid AND ";
+		$query = "SELECT permissions.resource_name,permissions.gid,groups.group_name,groups.groupid,groups.group_description,permissions.eid,permissions.permissions FROM permissions,groups where permissions.groupid = groups.groupid AND ";
 		$query .= "resource_name = '" . $db->escape($resource) . "' ";
 		$query .= "AND permissions.gid = '" . $db->escape($perm->gid) . "' ";
 		$query .= "AND permissions.eid = '" . $db->escape($perm->eid) . "';";
 		$db->query($query,&$this);
+		$this->resource = $resource;
 	}
 	function sqlcb($row)
 	{
-		$this->list[] = $row['group_name'];
+		$this->list[] = new groupresctrl($row['resource_name'], $row['eid'],$row['group_name'], $row['groupid'], $row['gid'], $row['group_description'],$row['permissions']);
 	}
 	function get()
 	{
@@ -363,11 +458,14 @@ class resourcectrl
 			return "No such group or you don't have permission to modify it";
 		$box = new box();
 		$box->add(h1($this->perm->resource));
+		$box->add(p("GID: " . $this->perm->gid . " EID: " . $this->perm->eid));
 		$menu = new menu("Member groups");
 		foreach ($this->list as $group)
-			$menu->add(str($group));
-		$box->add(p("GID: " . $this->perm->gid . " EID: " . $this->perm->eid));
+			$menu->addst($group->get());
 		$box->add($menu);
+		$groupadd = new grouplistresadd($this->perm->gid, $this->perm->eid, $this->resource);
+		$box->add($groupadd);
+
 		return $box->get();
 	}
 }
@@ -413,6 +511,8 @@ class myuser extends user
 		if ($resources == false)
 			return;
 		$this->lastresourcectrl = add_action("ResourceControl", &$this);
+		$this->lastresourceadd = add_action("ResourceAddGroup",&$this);
+		$this->lastresourcedel = add_action("ResourceRmGroup",&$this);
 		global $page;
 		$menu = new dropdown("Resource Control");
 		foreach ($resources as $item)
@@ -423,6 +523,58 @@ class myuser extends user
 		}
 		$page->ctrl3->add($menu);
 	}
+	function handle_resource_add()
+	{
+		global $me;
+		$resource = $_REQUEST['resource'];
+		$groupid = $_REQUEST['groupid'];
+		$permissions = $_REQUEST['permissions'];
+		$eid = $_REQUEST['oureid'];
+		$gid = $_REQUEST['ourgid'];
+		if (!isset($resource) || !isset($groupid) || !isset($permissions))
+			return;
+		if (!strstr($me->permission($resource, $eid, $gid),"m"))
+			return;
+		$res = $me->perms->find_specific_resource($resource);
+		if (!isset($res))
+			return;
+		global $db;
+		global $page;
+		$query = "INSERT INTO permissions VALUES('";
+		$query .= $db->escape($gid) . "','";
+		$query .= $db->escape($eid) . "','";
+		$query .= $db->escape($res->resourceid) . "','";
+		$query .= $db->escape($res->resource) . "','";
+		$query .= $db->escape($permissions) . "','";
+		$query .= $db->escape($groupid) . "');";
+		$db->insert($query);
+		$page->content->add(p("Adding $groupid to $resource with $permissions (gid: $gid eid: $eid) \n"));
+	}
+	function handle_resource_del()
+	{
+		global $me;
+		$resource = $_REQUEST['resource'];
+		$groupid = $_REQUEST['groupid'];
+		$eid = $_REQUEST['oureid'];
+		$gid = $_REQUEST['ourgid'];
+		if (!isset($resource) || !isset($groupid) || !isset($eid))
+			return;
+		if (!strstr($me->permission($resource, $eid, $gid),"m"))
+			return;
+		$res = $me->perms->find_specific_resource($resource);
+		if (!isset($res))
+			return;
+		global $db;
+		global $page;
+		$query = "DELETE FROM permissions WHERE gid = '";
+		$query .= $db->escape($gid) . "' AND eid = '";
+		$query .= $db->escape($eid) . "' AND resource = '";
+		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
+		$query .= $db->escape($res->resource) . "' AND groupid = '";
+		$query .= $db->escape($groupid) . "' LIMIT 1;";
+		$db->insert($query);
+		$page->content->add(p("Deleted $groupid on $resource (gid: $gid eid: $eid) \n"));
+	}
 	function actioncb($action)
 	{
 		if ($action == "ResourceControl")
@@ -430,6 +582,12 @@ class myuser extends user
 			global $page;
 			$page->content->add(new resourcectrl($_REQUEST['resource']));
 			next_action($action,$this->lastresourcectrl);
+		} else if ($action == "ResourceAddGroup") {
+			$this->handle_resource_add();
+			next_action($action,$this->lastresourceadd);
+		} else if ($action == "ResourceRmGroup") {
+			$this->handle_resource_del();
+			next_action($action,$this->lastresourcedel);
 		}
 	}
 	function logout()
