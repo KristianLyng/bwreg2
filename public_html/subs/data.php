@@ -191,7 +191,7 @@ class content
 			next_action($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
 			global $maincontent;
-			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w"))
+			if ($this->main && $this->title == $maincontent->title && str($me->permission($this->permission),"w"))
 			{
 				$newcontent = new content($this->title, $_REQUEST['version']);
 				if (is_object($newcontent)) 

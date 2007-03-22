@@ -93,10 +93,15 @@ class permissions
 		global $db;
 		if(!isset($uid) or $uid == "")
 			return;
+		$query = "SELECT @super := COUNT(*) FROM permissions,users,group_members WHERE permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND permissions.gid = 0 AND permissions.eid = 0 ";
+		$query .= "AND users.uid = '";
+		$query .= $db->escape($uid);
+		$query .= "';";
+		$db->query($query);
 		$query = "SELECT " . 
 			 "permissions.resource, " . 
 			 "permissions.resource_name, " .
-			 "permissions.permissions, " .
+			 "IF(@super > 0, \"rwm\", permissions.permissions) as permissions, " .
 			 "permissions.eid, " .
 			 "permissions.gid " . 
 			 "FROM permissions LEFT JOIN groups ON groups.groupid = permissions.groupid " .
@@ -106,7 +111,7 @@ class permissions
 			$query .= $db->escape($uid);
 		else
 			$query .= $uid;
-		$query .= "';";
+		$query .= "' OR @super > 0;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
@@ -403,7 +408,7 @@ class grouplistresadd extends grouplist
 	function get()
 	{
 		if (!isset($this->list))
-			return "....";
+			return "";
 		$form = new form();
 		$form->add(fhidden("ResourceAddGroup"));
 		$form->add(fhidden($this->resource, "resource"));
