@@ -338,6 +338,7 @@ class user extends box
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
 }
+
 class group
 {
 	function group($name, $id, $gid, $desc)
@@ -347,6 +348,27 @@ class group
 		$this->gid = $gid;
 		$this->desc = $desc;
 	}
+	// TODO: Range checks.
+	function create()
+	{
+		global $me;
+		if ($me->uid == 0)
+			return false;
+		global $db;
+		$query = "SELECT COUNT(*) FROM groups WHERE gid = ';";
+		$query .= $db->escape($this->gid) . "' AND groupname = '";
+		$query .= $db->escape($this->name) . "';";
+		$result = $db->query($query);
+		if ($result > 0 or $result == NULL or $result == false)
+			return false;
+		$query = "INSERT INTO groups (gid,group_name,group_description,owner) VALUES('";
+		$query .= $db->escape($this->gid) . "','";
+		$query .= $db->escape($this->name) . "','";
+		$query .= $db->escape($this->desc) . "','";
+		$query .= $db->escape($me->uid) . "');";
+		$db->insert($query);
+	}
+
 	function get()
 	{
 		return $this->name;
@@ -395,7 +417,24 @@ class grouplist
 		return "Not implemented";
 	}
 }
-
+class grouplistuser extends grouplist
+{
+	function grouplistuser($uname)
+	{
+		global $db;
+		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND users.uname = '";
+		$query .= $db->escape($uname) . "';";
+		$db->query($query,&$this);
+	}
+	function get()
+	{
+		foreach ($this->list as $group)
+		{
+			$string .= $group->name . "<br />";
+		}
+		return $string;
+	}
+}
 class grouplistresadd extends grouplist
 {
 	function grouplistresadd($gid, $eid, $resource)
@@ -520,6 +559,7 @@ class myuser extends user
 		$this->lastresourcectrl = add_action("ResourceControl", &$this);
 		$this->lastresourceadd = add_action("ResourceAddGroup",&$this);
 		$this->lastresourcedel = add_action("ResourceRmGroup",&$this);
+		$this->lastgetuserinfo = add_action("UserGetInfo", &$this);
 		global $page;
 		$menu = new dropdown("Resource Control");
 		foreach ($resources as $item)
@@ -556,6 +596,16 @@ class myuser extends user
 		$query .= $db->escape($groupid) . "');";
 		$db->insert($query);
 		$page->content->add(p("Adding $groupid to $resource with $permissions (gid: $gid eid: $eid) \n"));
+	}
+	function handle_user_info()
+	{
+		global $page;
+		$user = $_REQUEST['user'];
+		if ($user == $this->uname)
+		{
+			$page->content->add(new grouplistuser($user));
+			$page->content->add(str("Info omegen bruker..."));
+		}
 	}
 	function handle_resource_del()
 	{
@@ -623,6 +673,9 @@ class myuser extends user
 			global $page;
 			$page->content->add(new resourcectrl($_REQUEST['resource']));
 			next_action($action,$this->lastresourcedel);
+		} else if ($action == "UserGetInfo") {
+			$this->handle_user_info();
+			next_action($action,$this->lastgetuserinfo);
 		} else {
 			parent::actioncb($action);
 		}
@@ -647,17 +700,26 @@ class myuser extends user
 	function print_logout()
 	{
 		global $page;
+		global $me;
 		$url = $page->url();
 		$url .= "?action=Logout";
 		$object = htlink($url, str("Logout"));
-		return $object->get();
+		$url = $page->url();
+		$url .= "?page=Userinfo&amp;action=UserGetInfo&amp;user=";
+		$url .= $me->uname;
+		$object2 = htlink($url, str("Brukerinfo"));
+		$box = new box();
+		$box->add($object);
+		$box->addst("| ");
+		$box->add($object2);
+		return $box->get();
 	}
 	function get()
 	{
 		if($this->failed && $this->uid == 0) {
 			return "Login failed" . $this->print_box();
 		} else if ($this->uid > 0) {
-			return parent::get() . " " . $this->print_logout();
+			return parent::get() . "<br />" . $this->print_logout();
 		} else {
 			return $this->print_box();
 		}
