@@ -67,7 +67,7 @@ class content
 		global $session;
 		global $execaction;
 		$this->renderme = true;
-		$this->permission = $event->gname . "ContentCreators";
+		$this->permission = $event->gname;
 		$query = "SELECT content,version,title,gid,permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
@@ -169,7 +169,7 @@ class content
 			next_action($action,$this->lastsave);
 		} else if ($action == "ContentDiff") {
 			global $maincontent;
-			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w"))
+			if ($this->main && $this->title == $maincontent->title && str($me->permission($this->permission),"w"))
 			{
 				$oldcontent = new content($this->title, $_REQUEST['version']);
 				$new = split("\n", $this->content);
