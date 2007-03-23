@@ -67,6 +67,7 @@ class content
 		global $session;
 		global $execaction;
 		$this->renderme = true;
+		$this->gid = $event->gid;
 		$this->permission = $event->gname;
 		$query = "SELECT content,version,title,gid,permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
@@ -250,12 +251,17 @@ class content
 	{
 		global $page;
 		global $me;
+		global $gid;
 		if (!strstr($me->permission($this->permission),"w"))
 			return ;
 		$box = new form();
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
 		$permlist .= "<br /> Resource (ACL): <select name=\"permission\">";
-		$permlist .= $me->list_perms($this->gid, $this->permission);
+		if (isset($this->gid))
+			$gid = $this->gid;
+		else 
+			$gid = $event->gid;
+		$permlist .= $me->list_perms($gid, $this->permission);
 		$permlist .= "</select>";
 		
 		$box->add(str($permlist));
