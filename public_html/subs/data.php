@@ -255,7 +255,7 @@ class content
 		$box = new form();
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
 		$permlist .= "<br /> Resource (ACL): <select name=\"permission\">";
-		$permlist .= $me->list_perms($this->permission);
+		$permlist .= $me->list_perms($this->gid, $this->permission);
 		$permlist .= "</select>";
 		
 		$box->add(str($permlist));
