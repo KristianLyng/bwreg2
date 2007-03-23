@@ -1,6 +1,5 @@
 Group system of BWReg
 
-
 1. Overview
 2. Creation of groups
 3. Signing up to groups
@@ -19,9 +18,8 @@ of the use. Creating and signing up for groups should be simple.
 Any user can create a group. This is a fundamental principle of BWReg2. There
 are only three restrictions: A group may not be named BWReg2, and a group may 
 not start with the same uniqe genre-name the genre has. These are reserved 
-groups.  (Ie: blanContentCreators can not be created by normal users if it 
-somehow gets accidently deleted). The last condition is that a group name may
-not start with "deleted", as this is also reserved.
+groups.  The last condition is that a group name may not start with "deleted", 
+as this is also reserved.
 
 All groups belongs to a genre, except the the manually created bwreg2 admin
 groups. A group may be set to belong to an event, or it may be genre-wide, this
