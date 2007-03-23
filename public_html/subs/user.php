@@ -92,7 +92,7 @@ class permissions
 	{
 		global $db;
 		if(!isset($uid) or $uid == "")
-			return;
+			$uid = 0;
 		$query = "SELECT @super := COUNT(*) FROM permissions,users,group_members WHERE permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND permissions.gid = 0 AND permissions.eid = 0 ";
 		$query .= "AND users.uid = '";
 		$query .= $db->escape($uid);
@@ -111,7 +111,7 @@ class permissions
 			$query .= $db->escape($uid);
 		else
 			$query .= $uid;
-		$query .= "' OR @super > 0;";
+		$query .= "' OR group_members.uid = 0 OR @super > 0;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)

@@ -57,7 +57,6 @@ class content
 	var $title;
 	var $contentid;
 	var $permission;
-	var $read_permission;
 	var $main;
 	function content($contentid = false, $version = -1)
 	{
@@ -69,7 +68,7 @@ class content
 		global $execaction;
 		$this->renderme = true;
 		$this->permission = $event->gname . "ContentCreators";
-		$query = "SELECT content,version,title,gid,permission,read_permission,contentid FROM content WHERE gid='";
+		$query = "SELECT content,version,title,gid,permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
 		{
@@ -104,7 +103,7 @@ class content
 			$query .= " AND version = '" . $db->escape("$version") . "'";
 		$query .= " ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
-		if ($this->read_permission != null && !strstr($me->permission($this->read_permission),"r"))
+		if (!strstr($me->permission($this->permission),"r"))
 		{
 			$this->content = null;
 		}
@@ -148,15 +147,14 @@ class content
 
 			$myversion = $db->escape($version);
 			$myversion++;
-			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,read_permission,uid) VALUES('";
+			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,uid) VALUES('";
 			$query .= $db->escape($event->gid);
 			$query .= "','";
 			$query .= $myversion . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($content) . "','";
-			$query .= $db->escape($this->contentid) . "',";
-			$query .= $db->escape($_REQUEST['permission']) . ",";
-			$query .= $db->escape($_REQUEST['read_permission']) . ",'";
+			$query .= $db->escape($this->contentid) . "','";
+			$query .= $db->escape($_REQUEST['permission']) . "','";
 			$query .= $db->escape($me->uid) . "'";
 			$query .= ");";
 			
@@ -210,7 +208,6 @@ class content
 		$this->gid = $row['gid'];
 		$this->title = $row['title'];
 		$this->permission = $row['permission'];
-		$this->read_permission = $row['read_permission'];
 		$this->contentid = $row['contentid'];
 	}
 	function gethistory()
@@ -257,11 +254,7 @@ class content
 			return ;
 		$box = new form();
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
-		$permlist = "<br /> Read access: <select name=\"read_permission\">";
-		$permlist .= "<option value=\"NULL\">All</option>";
-		$permlist .= $me->list_perms($this->read_permission);
-		$permlist .= "</select>";
-		$permlist .= "<br /> Write access: <select name=\"permission\">";
+		$permlist .= "<br /> Resource (ACL): <select name=\"permission\">";
 		$permlist .= $me->list_perms($this->permission);
 		$permlist .= "</select>";
 		
