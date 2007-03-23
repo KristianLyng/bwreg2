@@ -222,8 +222,8 @@ class content
 		foreach ($history->data as $data)
 		{
 			$box->addst("<tr><td>");
-			$box->add(htlink($page->url() . "?action=ContentGetVersion&version=" . $data['version'], str($data['version'])));
-			$box->add(htlink($page->url() . "?action=ContentDiff&version= "  . $data['version'], str("diff")));
+			$box->add(htlink($page->url() . "?action=ContentGetVersion&amp;version=" . $data['version'], str($data['version'])));
+			$box->add(htlink($page->url() . "?action=ContentDiff&amp;version= "  . $data['version'], str("diff")));
 			$box->addst("</td><td>");
 			$box->add(str($data['timestamp']));
 			$box->addst("</td><td>");
@@ -241,9 +241,9 @@ class content
 		global $page;
 		$box = new infoboks();
 		$meny = new menu();
-		$meny->add(htlink($page->url() . "?action=EditContent&page=" . $this->title,
+		$meny->add(htlink($page->url() . "?action=EditContent&amp;page=" . $this->title,
 			str("Editer denne siden")));
-		$meny->add(htlink($page->url() . "?action=ContentHistory&page=" . $this->title, 
+		$meny->add(htlink($page->url() . "?action=ContentHistory&amp;page=" . $this->title, 
 			str("Sidehistorie")));
 		$box->add($meny);
 		return $box;

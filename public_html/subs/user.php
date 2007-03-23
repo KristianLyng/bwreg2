@@ -365,10 +365,10 @@ class groupresctrl extends group
 	function get()
 	{
 		global $page;
-		$url = $page->url() . "?action=ResourceRmGroup&resource=";
-		$url .= $this->resource . "&ourgid=";
-		$url .= $this->gid . "&oureid=";
-		$url .= $this->eid . "&groupid=";
+		$url = $page->url() . "?action=ResourceRmGroup&amp;resource=";
+		$url .= $this->resource . "&amp;ourgid=";
+		$url .= $this->gid . "&amp;oureid=";
+		$url .= $this->eid . "&amp;groupid=";
 		$url .= $this->id;
 		$text = $this->name . "  - " . $this->permissions . " ";
 		$link = htlink($url,str("Remove"));
@@ -469,7 +469,9 @@ class resourcectrl
 			$menu->addst($group->get());
 		$box->add($menu);
 		$groupadd = new grouplistresadd($this->perm->gid, $this->perm->eid, $this->resource);
-		$box->add($groupadd);
+		$fo = new namedbox("class","form");
+		$fo->add($groupadd);
+		$box->add(p($groupadd->get()));
 
 		return $box->get();
 	}
@@ -522,8 +524,8 @@ class myuser extends user
 		$menu = new dropdown("Resource Control");
 		foreach ($resources as $item)
 		{
-			$link = $page->url() . "?action=ResourceControl&resource=";
-			$link .= $item . "&page=ResourceControl";
+			$link = $page->url() . "?action=ResourceControl&amp;resource=";
+			$link .= $item . "&amp;page=ResourceControl";
 			$menu->add(htlink($link,str($item)));
 		}
 		$page->ctrl3->add($menu);
@@ -571,6 +573,30 @@ class myuser extends user
 			return;
 		global $db;
 		global $page;
+		$query = "SELECT COUNT(*) FROM permissions,users,group_members WHERE permissions.gid = '";
+		$query .= $db->escape($gid) . "' AND permissions.eid = '";
+		$query .= $db->escape($eid) . "' AND resource = '";
+		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
+		$query .= $db->escape($res->resource) . "' AND permissions.groupid != '";
+		$query .= $db->escape($groupid) . "' AND permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND ";
+		$query .= "permissions.permissions = \"rwm\" AND users.uid = '" . $db->escape($me->uid) . "';";
+		$result = $db->query($query);
+		if (($result == 0 || $result == "0") && !strstr($me->permission("BWReg2"),"rwm"))
+		{
+			$page->content->add(p("Can't delete the last group granting you rwm permissions"));
+			return ;
+		}
+		$query = "SELECT COUNT(*) FROM permissions WHERE permissions.gid = '";
+		$query .= $db->escape($gid) . "' AND permissions.eid = '";
+		$query .= $db->escape($eid) . "' AND resource = '";
+		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
+		$query .= $db->escape($res->resource) . "';"; 
+		$result = $db->query($query);
+		if ($result < 2) 
+		{
+			$page->content->add(p("Can't delete the last group..."));
+			return;
+		}
 		$query = "DELETE FROM permissions WHERE gid = '";
 		$query .= $db->escape($gid) . "' AND eid = '";
 		$query .= $db->escape($eid) . "' AND resource = '";
@@ -593,6 +619,8 @@ class myuser extends user
 		} else if ($action == "ResourceRmGroup") {
 			$this->handle_resource_del();
 			next_action($action,$this->lastresourcedel);
+		} else {
+			parent::actioncb($action);
 		}
 	}
 	function logout()
@@ -609,7 +637,7 @@ class myuser extends user
 		$form->add(ftext("uname","uname",8));
 		$form->add(fpass("pass",8));
 		$form->add(fsubmit("Login", "action"));
-		$form->add(htlink( $page->url() . "?action=PrintNewUser&page=" . $event->gname . "PrintNewUser",str("Register")));
+		$form->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Register")));
 		return $form->get();
 	}
 	function print_logout()
@@ -707,7 +735,7 @@ class newuser
 	{
 		$form = new form();
 		$form->add(str("<table style=\"UserForm\"><tr>"));
-		$form->add(str("<td>Fornavn</td><td>"));
+		$form->add(str("<td><label for=\"firstname\" title=\"Fornavn\">Fornavn</label></td><td>"));
 		$form->add(ftext("firstname"));
 		$form->add(str("</td></tr><tr><td>\n"));
 		$form->add(str("Etternavn</td><td>"));

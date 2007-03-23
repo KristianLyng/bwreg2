@@ -485,6 +485,10 @@ function &img($url, $desc="")
 	$obj = null;
 	return new htmlobject("img","src=\"" . $url . "\" alt=\"" . $desc . "\"",$obj);
 }
+function &fieldset($content)
+{
+	return new htmlobject("fieldset","",$content);
+}
 function &p($content)
 {
 	return new htmlobject("p","",$content);
