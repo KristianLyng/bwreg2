@@ -615,9 +615,13 @@ class myuser extends user
 			next_action($action,$this->lastresourcectrl);
 		} else if ($action == "ResourceAddGroup") {
 			$this->handle_resource_add();
+			global $page;
+			$page->content->add(new resourcectrl($_REQUEST['resource']));
 			next_action($action,$this->lastresourceadd);
 		} else if ($action == "ResourceRmGroup") {
 			$this->handle_resource_del();
+			global $page;
+			$page->content->add(new resourcectrl($_REQUEST['resource']));
 			next_action($action,$this->lastresourcedel);
 		} else {
 			parent::actioncb($action);
