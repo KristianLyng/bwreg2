@@ -1,0 +1,4 @@
+Rework permissions for anonymous users. 
+Rework how content uses permissions (read_permissions should NOT be necesarry
+as the ACL defines who has access to what).
+

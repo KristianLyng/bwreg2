@@ -38,10 +38,12 @@ Kravspesifikasjon for bwreg2
 5.2 PHP struktur
 5.3 Backup-system
 
-6. Statisk innhold
-6.1 Rettigheter
-6.2 Modifisering av statisk innhold
-6.3 CSS spesifikasjon
+6. Innhold
+6.1 Statisk innhold
+6.2 Dynamisk innhold
+6.3 Utseende
+6.4 Rettigheter
+
 
 1. Overordnet mål
 =================
@@ -83,7 +85,9 @@ brukerens rettigheter. Dette innebærer at kildekoden til BWReg2 vil være Fri.
 
 En fri lisens som dette betyr at videre utvikling av systemet ikke krever noen
 form for godkjenning fra den opprinnlige utvikleren. Det eneste det krever er
-at de samme rettighetene ivaretas for fremtidige brukere. 
+at de samme rettighetene ivaretas for fremtidige brukere. Med andre ord gir
+deg ikke noen mulighet til å kuppe produktet, hverken utvikleren eller 
+mottakeren.
 
 [1] http://www.gnu.org/licenses/gpl.html#SEC1
 
@@ -97,7 +101,6 @@ testing.
 Dette tilsvarer cirka den tiden som allerede er investert i BWReg1. 
 
 
-
 2. Tekniske spesifikasjoner
 ===========================
 
@@ -108,6 +111,9 @@ grad som mulig skrives uavhengi av andre verktøy. Med unntak av backupscriptene.
 
 Maskinvaren som vil trenges for å drive systemet er minimalt. Det eneste som 
 spiller noen stor rolle er at internettforbindelsen er stabil.
+
+Enkelte PEAR moduler fra PHP vil benyttes, men bakoverkompatibilitet er 
+prioritert for å kunne benytte BWReg2 på så mange installasjoner som mulig.
 
 BWReg2 vil forventes å kjøre på Linux. 
 
@@ -137,38 +143,29 @@ Content table:
  - Krever rettigheter i brukerdatabasen ELLER crew-tabel.
  - Kan dynamisk opprettes og fjernes.
 
-Admin-users
- - Definerer admins for hele systemet, som kan lage og editere events. 
- - Lenker til user-tabellen
-
-Crews
- - Definerer hvile crew som eksiterer.
- - En rad per crew per event. (Game, Vision, Admin....).
- 
-Crew list
- - En entry per crewmedlem.
- - Level, definerer stilling innad i crew. (Sjef, vaktleder, normal, etc...)
-
 Permissions
  - EventID, Type, User, Crew
  - Definerer generiske rettigheter. Type er Read, Write eller Modify.
  - Modify == slett/rename. User kan enten være 0 eller en uid.
  - Crew kan være en lenke til crew-id. 
 
+Groups
+ - En list per gruppe, en gruppe kan brukes til alt fra Crew til 
+   compoer og plassreservering.
+
+Group members
+ - Definerer medlemmene i de individuelle gruppene.
+
 News
  - Content
 
 2.3 Brukernivåer og rettigheter
 ===============================
-Eventusers crew-status-feltet definerer:
-	0: Vanlig bruker.
-	1-5: Reservert.
-	6: Opplastingsrettigheter.
-	7-9: Reservert.
-	10: Vanlig crew.
-
 Permission-tabellen brukes for å dynamisk opprette rettigheter for content,
 news og andre ting. Inkludert dynamiske sider.
+
+Veldig lite vil være basert på nivåer, men ACL (Access Control Lists), som vil
+gi oss muligheten til å fin-justere hvem som kan gjøre hva.
 
 
 3. Administrasjon
@@ -180,7 +177,7 @@ Målet er at så lite som mulig skal måtte gjøres manuelt, og at tilnærmet lik
 alt skal kunne gjøres via web-interfacet. 
 
 Dette innebærer en form for kompleksistet som er betydelig tyngre enn dagens
-bwreg1, men åpner også for at samme bwreg skal kunne hoste flere events
+bwreg1, men åpner også for at samme bwreg skal kunne hoste flere lan parties
 samtidig. 
 
 3.2 Site administrasjon
@@ -217,6 +214,8 @@ bankkontonummer, kontakt-personer, og lignende.
 3.5 Crew administrasjon
 =======================
 Dette går ut på å kunne tildele folk crew-status og å fjerne det igjenn. 
+Dette er i praksis bare å ha rettigheter til blan ressursen, eller blanCrew.
+Eventuelt de forskjellige crew-gruppene.
 
 4. Dynamisk innhold
 ===================
@@ -229,7 +228,8 @@ På det som tradisjonelt er statiske sider, har vi ett tillegg til dette
 språket for å kunne plassere andre dynamiske objekter, f.eks en nyhetsmodul
 eller en poll. 
 
-Fokus er brukervennlighet.
+Fokus er brukervennlighet både for leseren, og for vedkommende som skal fylle
+inn innholdet.
 
 4.1 Nyheter
 ===========
@@ -253,9 +253,10 @@ Tanken er at det skal være så idiotsikkert som mulig.
 
 4.2.1 Enkeltbrukere
 ===================
-Hver enkelt bruker blir presentert med en "din side"-aktig side etter
-han/hun har logget inn. Denne viser all relevant informasjon om brukeren,
-samt meldinger til brukeren.
+Vi operer ikke med en "du har logget inn" side i BWReg2, i stedet vil det
+være en informasjonsboks med viktig informasjon om brukeren, og ekstra
+viktig informasjon kan presses enda tydligere fram. Slik gjør vi innlogging mer
+flytende.
 
 Mens man er logget inn får man prioriterte meldinger på samtlige sider
 man er på, intill man klikker dem bort. 
@@ -268,11 +269,9 @@ en rekke menyer for de forskjellige systemene.
 
 4.2.2 Grupper
 =============
-Gruppesystemet skal la folk kunne plassreservere seg sammen. Det skal
-også være mulig å la en og samme person bestille billetter for grupper
-på opp til X antall deltakere, der X varierer fra event til event.
-
-Klansystemet er relatert til grupper, men ikke avhengi av dem.
+Gruppesystemet er generisk, i den betyding at bruksområdet til grupper ikke
+er avgrenset. Dette gir et felles grensesnitt til grupper uavhengi av om dette
+dreier seg om grupper for plassreservering, crew eller CS-klaner.
 
 4.3 Bilettsystem
 ================
@@ -282,10 +281,11 @@ det skal være lett for event-admin å overstyre denne automatikken.
 
 4.3.1 Registrering
 ==================
-Foregår ved enkel klikking ette rman har logget inn. Avhengi av hvilket
-event/genre man bruker for å legge inn, velges et default event, men det 
-skal være lett å velge ett annet event. Og det skal dobbeltsjekkes
-at brukeren vet hva han eller hun velger.
+Foregår ved enkel klikking etter man har logget inn. Avhengi av hvilket
+event/genre man bruker for å legge inn, velges et default genre. Da et
+genre kun kan ha et event, er dette relativt lett. Det skal likevell være
+lett å melde seg på andre genre's eventer, og denne påmeldingen må være 
+idiotsikker.
 
 4.3.2 Kontrollering
 ===================
@@ -314,10 +314,8 @@ tillatt, og om det kreves at alle har betalt.
 I første omgang skal dette systemet kun ha støtte for å registrere klaner
 og å lage compoer som deltakere kan melde seg på. 
 
-En Klan kan bruke en gruppe som mal, men er ikke på noen måte bundet opp
-mot denne gruppen. Det er kun under opprettelsen av klanen at det er en
-forbindelse mellom grupper og klaner, og dette er heller ikke absolutt
-på noen måte.
+Siden klaner benytter grupper, kan man enkelt definere at en gruppe er 
+en klan. 
 
 Kontroll av klan-deltakere foregår mye på samme måte som gruppe-systemet.
 
@@ -328,7 +326,9 @@ automatisk bracket-system. Systemet skal lages med dette i bakhodet.
 ==============
 Polls bindes opp mot eventer. En poll-klasse kan f.eks være "vision",
 og de kan ha en poll for hver natt, der vision-crew kan styre den
-enkelte pollen. Event-admin lager nye klasser. 
+enkelte pollen. Event-admin lager nye klasser. Kan om ønskelig bindes opp
+mot content-delen. Administrering av dette bør fungere på samme måte som
+nyheter.
 
 
 4.6 Kommunikasjon
@@ -337,12 +337,18 @@ Kommunikasjon skal gå over meldinger OG mail. Avhengi av prioriteten
 brukeren velger. All mail sendt til brukeren skal også lagres som en 
 melding.
 
-Det skal kunne sendes meldinger til grupper og klaner, systemet skal 
-hele tiden være basert på at en melding er personlig, så om man sender
-en melding til en cs5on5 klan, sendes 5 individuelle meldinger, men
-dette gjøres automatisk så game crew trykker send bare en gang.
+Det skal kunne sendes meldinger til grupper og klaner.
 
-Unntaket for dette er meldinger til crew, dette vil være ticket-basert.
+Det er tre typer meldinger; gruppemeldinger, individuelle gruppemeldinger
+og personlige meldinger. I bakkant vil individuelle gruppemeldinger 
+være en rekke personlige meldinger til alle gruppemeldingene, og databasen
+vil ikke klare å skille mellom individuelle gruppemeldinger og personlige
+meldinger.
+
+Dette gir game crew f.eks mulighet til å sende en påmindelse til samtlige 
+deltakere i en gruppe om når ting begynner, eller en bruker kan sende
+en felles-melding til alle i crew. Forskjellen er at det holder at en behandler
+meldingen til crew, mens alle må lese meldingen om når en compo starter.
 
 4.6.1 Personlige meldinger
 ==========================
@@ -387,7 +393,9 @@ presenteres til brukeren.
 En katalog vil inneholde fellesfiler for alle modulene, f.eks informasjon
 om databasen, konfigurasjonsinformasjon og lignende. 
 
-(mer kommer)
+Koden vil bli delt inn i logiske filer, for eksempel vil "user.php" ta seg av
+alt som håndterer brukere direkte, "data.php" vil håndtere content og nyheter,
+osv.
 
 5.3 Backup-system
 =================
@@ -401,29 +409,92 @@ Det vil også være mulig for en site administrator å kjøre en backup on demand,
 men denne vil lagres lokalt på web-serveren intill den nattlige backupen 
 overfører denne backupen.
 
-6. Statisk innhold
-==================
-Statisk innhold er egentlig ikke statisk, men tanken er at dette f.eks kan
-være foreldreskrivet.
+6. Innhold
+==========
+Innholdet på sidene vil være delt opp i to kategorier: Statisk og dynamisk
+innhold. Alt innhold skal lagres i databasen. 
 
-Det skal være lett å opprette og fjerne slike sider, og det skal være en form
-for historie på hva som endres. Vanlige brukere skal ikke kunne editere slike
-sider.
+Statisk innhold er sider som typisk er rimelig permanente, f.eks informasjon
+om nettverket, foreldreskrivet, ofte stilte spørsmål, og lignende. Dynamisk
+innhold kan være nyheter, kjøreplanen, compo-annonsering, plassreservering,
+osv. Ting som forandrer seg hyppig og til dels automatisk. 
 
-6.1 Rettigheter
-===============
-Genre-admin skal kunne definere rettigheter på slike sider, slik at f.eks
-game-crew skal kunne endre game-sidene.
+Prioriteten for alt innhold er at det skal være lett å navigere, lett å 
+publisere, og generelt oversiktlig for alle involvert.
 
-6.2 Modifisering av statisk innhold
-===================================
-Bruker språket vi nevnte tidligere, skal ikke være nødvendig å kunne HTML.
+6.1 Statisk innhold
+===================
+Som i BWReg1 så vil brukere med tilstrekkelig rettigheter kunne modifisere
+innhold. Det vil være enkelt å endre menyen, lage nye sider både for internt
+bruk av crew og bruk av deltakere, og ting vil være generelt koselig.
 
-6.3 CSS spesifikasjon
-=====================
+Det vil ikke være mulig å slette innhold, det vil derimot være mulig å tømme
+en side og sette rettighetene på en måte som vil gi brukeren inntrykk av at 
+siden eksisterer. På denne måten kan vi opprettholde versjonshistorie.
+
+6.2 Dynamisk innhold
+====================
+Målet er at dynamisk innhold skal presenteres på en naturlig måte. Det skal
+ikke være så pågående at det blir forvirrende. Med andre ord ønsker vi med
+BWReg2 at det vi kaller dynamisk innhold ikke ser ut som maskin-generert innhold
+i det heletatt. Det er mensker i alderen 14-16 som bruker systemet mest, og
+derfor må det dynamiske innholdet tilpassess denne aldersgruppen. 
+
+Dette betyr derimot ikke at dynamisk innhold vil være "barnslig". Det betyr bare
+at brukervennlighet og naturlig presentasjon vil være svært høyt prioritert.
+
+Det skal også være lett å benytte det dynamiske innholdet for f.eks crew. Er
+detikke naturlig, blir det ikke brukt, som BWReg1 sitt "todo"-system er et
+bevis på. 
+
+Samtidig er det også svært viktig med sikkerhetsnett. Brukeren må vite at 
+uansett hva han eller hun gjør, så vil ikke systemet blindt akseptere valg
+brukeren sansynligvis ikke ønsket eller viste hva var. Dette betyr f.eks 
+bekreftelser av avmelding, kontroll av dato-felt i todo'er, kontroll på at
+ACL'er ikke blir tomme og dermed ubrukelige, og lignende. Essensen av dette
+er at man skal kunne trykke på hva som helst uten å gjøre permanent skade, gitt
+at man bare trykker en gang. 
+
+6.3 Utseende
+============
+Utseende skal være avslappende og bidra til å unngå forvirring. Designet skal
+ikke være permanent; det skal være mulig å radikalt endre utseende uten å 
+måtte modifsere PHP koden på noen måte. Helst utelukkende via web. 
+
+Stilsettet (CSS) skal prioritere funksjonalitet, fleksibilitet og utseende. 
+I den rekkefølgen. Dette betyr at en stygg informasjonsboks som skriker kan 
+være nødvendig for å fange brukerens oppmerksomhet. Det betyr også at absolutte
+størrelser og posisjoner bør ungås. Dette kan gjøres ved å definere avstandend
+fra høyre side, istedet for avstandend fra venstre når man ønsker å
+plassere et element til høyre. Bredden på menyer og informasjonsbokser kan være
+definert. Fontstørrelser SKAL være relative. Man skal med andre ord ikke 
+spesifisere font størrelse 10 for å få liten tekst, men "small" istedet. Folk
+har forskjellige skjermer, browsere og fonter, derfor er det ikke mulig å vite
+hvor lite fontstørrelse "10" egentlig er. Dette gjør det også lettere for folk 
+med synsproblemer eller andre spesielle behov.
+
+Tanken bak utseende er at HTML biten skal bygges opp av en liten mengde
+nøye spesifiserte elementer. Hovedenyer, informasjonsbokser, overskrift, 
+innhold, menybokser, nyheter. Disse må kunne nøstes på en fornuftig måte.
+HTML koden vil så langt som mulig benytte standard HTML elementer, og ikke
+spesifisere class= for hvert element, men heller ha en <div> rundt hele
+gruppen. Slik blir HTML koden lettleslig og fleksibel. 
+
+Det vil benyttes en rekke nøstede menyer (såkalte dropdowns) i de mer 
+innviklede delene av siden, og det er viktig at CSS koden tar hensyn til 
+dette. Dette vil bidra til å minske bredden på informasjonen som dyttes
+ut til brukeren, samtidig som informasjonen vil være tilgjengelig uten å måtte
+trykke seg ihjel. Dette vil f.eks brukes for å presentere brukerinformasjon
+bare ved å ha musa over brukerens navn.
+
 Se Documentation/CSS-Spec for detaljer.
 
-Tanken er at siden bygges opp av flere elementer: Meny, meny-element, 
-overskrift, nyhetselement... osv.
+6.4 Rettigheter
+===============
+Rettighetene på innholdet skal være enkelt å spesifisere. Det skal ikke være
+nødvendig å spesfisere hvem som har tilgang til hvilken ressurs, istedet vil
+man kun trenge å spesifisere hvordan ressurs innholdet er. 
 
-Det skal være mulig å bytte CSS lett for genre-admin.
+Man vil f.eks si at forsiden er en "blanInfo" ressurs, og dermed vil alle
+ha leserettigheter, mens en begrenset gruppe har skriverettigheter. Crewmenyen
+derimot kan være "blanCrewInfo" og vil dermed kun være leslig for crew.
