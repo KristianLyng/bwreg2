@@ -256,15 +256,19 @@ class user extends box
 			return $perm;
 		return false;
 	}
-	function list_perms($checker)
+	function list_perms($gid, $checker)
 	{
-		foreach ($this->perms->keys as $param => $value)
+		$array  = array();
+		foreach ($this->perms->list as $value)
 		{
-			$string .= "<option value=\"" . $param . "\"";
-			if ( $param == $checker )
-				$string .= " selected ";
-			$string .= ">" . $value . "</option>\n";
-			
+			if($value->gid == $gid && !isset($array[$value->resource]))
+			{
+				$array[$value->resource] = true;
+				$string .= "<option value=\"" . $value->resourceid . "\"";
+				if ( $value->resourceid == $checker )
+					$string .= " selected ";
+				$string .= ">" . $value->resource . "</option>\n";
+			}
 		}
 		return $string;
 	}
