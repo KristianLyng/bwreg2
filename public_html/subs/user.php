@@ -813,29 +813,30 @@ class myuser extends user
 		$form->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Register")));
 		return $form->get();
 	}
-	function print_logout()
+	function print_logout($box)
 	{
 		global $page;
 		global $me;
 		$url = $page->url();
 		$url .= "?action=Logout";
-		$object = htlink($url, str("Logout"));
+		$object = htlink($url, str("Logg av"));
 		$url = $page->url();
 		$url .= "?page=Userinfo&amp;action=UserGetInfo&amp;user=";
 		$url .= $me->uname;
 		$object2 = htlink($url, str("Brukerinfo"));
-		$box = new box();
 		$box->add($object);
-		$box->addst("| ");
 		$box->add($object2);
-		return $box->get();
+		return ;
 	}
 	function get()
 	{
 		if($this->failed && $this->uid == 0) {
 			return "Login failed" . $this->print_box();
 		} else if ($this->uid > 0) {
-			return parent::get() . "<br />" . $this->print_logout();
+			$box = new menu(h1(parent::get()));
+			$this->print_logout(&$box);
+
+			return $box->get();
 		} else {
 			return $this->print_box();
 		}

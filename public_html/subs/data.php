@@ -68,7 +68,7 @@ class content
 		global $execaction;
 		$this->renderme = true;
 		$this->gid = $event->gid;
-		$this->permission = $event->gname;
+		$this->permission = $event->gname . "Info";
 		$query = "SELECT content,version,title,gid,permission,contentid FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
 		if (!$contentid)
@@ -237,14 +237,13 @@ class content
 	}
 	function &editlink() {
 		global $page;
-		$box = new infoboks();
 		$meny = new menu();
+		$meny->add(str("<hr />"));
 		$meny->add(htlink($page->url() . "?action=EditContent&amp;page=" . $this->title,
 			str("Editer denne siden")));
 		$meny->add(htlink($page->url() . "?action=ContentHistory&amp;page=" . $this->title, 
 			str("Sidehistorie")));
-		$box->add($meny);
-		return $box;
+		return $meny;
 	}
 
 	function editbox()
