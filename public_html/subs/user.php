@@ -61,8 +61,14 @@ class userinfo
 			$plugins->userinfo[$tmp]->userinfo(&$this);
 		}
 	}
-
 	function get()
+	{
+		$box = $this->get_box();
+		return $box->get();
+	
+	}
+
+	function get_box()
 	{
 		$box = new userinfoboks();
 		$box->add(h1(htlink("mailto:" . $this->mail, str($this->firstname . " " . $this->lastname))));
@@ -70,10 +76,11 @@ class userinfo
 		$box->add(htmlbr());
 		$box->add(str("extra: " . $this->extra));
 		$box->add(htmlbr());
-		if($this->born != null && $this->born != 0)
+		$born = $this->born->get();
+		if($born != null && $born != 0 && $born != "0")
 		$box->add(str("born: " . $this->born->get()));
 		$box->add($this->pluginextra);
-		return $box->get();
+		return $box;
 	}
 }
 
@@ -358,17 +365,57 @@ class user extends box
 			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
 }
-
+class groupmember extends userinfo
+{
+	function groupmember($row)
+	{
+		parent::userinfo();
+		$this->firstname = $row['firstname'];
+		$this->lastname = $row['lastname'];
+		$this->phone = $row['phone'];
+		$this->mail = $row['mail'];
+		$this->extra = $row['extra'];
+		$this->adress = $row['adress'];
+		$this->born = new dateStuff($row['birthyear']);
+		$this->level = $row['level'];
+		$this->role = $row['role'];
+	}
+	function get()
+	{
+		$box = $this->get_box();
+		$box->add(htmlbr());
+		$box->add(str("Group role: " . $this->role));
+		$box->add(htmlbr());
+		$box->add(str("Group level: " . $this->level));
+		return $box->get();
+	}
+	
+}
 class group
 {
+	var $getit;
 	function group($name, $id, $gid, $desc)
 	{
+		$this->getit = "name";
 		$this->name = $name;
 		$this->id = $id;
 		$this->gid = $gid;
 		$this->desc = $desc;
 	}
 	// TODO: Range checks.
+	function get_members()
+	{
+		global $db;
+		$this->getit = "members";
+		$query = "SELECT level, role, uname, firstname, lastname, phone, mail, birthyear, adress, extra FROM group_members,groups,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND groups.groupid = '";
+		$query .= $db->escape($this->id) . "' AND gid = '";
+		$query .= $db->escape($this->gid) . "';";
+		$db->query($query,&$this);
+	}
+	function sqlcb($row)
+	{
+		$this->members[] = new groupmember($row);
+	}
 	function create()
 	{
 		global $me;
@@ -400,7 +447,18 @@ class group
 
 	function get()
 	{
-		return $this->name;
+		if($this->getit == "name")
+			return $this->name;
+		else if ($this->getit == "members")
+		{
+			foreach ($this->members as $member)
+			{
+				$drop = new dropdown($member->firstname . " " . $member->lastname);
+				$drop->add($member);
+				$string .= $drop->get();
+			}
+			return $string;
+		}
 	}
 }
 class oldgroup extends group
