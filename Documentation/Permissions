@@ -1,7 +1,14 @@
 We base our permission system on groups.
 
-Permissions
-===========
+1. Permissions
+2. Groups
+3. Group members
+4. Use in PHP
+5. Administration
+6. Special ACLs
+
+1. Permissions
+==============
 gid Genre (not null)
 eid EventID (null means genre at large)
 resource Specific resource (other items link here), null means event at large.
@@ -15,8 +22,8 @@ permission set to Read and group NULL, makeing it world-readable.
 Yet another identical entry could have rwm Permission with group set
 to "AdminCrew" for instance. 
 
-Groups
-======
+2. Groups
+=========
 A group is generic, it will be used for diffrent purposes.
 
 groupid Uniqe group ID
@@ -25,8 +32,8 @@ eid Event (null means the group isn't bound to a specific event).
 group_name Genre/Event-uniqe human readable name of the Group.
 owner Uid of the group admin.
 
-Group members
-=============
+3. Group members
+================
 groupid Link to the group table
 uid Link to the user table
 level Defines the right of the user. How this is used is up to the 
@@ -36,8 +43,8 @@ role Description of the persons role in the group ("Seater", "Camper",
      "GameCrew Chief", "Clown", ....).
 
 
-Use in PHP
-==========
+4. Use in PHP
+=============
 The User class will read in permissions for the user, and store it
 in a sane way. Other parts of the code should only need to do
 $user->permission(id) to get the permission that user has for the
@@ -57,8 +64,8 @@ affect the status of other users (sign them up for compos, reserve
 seats, etc), but they would have the same permissions on shared resources
 like content pages, news, todo lists and similar. 
 
-Administration
-==============
+5. Administration
+=================
 A bwreg admin is a user in a group with access to the BWReg2 resource of gid
 and eid 0. BWReg2 admins can create new genres and assign groups to any 
 resource. This ensures that the BWReg2 admin can make sure a genre has a
@@ -86,3 +93,35 @@ administration of a resource to another group of users.
 
 This goes for any resource at any level, meaning that a user with RW to
 the BWReg2 resource, can not grant others permissions to that resource.
+
+6. Special ACLs
+===============
+
+At the moment, there are a few special ACL's. This is necesarry when the 
+resource isn't defined. Some of these pre-defined ACL's could possibly
+be defined in the genre-information, but at present time, it's not considered
+necesarry.
+
+BWReg2  - gid 0
+   This is the super-user ACL. It gives you global permissions. You probably
+   only want one group with rwm here, but there can probably be situations 
+   where you want a group with read-only on everything for instance too.
+   Keep this ACL small and only have completly trusted users on it.
+
+<gname> - gid N
+   Example: blan or jallalan. This is the genre-equivalent of the BWReg2 group.
+   You probably only want genre admins here. Write permission here also gives
+   the usergroup the ability to modify other groups to a certain extent, so
+   usethis carefully. Giving read-permission here will let the usergroup read
+   information about other users, and is fairly usefull.
+
+<gname>Info - gid N
+   This is the ACL used for non-existant pages, meaning you need write access
+   here to be able to create new pages. It is probably a good idea to use
+   this list for all public pages, and give crew write permission. Or at any
+   rate give crew write/read permission so they can quickly create new pages.
+   If you don't wish to let crew create public pages, you can still add them
+   here, but avoid giving everyone else read access, and instead using an other
+   ACL for public information.
+
+
