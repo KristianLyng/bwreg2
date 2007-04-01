@@ -38,7 +38,6 @@ function me_perm($resource, $perm, $gid = null)
 		return true;
 	return false;
 }
-
 /* Userinfo object. Plugins get noticed when this is created and a get
  * is called. 
  */
@@ -51,6 +50,8 @@ class userinfo
 	var $extra = "";
 	var $adress = "";
 	var $born = null;
+	var $options;
+	var $uname;
 	var $pluginextra; // Plugins add userinfo stuff here.
 	function userinfo()
 	{
@@ -70,15 +71,53 @@ class userinfo
 
 	function get_box()
 	{
+		global $me;
+		global $event;
 		$box = new userinfoboks();
-		$box->add(h1(htlink("mailto:" . $this->mail, str($this->firstname . " " . $this->lastname))));
-		$box->add(str("phone: " . $this->phone));
-		$box->add(htmlbr());
-		$box->add(str("extra: " . $this->extra));
-		$box->add(htmlbr());
-		$born = $this->born->get();
-		if($born != null && $born != 0 && $born != "0")
-		$box->add(str("born: " . $this->born->get()));
+		$seeall = false;
+		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r",$event->gid)))
+			$seeall = true;
+		if (!strstr($this->options,"f") || $seeall)
+			$name = $this->firstname;
+		if (!strstr($this->options,"l") || $seeall)
+			$name .= " " . $this->lastname;
+		if (!isset($name))
+			$name = "(Skjult)";
+		if (!strstr($this->options,"m") || $seeall)
+			$mail = $this->mail;
+		else
+			$mail = false;
+		if ($mail)
+			$box->add(h1(htlink("mailto:" . $mail, str($name))));
+		else
+			$box->add(h1(str($name)));
+		if (!strstr($this->options,"u") || $seeall)
+		{
+			$box->add(str("Brukernavn: " . $this->uname));
+			$box->add(htmlbr());
+		}
+		if (!strstr($this->options,"p") || $seeall)
+		{
+			$box->add(str("Telefonnummer: " . $this->phone));
+			$box->add(htmlbr());
+		}
+		if (!strstr($this->options,"x") || $seeall)
+		{
+			$box->add(str("Ekstra: " . $this->extra));
+			$box->add(htmlbr());
+		}
+		if (!strstr($this->options,"a") || $seeall)
+		{
+			$box->add(str("Adresse: " . $this->adress));
+			$box->add(htmlbr());
+		}
+		if (!strstr($this->options,"b") || $seeall)
+		{
+			$born = $this->born->get();
+			if($born != null && $born != 0 && $born != "0")
+				$box->add(str("Født: " . $this->born->get()));
+		}
+		
 		$box->add($this->pluginextra);
 		return $box;
 	}
@@ -266,7 +305,6 @@ class user extends box
 				return;
 			}
 			$page->content->add(h1("Registreringen lyktes!"));
-			$page->content->add(p("(Egentlig ikke... hysj"));
 			$page->content->add(str("Ditt navn: " . $my->firstname));
 			next_action($action, $this->lastuserstore);
 			
@@ -300,7 +338,7 @@ class user extends box
 		global $db;
 		$myuser = $db->escape($user);
 		$mypass = $db->escapepass($password);
-		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uname = '";
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra,private FROM users WHERE uname = '";
 		$query .= $myuser;
 		$query .= "' AND pass = ";
 		$query .= $mypass;
@@ -323,7 +361,7 @@ class user extends box
 	function c_uname($user)
 	{
 		global $db;
-		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uname = '";
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra,private FROM users WHERE uname = '";
 		$query .= $db->escape($user);
 		$query .= "';";
 		return $db->query($query, &$this);
@@ -331,7 +369,7 @@ class user extends box
 	function c_uid($uid)
 	{
 		global $db;
-		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE uid = '";
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra,private FROM users WHERE uid = '";
 		$query .= $db->escape($uid);
 		$query .= "';";
 		return $db->query($query, $this);
@@ -347,6 +385,8 @@ class user extends box
 		$this->userinfo->adress = $row[6];
 		$this->userinfo->phone = $row[7];
 		$this->userinfo->extra = $row[8];
+		$this->userinfo->options = $row['private'];
+		$this->userinfo->uname = $row['uname'];	
 		
 		for($tmp = 0; $tmp < $this->nItems; $tmp++)
 		{
@@ -376,6 +416,8 @@ class groupmember extends userinfo
 		$this->mail = $row['mail'];
 		$this->extra = $row['extra'];
 		$this->adress = $row['adress'];
+		$this->private = $row['private'];
+		$this->uname = $row['uname'];
 		$this->born = new dateStuff($row['birthyear']);
 		$this->level = $row['level'];
 		$this->role = $row['role'];
@@ -391,6 +433,7 @@ class groupmember extends userinfo
 	}
 	
 }
+
 class group
 {
 	var $getit;
@@ -407,7 +450,7 @@ class group
 	{
 		global $db;
 		$this->getit = "members";
-		$query = "SELECT level, role, uname, firstname, lastname, phone, mail, birthyear, adress, extra FROM group_members,groups,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND groups.groupid = '";
+		$query = "SELECT level, role, uname, firstname, lastname, phone, mail, birthyear, adress, extra,private FROM group_members,groups,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND groups.groupid = '";
 		$query .= $db->escape($this->id) . "' AND gid = '";
 		$query .= $db->escape($this->gid) . "';";
 		$db->query($query,&$this);
@@ -453,7 +496,8 @@ class group
 		{
 			foreach ($this->members as $member)
 			{
-				$drop = new dropdown($member->firstname . " " . $member->lastname);
+				$cap = htlink(uinfolink($member->uname),str($member->uname));
+				$drop = new dropdown($cap->get());
 				$drop->add($member);
 				$string .= $drop->get();
 			}
@@ -467,13 +511,14 @@ class oldgroup extends group
 	{
 		global $db;
 		parent::group("","","","");
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description FROM groups WHERE groupid = '";
+		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,options FROM groups WHERE groupid = '";
 		$query .= $db->escape($id) . "';";
 		$db->query($query, &$this);
 	}
 
 	function sqlcb($row)
 	{
+		$this->options = $row['options'];
 		parent::group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
 	}
 }
@@ -503,9 +548,11 @@ class groupresctrl extends group
 class grouplist
 {
 	var $list;
-	function grouplist($gid)
+	function grouplist($gid = null)
 	{
 		global $db;
+		if ($gid == null)
+			return;
 		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
 		$query .= $db->escape($gid) . "';";
 		$db->query($query,&$this);
@@ -520,12 +567,61 @@ class grouplist
 	}
 }
 
-class grouplistuser extends grouplist
+class grouplistopen extends grouplist
 {
-	function grouplistuser($uname)
+	function grouplistopen($uname,$existing = null,$perm)
 	{
 		global $db;
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND users.uname = '";
+		global $event;
+		$gid = $event->gid;
+		$this->existing = $existing;
+		parent::grouplist();
+		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
+		$query .= $db->escape($gid) . "' AND options LIKE '%$perm%';";
+		$this->uname = $uname;
+		$db->query($query,&$this);
+	}
+	function get()
+	{
+		global $me;
+		global $page;
+		global $event;
+		foreach ($this->list as $group)
+		{
+			$skip = false;
+			foreach ($this->existing->list as $mygroup)
+			{
+				if ($group->id == $mygroup->id)
+					$skip = true;
+			}
+			if ($skip)
+				continue;
+			$string .= $group->name; 
+			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
+			{
+				$url = $page->url() . "?action=JoinGroup&amp;ourgid=";
+				$url .= $group->gid . "&amp;user=";
+				$url .= $this->uname . "&amp;group=";
+				$url .= $group->id;
+				$link = htlink($url,str("Bli med i gruppa"));
+				$string .= "  - " . $link->get();
+			}
+			$string .=  " <br />";
+			
+		}
+		return $string;
+	}
+}
+class grouplistuser extends grouplist
+{
+	function grouplistuser($uname,$mod = false )
+	{
+		global $db;
+		if ($mod)
+			$level = "=";
+		else
+			$level = ">";
+		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND group_members.level $level 0 AND users.uname = '";
 		$query .= $db->escape($uname) . "';";
 		$db->query($query,&$this);
 		$this->uname = $uname;
@@ -671,8 +767,11 @@ class myuser extends user
 	 */
 	function find_resource_rights()
 	{
-		$this->lastgetuserinfo = add_action("UserGetInfo", &$this);
+		$this->lastgetuserinfo =& add_action("UserGetInfo", &$this);
 		$this->lastleavegroup =& add_action("LeaveGroup",&$this);
+		$this->lastjoingroup =& add_action("JoinGroup",&$this);
+		$this->lasteditinfo =& add_action("EditUserInfo",&$this);
+		$this->lastcommitinfo =& add_action("CommitUserInfo",&$this);
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
@@ -716,6 +815,13 @@ class myuser extends user
 		$db->insert($query);
 		$page->content->add(p("Adding $groupid to $resource with $permissions (gid: $gid eid: $eid) \n"));
 	}
+	
+	/* This will list the information for a user. It will evaluate the 
+	 * "private" field of a user record to decide what information will
+	 * displayed. It also lists groups the user is in, and possibly a link
+	 * to leave the group. If $me us a BWReg2 or genre superuser, he/she
+	 * will have the same control as if he/she was actually logged in as $user.
+	 */
 	function handle_user_info($user = null)
 	{
 		global $page;
@@ -723,33 +829,55 @@ class myuser extends user
 		global $event;
 		if ($user == null)
 			$user = $_REQUEST['user'];
-		if ($user == $this->uname)
-		{
-			$page->content->add($this->userinfo);
-			$list = new grouplistuser($user);
-			if (isset($list->list))
-			{
-				$page->content->add(h2("Grupper du er med i"));
-				$page->content->add($list);
-			}
-		} else if (me_perm(null,"r",$event->gid)) { 
+		if ($user == $this->uname) {
+			$caption = "du";
+			$userinfo = $this->userinfo;
+		} else { 
 			$userob = new user($user);
 			if ($userob->uid == 0)
 			{
 				$page->warn->add(new content("ErrorUserInfoNotFound"));
 				return;
 			}
-			$page->content->add($userob->userinfo);
-			$list = new grouplistuser($user);
-			if (isset($list->list))
-			{
-				$page->content->add(h2("Grupper $user er med i"));
+			$userinfo = $userob->userinfo;
+			$caption = $userinfo->uname;
+		}
+		$seeall = false;
+		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"r",$event->gid)))
+			$seeall = true;
+		$page->content->add($userinfo);
+		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
+			$page->content->add(htlink($page->url() . "?page=Userinfo&amp;action=EditUserInfo&amp;user=$user",p("Endre brukerinformasjonen")));
+		$modlist = new grouplistuser($user,true);
+		$list = new grouplistuser($user,false);
+		if (!strstr($userinfo->options,"g") || $seeall) 
+		{
+			if (isset($list->list)) {
+				$page->content->add(h2("Grupper $caption er med i"));
 				$page->content->add($list);
 			}
-		} else {
-			$page->warn->add(new content("ErrorPermissionDeniedUserInfo"));
 		}
+		if ($this->userinfo == $userinfo || me_perm(null,"w",$event->gid))
+		{
+			if (isset($modlist->list)) {
+				$page->content->add(h2("Modererte grupper $caption har søkt på"));
+				$page->content->add($modlist);
+			}
+			$list2 = new grouplistopen($user,$list,"o");
+			if (isset($list2->list))
+			{
+				$page->content->add(h2("Åpne grupper $caption kan meldes på"));
+				$page->content->add($list2);
+			}
+			$list3 = new grouplistopen($user,$list,"m");
+			if (isset($list3->list))
+			{
+				$page->content->add(h2("Modererte grupper $caption kan meldes på"));
+				$page->content->add($list3);
+			}
+		}	
 	}
+
 	function handle_resource_del()
 	{
 		global $me;
@@ -800,6 +928,54 @@ class myuser extends user
 		$page->content->add(p("Deleted $groupid on $resource (gid: $gid eid: $eid) \n"));
 	}
 
+	function handle_join_group()
+	{
+		$gid = $_REQUEST['ourgid'];
+		$user = $_REQUEST['user'];
+		$groupid = $_REQUEST['group'];
+		global $me;
+		$group = new oldgroup($groupid);
+		if (!isset($group->id))
+		{
+			$page->warn->add(content("ErrorGroupNotFound"));
+			return;
+		}
+		if ($user == $this->uname || me_perm(null,"w",$group->gid))
+		{
+			if (!isset($group->name))
+				return;
+			if ($user != $this->uname)
+			{
+				$userob = new user($user);
+				if (!isset($userob->uid) || $userob->uid == 0)
+					return;
+				$uid = $userob->uid;
+			} else 
+				$uid = $this->uid;
+			global $db;
+			if (strstr($group->options,"o"))
+				$level = 1;
+			else if (strstr($group->options,"m"))
+				$level = 0;
+			else
+				return ;
+			$query = "SELECT count(*) FROM group_members WHERE groupid = '";
+			$query .= $db->escape($groupid) . "' AND uid = '";
+			$query .= $db->escape($uid) . "';";
+			$res = $db->query($query);
+			if ($res && $res > 0)
+			{
+				global $page;
+				$page->warn->add(str("Du er alt med i denne gruppa"));
+				return;
+			}
+			$query = "INSERT INTO group_members VALUES('";
+			$query .= $db->escape($groupid) . "','";
+			$query .= $db->escape($uid) . "','$level','');";
+			$db->insert($query);
+		}
+	}
+	
 	function handle_leave_group()
 	{
 		$gid = $_REQUEST['ourgid'];
@@ -826,6 +1002,64 @@ class myuser extends user
 			$db->insert($query);
 		}
 	}
+	function handle_user_edit_show()
+	{
+		global $me;
+		global $event;
+		global $page;
+		$user = $_REQUEST['user'];
+		if (!isset($user) || $me->uid == 0 || ($me->uname != $user && !me_perm(null,"w")))
+		{
+			$page->warn->add(new content("ErrorPermissionDenied"));
+			return;
+		}
+		if ($user == $this->uname) {
+			$userinfo = $this->userinfo;
+		} else { 
+			$userob = new user($user);
+			if ($userob->uid == 0)
+			{
+				$page->warn->add(new content("ErrorUserInfoNotFound"));
+				return;
+			}
+			$userinfo = $userob->userinfo;
+		}
+		$upuser = new newuser(true);
+		$upuser->userinfo = $userinfo;
+		$page->content->add($upuser->set_form());
+	}
+	function handle_user_edit_commit()
+	{
+		global $me;
+		global $event;
+		global $page;
+		$user = $_REQUEST['user'];
+		if (!isset($user) || $me->uid == 0 || ($me->uname != $user && !me_perm(null,"w")))
+		{
+			$page->warn->add(new content("ErrorPermissionDenied"));
+			return;
+		}
+		if ($user == $this->uname) {
+			$userinfo = $this->userinfo;
+		} else { 
+			$userob = new user($user);
+			if ($userob->uid == 0)
+			{
+				$page->warn->add(new content("ErrorUserInfoNotFound"));
+				return;
+			}
+			$userinfo = $userob->userinfo;
+		}
+		$upuser = new newuser(true);
+		if (!$upuser->get_form())
+		{
+			$page->warn->add(h1("Oppdateringen feilet"));
+			$page->warn->add(p($upuser->error));
+		} else {
+			$page->setrefresh(uinfolink($user));
+		}
+		
+	}
 	function actioncb($action)
 	{
 		if ($action == "ResourceControl")
@@ -846,6 +1080,16 @@ class myuser extends user
 		} else if ($action == "UserGetInfo") {
 			$this->handle_user_info();
 			next_action($action,$this->lastgetuserinfo);
+		} else if ($action == "EditUserInfo") {
+			$this->handle_user_edit_show();
+			next_action($action,$this->lasteditinfo);
+		} else if ($action == "CommitUserInfo") {
+			$this->handle_user_edit_commit();
+			next_action($action,$this->lastcommitinfo);
+		} else if ($action == "JoinGroup") {
+			$this->handle_join_group();
+			$this->handle_user_info();
+			next_action($action,$this->lastjoingroup);
 		} else if ($action == "LeaveGroup") {
 			$this->handle_leave_group();
 			$this->handle_user_info();
@@ -969,41 +1213,50 @@ class newuser
 {
 	var $userinfo;
 	var $form;
-	function newuser()
+	function newuser($update = false)
 	{
+		$this->update = $update;
 	}
 	function set_form()
 	{
 		$form = new form();
+		$u = $this->userinfo;
 		$form->add(str("<table style=\"UserForm\"><tr>"));
 		$form->add(str("<td><label for=\"firstname\" title=\"Fornavn\">Fornavn</label></td><td>"));
-		$form->add(ftext("firstname"));
+		$form->add(ftext("firstname",$u->firstname));
 		$form->add(str("</td></tr><tr><td>\n"));
 		$form->add(str("Etternavn</td><td>"));
-		$form->add(ftext("lastname"));
+		$form->add(ftext("lastname",$u->lastname));
 		$form->add(str("</td></tr><tr><td>\n"));
 		$form->add(str("Telefonnummer</td><td>"));
-		$form->add(ftext("phone"));
+		$form->add(ftext("phone",$u->phone));
 		$form->add(str("</td></tr><tr><td>\n"));
 		$form->add(str("E-post</td><td>"));
-		$form->add(ftext("mail"));
+		$form->add(ftext("mail",$u->mail));
 		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Addresse</td><td>"));
-		$form->add(ftext("address"));
+		$form->add(str("Adresse</td><td>"));
+		$form->add(ftext("address",$u->adress));
 		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Brukernavn</td><td>"));
-		$form->add(ftext("user"));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Passord</td><td>"));
-		$form->add(fpass("pass",8));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Bekreft passord</td><td>"));
-		$form->add(fpass("pass_confirm",9));
-		$form->add(str("</td></tr><tr><td>\n"));
+		if (!$this->update)
+		{
+			$form->add(str("Brukernavn</td><td>"));
+			$form->add(ftext("user"));
+			$form->add(str("</td></tr><tr><td>\n"));
+			$form->add(str("Passord</td><td>"));
+			$form->add(fpass("pass",8));
+			$form->add(str("</td></tr><tr><td>\n"));
+			$form->add(str("Bekreft passord</td><td>"));
+			$form->add(fpass("pass_confirm",9));
+			$form->add(str("</td></tr><tr><td>\n"));
+		} else
+			$form->add(fhidden($u->uname,"user"));
 		$form->add(str("Tilleggsinformasjon</td><td>"));
-		$form->add(ftext("extra"));
+		$form->add(ftext("extra",$u->extra));
 		$form->add(str("</td></tr><tr><td colspan=\"2\">\n"));
-		$form->add(fhidden("NewUserStore"));
+		if ($this->update)
+			$form->add(fhidden("CommitUserInfo"));
+		else
+			$form->add(fhidden("NewUserStore"));
 		$form->add(fsubmit("Lagre"));
 		$form->add(str("</td></tr></table>"));
 		return $form;
@@ -1020,15 +1273,18 @@ class newuser
 		$extra = $_REQUEST['extra'];
 		$user = $_REQUEST['user'];
 		global $db;
-		if ($pass != $confirm)
+		if (!$this->update)
 		{
-			$this->error = "Passordene du oppga var ikke like";
-			return false;
-		}
-		if (strlen($pass) < 4 || strlen($pass) > 9)
-		{
-			$this->error = "Passordet må være minst 4 tegn og mindre enn 10";
-			return false;
+			if ($pass != $confirm)
+			{
+				$this->error = "Passordene du oppga var ikke like";
+				return false;
+			}
+			if (strlen($pass) < 4 || strlen($pass) > 9)
+			{
+				$this->error = "Passordet må være minst 4 tegn og mindre enn 10";
+				return false;
+			}
 		}
 		if (strlen($firstname) < 2 || strlen($lastname) < 2 || strlen($firstname) > 40 || strlen($lastname) > 40)
 		{
@@ -1055,17 +1311,26 @@ class newuser
 			$this->error = "Du oppga for mye tilleggsinformasjon";
 			return false;
 		}
-		if (strlen($user) < 2 || strlen($user) > 10)
+		if (!$this->update)
 		{
-			$this->error = "Brukernavn må være minst 2 og maks 10 tegn";
-			return false;
+			if (strlen($user) < 2 || strlen($user) > 10)
+			{
+				$this->error = "Brukernavn må være minst 2 og maks 10 tegn";
+				return false;
+			}
 		}
 		$query = "SELECT uid FROM users WHERE uname = '";
 		$query .= $db->escape($user);
 		$query .= "';";
-		if ($db->query($query))
+		$res = $db->query($query);
+		if ($res && !$this->update)
 		{
 			$this->error = "Brukernavnet du oppga eksisterer allerede";
+			return false;
+		}
+		if (!$res && $this->update)
+		{
+			$this->error = "Brukernavnet du oppga eksisterer ikke";
 			return false;
 		}
 		$this->firstname = $firstname;
@@ -1075,20 +1340,39 @@ class newuser
 		$this->address = $address;
 		$this->pass = $pass;
 		$this->extra = $extra;
-		$query = "INSERT INTO users (uname,firstname,lastname,mail,adress,phone,extra,pass)";
-		$query .= " VALUES('";
-		$query .= $db->escape($user) . "','";
-		$query .= $db->escape($firstname) . "','";
-		$query .= $db->escape($lastname) . "','";
-		$query .= $db->escape($mail) . "','";
-		$query .= $db->escape($address) . "','";
-		$query .= $db->escape($phone) . "','";
-		$query .= $db->escape($extra) . "',";
-		$query .= $db->escapepass($pass) . ");";
-		if (!$db->insert($query))
+		if (!$this->update) 
 		{
-			$this->error = "En ukjent feil oppstod når brukeren din ble opprettet. Dette skal ikke skje...";
-			return false;
+			$query = "INSERT INTO users (uname,firstname,lastname,mail,adress,phone,extra,pass)";
+			$query .= " VALUES('";
+			$query .= $db->escape($user) . "','";
+			$query .= $db->escape($firstname) . "','";
+			$query .= $db->escape($lastname) . "','";
+			$query .= $db->escape($mail) . "','";
+			$query .= $db->escape($address) . "','";
+			$query .= $db->escape($phone) . "','";
+			$query .= $db->escape($extra) . "',";
+			$query .= $db->escapepass($pass) . ");";
+			if (!$db->insert($query))
+			{
+				$this->error = "En ukjent feil oppstod når brukeren din ble opprettet. Dette skal ikke skje...";
+				return false;
+			}
+		} else {
+			//(uname,firstname,lastname,mail,adress,phone,extra,pass)";
+			$query = "UPDATE users SET firstname = '"; 
+			$query .= $db->escape($firstname) . "', lastname = '";
+			$query .= $db->escape($lastname) . "', mail = '";
+			$query .= $db->escape($mail) . "', adress = '";
+			$query .= $db->escape($address) . "', phone = '";
+			$query .= $db->escape($phone) . "', extra = '";
+			$query .= $db->escape($extra) . "' WHERE uname = '";
+			$query .= $db->escape($user) . "' AND uid = '$res';";
+			print $query;
+			if (!$db->insert($query))
+			{
+				$this->error = "En ukjent feil oppstod når brukeren din ble opprettet. Dette skal ikke skje...";
+				return false;
+			}
 		}
 		return true;
 	}

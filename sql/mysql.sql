@@ -61,6 +61,7 @@ CREATE TABLE `groups` (
   `group_name` varchar(20) default NULL,
   `group_description` text,
   `owner` int(11) NOT NULL default '0',
+  `options` varchar(50) default NULL,
   PRIMARY KEY  (`groupid`)
 ) TYPE=MyISAM;
 
@@ -112,6 +113,7 @@ CREATE TABLE `users` (
   `phone` varchar(12) NOT NULL default '',
   `extra` varchar(50) default NULL,
   `pass` varchar(20) default NULL,
+  `private` varchar(20) default NULL,
   PRIMARY KEY  (`uid`)
 ) TYPE=MyISAM;
 

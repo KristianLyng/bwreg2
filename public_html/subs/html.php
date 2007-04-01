@@ -39,6 +39,13 @@
  * caring about anything except the object that's added in that part of the
  * code. This lets us deal with hiding messages, not the actual box.
  */
+
+function uinfolink($uname)
+{
+	global $page;
+	$url = $page->url() . "?page=Userinfo&amp;action=UserGetInfo&amp;user=" . $uname;
+	return $url;
+}
 class page extends box
 {
 	var $top1;

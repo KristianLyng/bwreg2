@@ -1,0 +1,33 @@
+Users in BWreg2
+
+
+1. Privacy
+2. Scope
+
+
+1. Privacy
+==========
+A user should be able to define exactly what he or she wants displayed about him or herself.
+
+This is stored in the "private" field of the user table.
+
+NULL means everything is displayed.
+The following lists characters in the "private" coloumn and what they hide:
+
+u - Username
+f - First name
+l - Last name
+m - Mail address
+b - Birth year
+a - Address
+p - Phone
+x - Extra
+g - Groups
+
+BWReg2 admins and genre admins can READ this information regardless. This 
+require "r" permission on BWReg2 or a <gname> list. 
+
+2. Scope
+========
+User scope is beyond all genres. They are in essence the largest scope.
+
