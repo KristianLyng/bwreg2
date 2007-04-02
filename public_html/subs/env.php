@@ -110,7 +110,7 @@ function next_action($action, &$object)
 	if(!isset($maincontent->content))
 	{
 		$page->warn->add(new content("ErrorPageNotFound"));
-		if(strstr($me->permission($maincontent->permission),"w"))
+		if(me_perm($maincontent->permission,"w",$event->gid))
 			$page->warn->add(new content("ErrorPageNotFoundAdmin"));
 	} 
 	$page->content->add($maincontent);

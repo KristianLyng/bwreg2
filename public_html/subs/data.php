@@ -104,7 +104,7 @@ class content
 			$query .= " AND version = '" . $db->escape("$version") . "'";
 		$query .= " ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
-		if (!strstr($me->permission($this->permission),"r"))
+		if (!me_perm($this->permission,"r",$event->gid))
 		{
 			$this->content = null;
 		}
@@ -115,7 +115,7 @@ class content
 		$this->lastgetversion =& add_action("ContentGetVersion", $this);
 		if($this->main)
 		{
-			if(strstr($me->permission($this->permission),"w"))
+			if (me_perm($this->permission,"w",$event->gid))
 			{
 				$page->ctrl2->add($this->editlink());
 			}
@@ -143,7 +143,7 @@ class content
 			{
 				return "Error!";
 			}
-			if (!strstr($me->permission($this->permission), "w"))
+			if (!me_perm($this->permission,"w",$event->gid))
 				return "Error perm";
 
 			$myversion = $db->escape($version);
@@ -170,7 +170,7 @@ class content
 			next_action($action,$this->lastsave);
 		} else if ($action == "ContentDiff") {
 			global $maincontent;
-			if ($this->main && $this->title == $maincontent->title && str($me->permission($this->permission),"w"))
+			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid))
 			{
 				$oldcontent = new content($this->title, $_REQUEST['version']);
 				$new = split("\n", $this->content);
@@ -185,12 +185,12 @@ class content
 			}
 			next_action($action,$this->lastdiff);
 		} else if ($action == "ContentHistory") {
-			if ($this->title == $maincontent->title && str($me->permission($this->permission),"w") && $me->permission($this->permission) != "" && $this->main)
+			if ($this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid) && $this->main)
 				$this->content = $this->gethistory();
 			next_action($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
 			global $maincontent;
-			if ($this->main && $this->title == $maincontent->title && str($me->permission($this->permission),"w"))
+			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid))
 			{
 				$newcontent = new content($this->title, $_REQUEST['version']);
 				if (is_object($newcontent)) 
@@ -251,7 +251,7 @@ class content
 		global $page;
 		global $me;
 		global $gid;
-		if (!strstr($me->permission($this->permission),"w"))
+		if (!me_perm($this->permission,"w",$event->gid))
 			return ;
 		$box = new form();
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
