@@ -748,7 +748,7 @@ class myuser extends user
 		}
 		if($_SESSION['uname'] && $_SESSION['pass'] ) 
 			$this->login($_SESSION['uname'],$_SESSION['pass']);
-		 else if ($_POST['uname'] && $_POST['pass']) {
+		 else if ($_POST['action'] == 'Login' && $_POST['uname'] && $_POST['pass']) {
 			$_SESSION['uname'] = $_POST['uname'];
 			$_SESSION['pass'] = $_POST['pass'];
 			$this->login($_POST['uname'],$_POST['pass']);
@@ -772,6 +772,7 @@ class myuser extends user
 		$this->lastjoingroup =& add_action("JoinGroup",&$this);
 		$this->lasteditinfo =& add_action("EditUserInfo",&$this);
 		$this->lastcommitinfo =& add_action("CommitUserInfo",&$this);
+		$this->lastcommitpass =& add_action("CommitPassChange",&$this);
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
@@ -869,7 +870,7 @@ class myuser extends user
 				$page->content->add(h2("Åpne grupper $caption kan meldes på"));
 				$page->content->add($list2);
 			}
-			$list3 = new grouplistopen($user,$list,"m");
+			$list3 = new grouplistopen($user,$modlist,"m");
 			if (isset($list3->list))
 			{
 				$page->content->add(h2("Modererte grupper $caption kan meldes på"));
@@ -1027,7 +1028,9 @@ class myuser extends user
 		$upuser = new newuser(true);
 		$upuser->userinfo = $userinfo;
 		$page->content->add($upuser->set_form());
+		$page->content->add($upuser->set_pass());
 	}
+
 	function handle_user_edit_commit()
 	{
 		global $me;
@@ -1060,6 +1063,61 @@ class myuser extends user
 		}
 		
 	}
+	function handle_user_pass_commit()
+	{
+		global $me;
+		global $event;
+		global $page;
+		$user = $_REQUEST['user'];
+		if (!isset($user) || $me->uid == 0 || ($me->uname != $user && !me_perm(null,"w")))
+		{
+			$page->warn->add(new content("ErrorPermissionDenied"));
+			return;
+		}
+		if ($user == $this->uname) {
+			$userinfo = $this->userinfo;
+		} else { 
+			$userob = new user($user);
+			if ($userob->uid == 0)
+			{
+				$page->warn->add(new content("ErrorUserInfoNotFound"));
+				return;
+			}
+			$userinfo = $userob->userinfo;
+		}
+		$upuser = new newuser(true);
+		$oldpass = $_REQUEST['oldpass'];
+		if ($oldpass != $_SESSION['pass'] && $user == $me->uname)
+		{
+			$page->warn->add(h1("Feil passord"));
+			$page->warn->add(p("Det gammle passordet du oppga stemmet ikke."));
+			return ;
+		}
+		$pass = $upuser->get_pass();
+		if (!$pass)
+		{
+			$page->warn->add(h1("Passordet ble ikke oppdatert"));
+			$page->warn->add(p($upuser->error));
+			return;
+		}
+		global $db;
+		$query = "SELECT COUNT(*) FROM users WHERE uname = '";
+		$query .= $db->escape($user) . "';";
+		$res = $db->query($query);
+		if ($res != "1")
+		{
+			$page->warn->add(h1("Passordet ble ikke oppdatert"));
+			$page->warn->add(p("Det oppstod en feil under oppdatering av passordet."));
+			return;
+		}
+		$query = "UPDATE users SET pass = ";
+		$query .= $db->escapepass($pass);
+		$query .= " WHERE uname = '";
+		$query .= $db->escape($user) . "';";
+		$res = $db->insert($query);
+		$page->warn->add(h1("Passordet er oppdatert"));
+		$page->warn->add(p("Du må logge ut og inn igjenn..."));
+	}
 	function actioncb($action)
 	{
 		if ($action == "ResourceControl")
@@ -1086,6 +1144,9 @@ class myuser extends user
 		} else if ($action == "CommitUserInfo") {
 			$this->handle_user_edit_commit();
 			next_action($action,$this->lastcommitinfo);
+		} else if ($action == "CommitPassChange") {
+			$this->handle_user_pass_commit();
+			next_action($action,$this->lastcommitpass);
 		} else if ($action == "JoinGroup") {
 			$this->handle_join_group();
 			$this->handle_user_info();
@@ -1216,6 +1277,50 @@ class newuser
 	function newuser($update = false)
 	{
 		$this->update = $update;
+		if (!$update)
+			$this->userinfo->options = "pmagb";
+	}
+	function set_private_form()
+	{
+		$box = new box();
+		$o = $this->userinfo->options;
+		$val = strstr($o,"u");
+		$box->add(fcheck("private","u",$val));
+		$box->addst("Brukernavn");
+		$box->add(htmlbr());
+		$val = strstr($o,"f");
+		$box->add(fcheck("private","f",$val));
+		$box->addst("Fornavn");
+		$box->add(htmlbr());
+		$val = strstr($o,"l");
+		$box->add(fcheck("private","l",$val));
+		$box->addst("Etternavn");
+		$box->add(htmlbr());
+		$val = strstr($o,"m");
+		$box->add(fcheck("private","m",$val));
+		$box->addst("E-postadresse");
+		$box->add(htmlbr());
+		$val = strstr($o,"b");
+		$box->add(fcheck("private","b",$val));
+		$box->addst("Fødselsår");
+		$box->add(htmlbr());
+		$val = strstr($o,"a");
+		$box->add(fcheck("private","a",$val));
+		$box->addst("Adresse");
+		$box->add(htmlbr());
+		$val = strstr($o,"p");
+		$box->add(fcheck("private","p",$val));
+		$box->addst("Telefonnummer");
+		$box->add(htmlbr());
+		$val = strstr($o,"x");
+		$box->add(fcheck("private","x",$val));
+		$box->addst("Ekstrainformasjon");
+		$box->add(htmlbr());
+		$val = strstr($o,"g");
+		$box->add(fcheck("private","g",$val));
+		$box->addst("Gruppemedlemskap");
+		$box->add(htmlbr());
+		return $box;
 	}
 	function set_form()
 	{
@@ -1242,16 +1347,22 @@ class newuser
 			$form->add(str("Brukernavn</td><td>"));
 			$form->add(ftext("user"));
 			$form->add(str("</td></tr><tr><td>\n"));
-			$form->add(str("Passord</td><td>"));
-			$form->add(fpass("pass",8));
-			$form->add(str("</td></tr><tr><td>\n"));
-			$form->add(str("Bekreft passord</td><td>"));
-			$form->add(fpass("pass_confirm",9));
-			$form->add(str("</td></tr><tr><td>\n"));
+			$form->add($this->set_pass(true));
 		} else
 			$form->add(fhidden($u->uname,"user"));
 		$form->add(str("Tilleggsinformasjon</td><td>"));
 		$form->add(ftext("extra",$u->extra));
+		$form->add(str("</td></tr><tr><td>\n"));
+		$form->add(str("Fødselsår</td><td>"));
+		if (!isset($u->born))
+			$b = "19";
+		else 
+			$b = $u->born->get();
+		$form->add(ftext("born",$b,5));
+		$form->add(str("</td></tr><tr><td>\n"));
+		$form->add(str("Skjul *"));
+		$form->add(str("</td><td>"));
+		$form->add($this->set_private_form());
 		$form->add(str("</td></tr><tr><td colspan=\"2\">\n"));
 		if ($this->update)
 			$form->add(fhidden("CommitUserInfo"));
@@ -1261,6 +1372,55 @@ class newuser
 		$form->add(str("</td></tr></table>"));
 		return $form;
 	}
+
+	function get_pass()
+	{
+		$pass = $_REQUEST['pass'];
+		$confirm = $_REQUEST['pass_confirm'];
+		if ($pass != $confirm)
+		{
+			$this->error = "Passordene du oppga var ikke like";
+			return false;
+		}
+		if (strlen($pass) < 4 || strlen($pass) > 9)
+		{
+			$this->error = "Passordet må være minst 4 tegn og mindre enn 10";
+			return false;
+		}
+		return $pass;
+	}
+
+	function set_pass($inline = false)
+	{
+		if (!$inline)
+		{
+			$form = new form();
+			$form->add(fhidden($this->userinfo->uname,"user"));
+			$form->add(fhidden("CommitPassChange"));
+			$form->add(str("<table style=\"UserForm\"><tr>"));
+			$form->add(str("<td colspan=\"2\">\n"));
+			$form->add(str("Bytt passord</td></tr><tr><td>\n"));
+			$form->add(str("Gammelt passord</td><td>"));
+			$form->add(fpass("oldpass",8));
+			$form->add(str("</td></tr><tr><td>\n"));
+		} else
+			$form = new box();
+		$form->add(str("Passord</td><td>"));
+		$form->add(fpass("pass",8));
+		$form->add(str("</td></tr><tr><td>\n"));
+		$form->add(str("Bekreft passord</td><td>"));
+		$form->add(fpass("pass_confirm",9));
+		$form->add(str("</td></tr><tr>"));
+		if (!$inline)
+		{
+			$form->add(str("<td colspan=\"2\">\n"));
+			$form->add(fsubmit("Endre"));
+			$form->add(str("</td></tr></table>"));
+		} else
+			$form->add(str("<td>\n"));
+		return $form;
+	}
+
 	function get_form()
 	{
 		$firstname = $_REQUEST['firstname'];
@@ -1268,23 +1428,34 @@ class newuser
 		$phone = $_REQUEST['phone'];
 		$mail = $_REQUEST['mail'];
 		$address = $_REQUEST['address'];
-		$pass = $_REQUEST['pass'];
-		$confirm = $_REQUEST['pass_confirm'];
 		$extra = $_REQUEST['extra'];
 		$user = $_REQUEST['user'];
+		foreach ($_REQUEST['private'] as $pr)
+			$private .= $pr;
+		$born = $_REQUEST['born'];	
 		global $db;
 		if (!$this->update)
 		{
-			if ($pass != $confirm)
-			{
-				$this->error = "Passordene du oppga var ikke like";
+			$pass = $this->get_pass();
+			if (!$pass)
 				return false;
-			}
-			if (strlen($pass) < 4 || strlen($pass) > 9)
-			{
-				$this->error = "Passordet må være minst 4 tegn og mindre enn 10";
-				return false;
-			}
+		}
+		if (!eregi("[uflmbapxg]{0,9}",$private))
+		{
+			$this->error = "Du har oppgitt ugyldig informasjon i \"skjult\" feltet. Dette er enten en programmeringsfeil eller så tukkler du...";
+			return false;
+		}
+		if (!eregi("[0-9]{4}",$born) || !is_numeric($born))
+		{
+			$this->error = "Du har oppgitt et ugyldig fødselsår. Fødselsåret må bestå av 4 tall. F.eks 1991.";
+			return false;
+		}
+		list($nborn) = sscanf($born,"%d");
+		$date = getdate();
+		if (($nborn < ($date['year']-100)) || ($nborn > ($date['year'] - 10)))
+		{
+			$this->error = "Du har oppgitt en ugyldig alder. Du må i ditt tiende leveår (og ikke eldre enn 100 år) for å registrere deg her. Kontakt administratorene om dette er et problem.";
+			return false;
 		}
 		if (strlen($firstname) < 2 || strlen($lastname) < 2 || strlen($firstname) > 40 || strlen($lastname) > 40)
 		{
@@ -1340,9 +1511,10 @@ class newuser
 		$this->address = $address;
 		$this->pass = $pass;
 		$this->extra = $extra;
+		$this->options = $private;
 		if (!$this->update) 
 		{
-			$query = "INSERT INTO users (uname,firstname,lastname,mail,adress,phone,extra,pass)";
+			$query = "INSERT INTO users (uname,firstname,lastname,mail,adress,phone,extra,private,birthyear,pass)";
 			$query .= " VALUES('";
 			$query .= $db->escape($user) . "','";
 			$query .= $db->escape($firstname) . "','";
@@ -1350,7 +1522,9 @@ class newuser
 			$query .= $db->escape($mail) . "','";
 			$query .= $db->escape($address) . "','";
 			$query .= $db->escape($phone) . "','";
-			$query .= $db->escape($extra) . "',";
+			$query .= $db->escape($extra) . "','";
+			$query .= $db->escape($private) . "','";
+			$query .= $db->escape($nborn) . "',";
 			$query .= $db->escapepass($pass) . ");";
 			if (!$db->insert($query))
 			{
@@ -1363,11 +1537,12 @@ class newuser
 			$query .= $db->escape($firstname) . "', lastname = '";
 			$query .= $db->escape($lastname) . "', mail = '";
 			$query .= $db->escape($mail) . "', adress = '";
-			$query .= $db->escape($address) . "', phone = '";
+			$query .= $db->escape($address) . "', private = '";
+			$query .= $db->escape($private) . "', birthyear = '";
+			$query .= $db->escape($nborn) . "', phone = '";
 			$query .= $db->escape($phone) . "', extra = '";
 			$query .= $db->escape($extra) . "' WHERE uname = '";
 			$query .= $db->escape($user) . "' AND uid = '$res';";
-			print $query;
 			if (!$db->insert($query))
 			{
 				$this->error = "En ukjent feil oppstod når brukeren din ble opprettet. Dette skal ikke skje...";

@@ -471,6 +471,17 @@ function fpass($name,$length = false)
 		$mylength = "";
 	return new htmlobject("input","type=\"password\" $mylength name=\"$name\"", $obj);
 }
+
+function fcheck($name,$value,$checked = false)
+{
+	$obj = null;
+	if ($checked)
+		$add = "CHECKED";
+	else 
+		$add = "";
+	return new htmlobject("input","type=\"checkbox\" name=\"" . $name . "[]\" value=\"" . $value . "\" $add",$obj);
+}
+
 function fsubmit($value = "Submit", $name = "SubmitButton")
 {
 	$obj = null;
