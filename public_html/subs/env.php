@@ -124,7 +124,10 @@ function next_action($action, &$object)
 	$menucrew = new menuboks($event->title);
 	$menucrew->add(new content($event->gname . "CrewMenu"));
 	$page->ctrl1->add(&$menucrew);
-
+	
+	$act = $maincontent->get_keyword("ACTION");
+	if ($act != false && !isset($session->action))
+			$session->action = $act;
 /* Handle actions */
 	if (isset($execaction[$session->action]))
 		$execaction[$session->action]->actioncb($session->action);

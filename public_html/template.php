@@ -7,5 +7,4 @@ include "subs/env.php";
  * the functionality this page demonstrates will be used internally
  * in other parts of bwreg2 as they are developed.
  */
-
 ?>

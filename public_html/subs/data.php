@@ -180,8 +180,6 @@ class content
 				$renderer = new Text_Diff_Renderer($opt);
 				$this->content = "<pre>" . $renderer->render($diff) . "</pre>";
 				$this->renderme = false;
-
-				
 			}
 			next_action($action,$this->lastdiff);
 		} else if ($action == "ContentHistory") {
@@ -269,6 +267,25 @@ class content
 		$box->add(fhidden($this->title, "title"));
 		$box->add(fsubmit("Save changes"));
 		return $box->get();
+	}
+
+	function get_keyword($keyword)
+	{
+		if (!$this->renderme || strstr($_REQUEST['action'],'Content'))
+			return false;
+		$this->content = preg_replace_callback(
+			'|(.{0,2})\$' . $keyword . ':(.*)\$(.{0,2})|',
+			create_function('$match', '
+				global $maincontent;
+				if ($match[1] == $match[3] && $match[1] == "``")
+					return $match[0];
+				$maincontent->replaceword = $match[2]; 
+				return $match[1] . $match[3];
+			'),
+			$this->content);
+		if (!isset($this->replaceword))
+			return false;
+		return $this->replaceword;
 	}
 	function get()
 	{
