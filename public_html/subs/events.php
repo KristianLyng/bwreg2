@@ -42,7 +42,7 @@ class genrectrl
 	function get()
 	{
 		global $page;
-		$menu = new dropdown("BWReg2 Control");
+		$menu = new dropdown("BWReg2 kontroll");
 		$menu->add(htlink($page->url . "?page=BWReg2GenreAdmin&amp;action=BWReg2ShowGenreAdmin", str("List Genres")));
 		
 		return $menu->get();

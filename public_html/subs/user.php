@@ -780,7 +780,7 @@ class myuser extends user
 		$this->lastresourceadd = add_action("ResourceAddGroup",&$this);
 		$this->lastresourcedel = add_action("ResourceRmGroup",&$this);
 		global $page;
-		$menu = new dropdown("Resource Control");
+		$menu = new dropdown("Rettighetskontroll");
 		foreach ($resources as $item)
 		{
 			$link = $page->url() . "?action=ResourceControl&amp;resource=";
@@ -848,7 +848,7 @@ class myuser extends user
 			$seeall = true;
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
-			$page->content->add(htlink($page->url() . "?page=Userinfo&amp;action=EditUserInfo&amp;user=$user",p("Endre brukerinformasjonen")));
+			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",p("Endre brukerinformasjonen")));
 		$modlist = new grouplistuser($user,true);
 		$list = new grouplistuser($user,false);
 		if (!strstr($userinfo->options,"g") || $seeall) 
@@ -1170,10 +1170,10 @@ class myuser extends user
 		global $page;
 		global $event;
 		$form = new form();
-		$form->add(ftext("uname","uname",8));
+		$form->add(ftext("uname","Brukernavn",9));
 		$form->add(fpass("pass",8));
 		$form->add(fsubmit("Login", "action"));
-		$form->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Register")));
+		$form->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Registrer deg")));
 		return $form->get();
 	}
 	function print_logout($box)
@@ -1182,11 +1182,11 @@ class myuser extends user
 		global $me;
 		$url = $page->url();
 		$url .= "?action=Logout";
-		$object = htlink($url, str("Logg av"));
+		$object = htlink($url, str("Logg ut"));
 		$url = $page->url();
 		$url .= "?page=Userinfo&amp;action=UserGetInfo&amp;user=";
 		$url .= $me->uname;
-		$object2 = htlink($url, str("Brukerinfo"));
+		$object2 = htlink($url, str("Brukerinformasjon"));
 		$box->add($object);
 		$box->add($object2);
 		return ;

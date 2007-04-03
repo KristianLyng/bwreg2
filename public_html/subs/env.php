@@ -74,6 +74,7 @@ function next_action($action, &$object)
 		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
 		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
+		"action" => $_SERVER['PHP_SELF'] . '?action=%s', 
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
