@@ -1,0 +1,44 @@
+Actions in BWReg2
+=================
+
+
+1. What they are
+2. How they can be triggered
+
+
+1. What they are
+================
+An action is when BWReg2 does something dynamic. This can be printing userinfo
+or showing version history of a page. More or less everything in BWReg2 is 
+based upon actions. 
+
+An action is not in any way BOUND to a specific page, even if it has a default
+page in most of the links. There is nothing stopping a user from viewing the 
+user registration form on the front page if he/she manipulates the URL. After
+all, why would this really be a problem? Letting this happen, however, gives
+us flexibility. 
+
+2. How they can be triggered
+============================
+
+Actions are, most of the time, triggered by the user following a link or 
+submitting a form with an action= field. BWReg2 registres action handlers
+whcih are performed right before the page is outputed. 
+
+There is one more way of triggering an action, by defining a default action
+on a content page. This will ONLY trigger if no previous action was defined.
+At this writing, the interface for doing this is still being planned, but
+the idea is to easily enable admins to add dynamic content.
+
+The keyword $ACTION:action$ will trigger this behavior. Other similar 
+keywords will be supported for plugins (think polls, for instance).
+As such, the maincontent class will have support for a get_keyword($keyword)
+function, which will return false if no keyword is found, and the string
+following if it is found, after removing it from the text. In other words,
+the format is:
+
+$KEYWORD:value$
+
+surrounding it with ``'s, like other Text_Wiki markups, will cause it to
+be ignored, and thus displayed.
+
