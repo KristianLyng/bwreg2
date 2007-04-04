@@ -1322,11 +1322,10 @@ class multiuser extends user
 			$query .= "uname like '";
 			$query .= $db->escape($user);
 			$query .= "%'";
+			$set = true;
 		}
 		if (!$set)
-		{
 			return;
-		}
 		$query .= " LIMIT 50;";
 		$db->query($query, &$this);
 	}
@@ -1348,7 +1347,7 @@ class multiuserlist extends multiuser
 	function multiuserlist($any = true, $fname = "", $lname = "", $user = "")
 	{
 		$this->userinfo = new userinfo();
-		parent::multiuser($any,$fname,$lname);
+		parent::multiuser($any,$fname,$lname,$user);
 	}
 
 	function get()
