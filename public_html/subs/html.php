@@ -441,6 +441,85 @@ class form extends htmlobject
 	}
 }
 
+/* Internal for the table class, you shouldn't use this directly. */
+class tableelement 
+{
+	var $content;
+	var $cols;
+	var $class;
+	function tableelement($content, $class, $cols)
+	{
+		$this->cols = $cols;
+		$this->class = $class;
+		$this->content = &$content;
+		if ($cols == false)
+		$this->cols = 1;
+	}
+	function get()
+	{
+		$ctrl = "<td";
+		if ($this->class != false)
+			$ctrl .= " class=\"" . $this->class . "\"";
+		if ($this->cols != 1)
+			$ctrl .= " colspan=\"" . $this->cols . "\"";
+		$ctrl .= ">" . $this->content->get() . "</td>";
+		return $ctrl;
+	}
+}
+
+/* HTML Table class 
+ * Define the amount of columns you want and table style lass, and
+ * this class will handle the HTML. You can either add to it as you do with
+ * any box, or append the colspan or class for the column.
+ * This does not output anything if the table is empty. 
+ */
+class table extends box
+{
+	var $cols;
+	var $class;
+	function table($cols, $class = false)
+	{
+		$this->cols = $cols;
+		$this->class = $class;
+	}
+	function add($object, $cols = false, $class = false)
+	{
+		parent::add(new tableelement($object,$class,$cols));
+	}
+	function get()
+	{
+		$ct = $this->cols;
+		$c = 0;
+		$set = false;
+		$str = "<table";
+		if ($this->class != false)
+			$str .= " class=\"" . $this->class . "\"";
+		$str .= ">\n";
+		foreach ($this->items as $item)
+		{
+			if (!$set)
+			{
+				$set = true;	
+				$str .= "<tr>\n";
+			}
+			if ($c >= $ct)
+			{
+				$str .= "</tr>\n<tr>\n";
+				$c = 0;
+			}
+			if (isset($item->cols))
+				$c += $item->cols;
+			else
+				$c++;
+			$str .= $item->get();
+		}
+		if (!$set)
+			return "";
+		$str .= "</tr></table>\n";
+		return $str;
+	}
+}
+
 function htmlbr()
 {
 	$obj = null;

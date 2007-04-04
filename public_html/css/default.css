@@ -170,6 +170,25 @@ table.grouplist
 	width: 500px;
 }
 
+.grouplist td.actions
+{
+	width: 170px;
+}
+
+.grouplist tr:hover td
+{
+	background: #ccc;
+}
+.grouplist td.header
+{
+	background: #bbb;
+}
+
+.grouplist h1
+{
+	font-size: medium;
+	font-weight: thick;
+}
 .news h1 { 
 	font-size: x-large;
 	color: black;

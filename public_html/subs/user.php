@@ -601,7 +601,8 @@ class grouplistopen extends grouplist
 		global $me;
 		global $page;
 		global $event;
-		$string = "<table class=\"grouplist\"><tr><td colspan=\"2\">" . $this->title . "</td></tr>";
+		$tab = new table(2,"grouplist");
+		$tab->add(h1($this->title),2,"header");
 		$notblank = false;
 		foreach ($this->list as $group)
 		{
@@ -614,7 +615,8 @@ class grouplistopen extends grouplist
 			if ($skip)
 				continue;
 			$notblank = true;
-			$string .= "<tr><td>" . $group->name . "</td><td>"; 
+			$tab->add(str($group->name));
+			$string = "";
 			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
 			{
 				$url = $page->url() . "?action=JoinGroup&amp;ourgid=";
@@ -622,14 +624,13 @@ class grouplistopen extends grouplist
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Bli med i gruppa"));
-				$string .= $link->get();
+				$string = $link->get();
 			}
-			$string .=  " </td></tr>\n";
+			$tab->add(str($string),1,"actions");
 		}
-		$string .= "</table>";
 		if (!$notblank)
 			return "";
-		return $string;
+		return $tab->get();
 	}
 }
 class grouplistuser extends grouplist
@@ -653,10 +654,12 @@ class grouplistuser extends grouplist
 		global $page;
 		global $event;
 		$notblank = false;
-		$string = "<table class=\"grouplist\"><tr><td colspan=\"2\">" . $this->title . "</td></tr>";
+		$tab = new table(2,"grouplist");
+		$tab->add(h1($this->title),2,"header");
 		foreach ($this->list as $group)
 		{
-			$string .= "<tr><td>" . $group->name . "</td><td>"; 
+			$tab->add(str($group->name)); 
+			$string = "";
 			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
 			{
 				$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
@@ -664,15 +667,14 @@ class grouplistuser extends grouplist
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Forlat gruppa"));
-				$string .= $link->get();
+				$string = $link->get();
 			}
+			$tab->add(str($string),1,"actions");
 			$notblank = true;
-			$string .=  " </td></tr>\n";
 		}
-		$string .= "</table>";
 		if (!$notblank)
 			return "";
-		return $string;
+		return $tab->get();
 	}
 }
 class grouplistresadd extends grouplist
@@ -875,7 +877,7 @@ class myuser extends user
 			$seeall = true;
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
-			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",p("Endre brukerinformasjonen")));
+			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",str("Endre brukerinformasjonen")));
 		$tmp = "Modererte grupper $caption har søkt på";
 		$modlist = new grouplistuser($user,true,$tmp);
 		$tmp = "Grupper $caption er med i";
@@ -1257,7 +1259,7 @@ class myuser extends user
 		if($this->failed && $this->uid == 0) {
 			return "Login failed" . $this->print_box();
 		} else if ($this->uid > 0) {
-			$box = new menu(h1(parent::get()));
+			$box = new menu(parent::get());
 			$this->print_logout(&$box);
 
 			return $box->get();
