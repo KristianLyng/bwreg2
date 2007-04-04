@@ -691,14 +691,15 @@ class grouplistresadd extends grouplist
 		if (!isset($this->list))
 			return "";
 		$form = new form();
+		$form->add(str("<div>"));
 		$form->add(fhidden("ResourceAddGroup"));
 		$form->add(fhidden($this->resource, "resource"));
 		$form->add(fhidden($this->gid,"ourgid"));
 		$form->add(fhidden($this->eid,"oureid"));
-		$form->add(str("<select name=\"groupid\">"));
+		$form->add(str("<select name=\"groupid\">\n"));
 		foreach ($this->list as $group)
 		{
-			$string = "<option value=\"" . $group->id;
+			$string = "\t<option value=\"" . $group->id;
 			$string .= "\">" . $group->name . "(";
 			$string .= $group->desc . ")</option>\n";
 			$form->add(str($string));
@@ -710,6 +711,7 @@ class grouplistresadd extends grouplist
 		$form->add(str("<option value=\"rwm\">Read/Write/Modify</option>\n"));
 		$form->add(str("</select>\n"));
 		$form->add(fsubmit("Add"));
+		$form->add(str("</div>"));
 		return $form->get();
 	}
 }
@@ -750,9 +752,7 @@ class resourcectrl
 			$menu->addst($group->get());
 		$box->add($menu);
 		$groupadd = new grouplistresadd($this->perm->gid, $this->perm->eid, $this->resource);
-		$fo = new namedbox("class","form");
-		$fo->add($groupadd);
-		$box->add(p($groupadd->get()));
+		$box->add($groupadd);
 
 		return $box->get();
 	}
@@ -802,6 +802,7 @@ class myuser extends user
 		$this->lasteditinfo =& add_action("EditUserInfo",&$this);
 		$this->lastcommitinfo =& add_action("CommitUserInfo",&$this);
 		$this->lastcommitpass =& add_action("CommitPassChange",&$this);
+		$this->lastresourcectrladdacl =& add_action("ResourceControlAddList",&$this);
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
@@ -809,7 +810,9 @@ class myuser extends user
 		$this->lastresourceadd = add_action("ResourceAddGroup",&$this);
 		$this->lastresourcedel = add_action("ResourceRmGroup",&$this);
 		global $page;
-		$menu = new dropdown("Rettighetskontroll");
+		$s = htlink($page->url() . "?page=ResourceControl&amp;action=ResourceControl",str("Rettighetskontroll"));
+		$t = $s->get();
+		$menu = new dropdown($t);
 		foreach ($resources as $item)
 		{
 			$link = $page->url() . "?action=ResourceControl&amp;resource=";
@@ -1178,13 +1181,83 @@ class myuser extends user
 			$page->content->add($f);
 		}
 	}
+	
+	function handle_resource_control_blank()
+	{
+		global $event;
+		if (!me_perm(null,"m",$event->gid))
+			return;
+		$form = new form();
+		$form->add(fhidden("ResourceControlAddList"));
+		$tab = new table(2,"resourecontrol");
+		$tab->add(str("Lag en ny tilgangskontrolliste"),2,"header");
+		$tab->add(str("Navn"));
+		$tab->add(ftext("aclname"));
+		$tab->add(str("Startgruppe"));
+		$box = new box();
+		$box->add(str("<div><select name=\"groupid\">\n"));
+		$grouplist = new grouplist($event->gid);
+		foreach ($grouplist->list as $group)
+			$box->add(str("<option value=\"" . $group->id . "\">\n\t" . $group->name . "\n</option>\n"));
+		$box->add(str("</select></div>"));
+		$tab->add($box);
+		$tab->add(fsubmit("Legg til ACL"),2);
+		$form->add($tab);
+		global $page;
+		$page->content->add($form);
+	}
+	function handle_resource_control_add_acl()
+	{
+		global $event;
+		global $db;
+		global $page;	
+		if (!me_perm(null,"m",$event->gid))
+			return;
+		$resource = $_REQUEST['aclname'];
+		$groupid = $_REQUEST['groupid'];
+		if (strlen($resource) < 4)
+		{
+			$page->warn->add(str("Listenavn må ha minst 4 tegn."));
+			return ;
+		}
+		if (!is_numeric($groupid))
+		{
+			$page->warn->add(str("Ugyldig gruppeid."));
+			return;
+		}
+		$query = "SELECT max(resource) FROM permissions;";
+		$resid = $db->query($query);
+		
+		$query = "SELECT resource FROM permissions WHERE gid = '";
+		$query .= $db->escape($event->gid) . "' AND resource_name = '";
+		$query .= $db->escape($resource) . "';";
+		global $page;	
+		if ($db->query($query))
+		{
+			$page->warn->add(str("Denne lista eksisterer alt."));
+			return;
+		}
+		$query = "INSERT INTO permissions VALUES('";
+		$query .= $db->escape($event->gid) . "','0',$resid,'";
+		$query .= $db->escape($resource) . "','rwm','";
+		$query .= $db->escape($groupid) . "');";
+		$db->insert($query);
+		$page->content->add(str("La til en ny liste gitt..."));
+		
+	}
 	function actioncb($action)
 	{
 		if ($action == "ResourceControl")
 		{
 			global $page;
-			$page->content->add(new resourcectrl($_REQUEST['resource']));
+			if (isset($_REQUEST['resource']))
+				$page->content->add(new resourcectrl($_REQUEST['resource']));
+			else
+				$this->handle_resource_control_blank();
 			next_action($action,$this->lastresourcectrl);
+		} else if ($action == "ResourceControlAddList") {
+			$this->handle_resource_control_add_acl();
+			next_action($action,$this->lastresourcectrladdacl);
 		} else if ($action == "ResourceAddGroup") {
 			$this->handle_resource_add();
 			global $page;
