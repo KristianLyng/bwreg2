@@ -378,15 +378,15 @@ class user extends box
 	}
 	function sqlcb($row)
 	{
-		$this->uid = $row[0];
-		$this->uname = $row[1];
-		$this->userinfo->firstname = $row[2];
-		$this->userinfo->lastname = $row[3];
-		$this->userinfo->mail = $row[4];
-		$this->userinfo->born = new dateStuff($row[5]);
-		$this->userinfo->adress = $row[6];
-		$this->userinfo->phone = $row[7];
-		$this->userinfo->extra = $row[8];
+		$this->uid = $row['uid'];
+		$this->uname = $row['uname'];
+		$this->userinfo->firstname = $row['firstname'];
+		$this->userinfo->lastname = $row['lastname'];
+		$this->userinfo->mail = $row['mail'];
+		$this->userinfo->born = new dateStuff($row['birthyear']);
+		$this->userinfo->adress = $row['adress'];
+		$this->userinfo->phone = $row['phone'];
+		$this->userinfo->extra = $row['extra'];
 		$this->userinfo->options = $row['private'];
 		$this->userinfo->uname = $row['uname'];	
 		
