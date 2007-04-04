@@ -165,6 +165,11 @@ li {
 	margin: 5px;
 }
 
+table.grouplist
+{
+	width: 500px;
+}
+
 .news h1 { 
 	font-size: x-large;
 	color: black;

@@ -93,7 +93,9 @@ class userinfo
 			$box->add(h1(str($name)));
 		if (!strstr($this->options,"u") || $seeall)
 		{
-			$box->add(str("Brukernavn: " . $this->uname));
+			$link = htlink(uinfolink($this->uname),str($this->uname));
+			$box->add(str("Brukernavn: "));
+			$box->add($link);
 			$box->add(htmlbr());
 		}
 		if (!strstr($this->options,"p") || $seeall)
@@ -397,12 +399,24 @@ class user extends box
 
 	function get()
 	{
-			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
+		return $this->userinfo->firstname . " " . $this->userinfo->lastname;
 	}
 
 	function getname()
 	{
-			return $this->userinfo->firstname . " " . $this->userinfo->lastname;
+		global $me;
+		global $event;
+		$seeall = false;
+		if($me->uid == $this->uid || me_perm(null,"r",$event->gid))
+			$seeall = true;
+		$string = "";
+		if (!strstr($this->userinfo->options,"f") || $seeall)
+			$string = $this->userinfo->firstname . " ";
+		if (!strstr($this->userinfo->options,"l") || $seeall)
+			$string .= $this->userinfo->lastname;
+		if ($string == "") 
+			$string = "(Anonym)";
+		return $string;
 	}
 }
 class groupmember extends userinfo
@@ -569,12 +583,13 @@ class grouplist
 
 class grouplistopen extends grouplist
 {
-	function grouplistopen($uname,$existing = null,$perm)
+	function grouplistopen($uname,$existing = null,$perm,$title)
 	{
 		global $db;
 		global $event;
 		$gid = $event->gid;
 		$this->existing = $existing;
+		$this->title = $title;
 		parent::grouplist();
 		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
 		$query .= $db->escape($gid) . "' AND options LIKE '%$perm%';";
@@ -586,6 +601,8 @@ class grouplistopen extends grouplist
 		global $me;
 		global $page;
 		global $event;
+		$string = "<table class=\"grouplist\"><tr><td colspan=\"2\">" . $this->title . "</td></tr>";
+		$notblank = false;
 		foreach ($this->list as $group)
 		{
 			$skip = false;
@@ -596,7 +613,8 @@ class grouplistopen extends grouplist
 			}
 			if ($skip)
 				continue;
-			$string .= $group->name; 
+			$notblank = true;
+			$string .= "<tr><td>" . $group->name . "</td><td>"; 
 			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
 			{
 				$url = $page->url() . "?action=JoinGroup&amp;ourgid=";
@@ -604,17 +622,19 @@ class grouplistopen extends grouplist
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Bli med i gruppa"));
-				$string .= "  - " . $link->get();
+				$string .= $link->get();
 			}
-			$string .=  " <br />";
-			
+			$string .=  " </td></tr>\n";
 		}
+		$string .= "</table>";
+		if (!$notblank)
+			return "";
 		return $string;
 	}
 }
 class grouplistuser extends grouplist
 {
-	function grouplistuser($uname,$mod = false )
+	function grouplistuser($uname,$mod = false ,$title="")
 	{
 		global $db;
 		if ($mod)
@@ -625,15 +645,18 @@ class grouplistuser extends grouplist
 		$query .= $db->escape($uname) . "';";
 		$db->query($query,&$this);
 		$this->uname = $uname;
+		$this->title = $title;
 	}
 	function get()
 	{
 		global $me;
 		global $page;
 		global $event;
+		$notblank = false;
+		$string = "<table class=\"grouplist\"><tr><td colspan=\"2\">" . $this->title . "</td></tr>";
 		foreach ($this->list as $group)
 		{
-			$string .= $group->name; 
+			$string .= "<tr><td>" . $group->name . "</td><td>"; 
 			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
 			{
 				$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
@@ -641,11 +664,14 @@ class grouplistuser extends grouplist
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Forlat gruppa"));
-				$string .= "  - " . $link->get();
+				$string .= $link->get();
 			}
-			$string .=  " <br />";
-			
+			$notblank = true;
+			$string .=  " </td></tr>\n";
 		}
+		$string .= "</table>";
+		if (!$notblank)
+			return "";
 		return $string;
 	}
 }
@@ -768,6 +794,7 @@ class myuser extends user
 	function find_resource_rights()
 	{
 		$this->lastgetuserinfo =& add_action("UserGetInfo", &$this);
+		$this->lastgetuserinfolist =& add_action("UserGetInfoList", &$this);
 		$this->lastleavegroup =& add_action("LeaveGroup",&$this);
 		$this->lastjoingroup =& add_action("JoinGroup",&$this);
 		$this->lasteditinfo =& add_action("EditUserInfo",&$this);
@@ -849,33 +876,20 @@ class myuser extends user
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
 			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",p("Endre brukerinformasjonen")));
-		$modlist = new grouplistuser($user,true);
-		$list = new grouplistuser($user,false);
+		$tmp = "Modererte grupper $caption har søkt på";
+		$modlist = new grouplistuser($user,true,$tmp);
+		$tmp = "Grupper $caption er med i";
+		$list = new grouplistuser($user,false,$tmp);
 		if (!strstr($userinfo->options,"g") || $seeall) 
-		{
-			if (isset($list->list)) {
-				$page->content->add(h2("Grupper $caption er med i"));
-				$page->content->add($list);
-			}
-		}
+			$page->content->add($list);
+
 		if ($this->userinfo == $userinfo || me_perm(null,"w",$event->gid))
 		{
-			if (isset($modlist->list)) {
-				$page->content->add(h2("Modererte grupper $caption har søkt på"));
-				$page->content->add($modlist);
-			}
-			$list2 = new grouplistopen($user,$list,"o");
-			if (isset($list2->list))
-			{
-				$page->content->add(h2("Åpne grupper $caption kan meldes på"));
-				$page->content->add($list2);
-			}
-			$list3 = new grouplistopen($user,$modlist,"m");
-			if (isset($list3->list))
-			{
-				$page->content->add(h2("Modererte grupper $caption kan meldes på"));
-				$page->content->add($list3);
-			}
+			$page->content->add($modlist);
+			$list2 = new grouplistopen($user,$list,"o","Åpne grupper $caption kan meldes på");
+			$page->content->add($list2);
+			$list3 = new grouplistopen($user,$modlist,"m", "Modererte grupper $caption kan meldes på");
+			$page->content->add($list3);
 		}	
 	}
 
@@ -1118,6 +1132,50 @@ class myuser extends user
 		$page->warn->add(h1("Passordet er oppdatert"));
 		$page->warn->add(p("Du må logge ut og inn igjenn..."));
 	}
+	function handle_user_info_list() 
+	{
+		global $page;
+		$fname = $_REQUEST['fname'];
+		$lname = $_REQUEST['lname'];
+		$user = $_REQUEST['user'];
+		if ($_REQUEST['any'][0] == "true")
+			$any = true;
+		else 
+			$any = false;
+		$b = new form();
+		$b->add(fhidden("UserGetInfoList"));
+		$b->add(fhidden("real","real"));
+		$b->add(str("<table class=\"search\">"));
+		$b->add(str("<tr><td>"));
+		$b->add(str("Hvilken som helst"));
+		$b->add(str("</td><td>"));
+		$b->add(fcheck("any","true",$any));
+		$b->add(str("</td></tr>"));
+		$b->add(str("<tr><td>"));
+		$b->add(str("Fornavn:"));
+		$b->add(str("</td><td>"));
+		$b->add(ftext("fname",$fname));
+		$b->add(str("</td></tr>"));
+		$b->add(str("<tr><td>"));
+		$b->add(str("Etternavn: "));
+		$b->add(str("</td><td>"));
+		$b->add(ftext("lname",$lname));
+		$b->add(str("</td></tr>"));
+		$b->add(str("<tr><td>"));
+		$b->add(str("Brukernavn: "));
+		$b->add(str("</td><td>"));
+		$b->add(ftext("user",$user));
+		$b->add(str("<tr><td colspan=\"2\">"));
+		$b->add(fsubmit("Søk"));
+		$b->add(str("</td></tr>"));
+		$b->add(str("</table>"));
+		$page->content->add($b);
+		if ($_REQUEST['real'] == 'real')
+		{
+			$f = new multiuserlist($any, $fname, $lname, $user);
+			$page->content->add($f);
+		}
+	}
 	function actioncb($action)
 	{
 		if ($action == "ResourceControl")
@@ -1147,6 +1205,9 @@ class myuser extends user
 		} else if ($action == "CommitPassChange") {
 			$this->handle_user_pass_commit();
 			next_action($action,$this->lastcommitpass);
+		} else if($action == "UserGetInfoList") {
+			$this->handle_user_info_list();
+			next_action($action,$this->lastgetuserinfolist);
 		} else if ($action == "JoinGroup") {
 			$this->handle_join_group();
 			$this->handle_user_info();
@@ -1221,18 +1282,52 @@ class oneuser extends user
 class multiuser extends user 
 {
 	var $pre;
-	function multiuser($any,$fname,$lname)
+	function multiuser($any = true,$fname = "",$lname = "", $user = "")
 	{
 		global $db;
+		parent::box();
+		$set = false;
 		$this->userinfo = new userinfo();
-		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra FROM users WHERE firstname like '";
-		$query .= $db->escape($fname);
-		if ($any)
-				$query .= "%' or lastname like '";
-		else
-				$query .= "%' and lastname like '";
-		$query .= $db->escape($lname);
-		$query .= "%';";
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,private,extra FROM users WHERE ";
+		if ($fname != "")
+		{
+			$set = true;
+			$query .= "firstname like '";
+			$query .= $db->escape($fname);
+			$query .= "%' ";
+		}
+		if ($lname != "")
+		{
+			if ($set)
+			{
+				if ($any)
+					$query .= "or ";
+				else
+					$query .= "and ";
+			}
+			$query .= "lastname like '";
+			$query .= $db->escape($lname);
+			$query .= "%' ";
+			$set = true;
+		}
+		if ($user != "")
+		{
+			if ($set)
+			{
+				if ($any)
+					$query .= "or ";
+				else
+					$query .= "and ";
+			}
+			$query .= "uname like '";
+			$query .= $db->escape($user);
+			$query .= "%'";
+		}
+		if (!$set)
+		{
+			return;
+		}
+		$query .= " LIMIT 50;";
 		$db->query($query, &$this);
 	}
 	function sqlcb($row)
@@ -1250,19 +1345,19 @@ class multiuser extends user
 
 class multiuserlist extends multiuser
 {
-	function multiuserlist($any, $fname, $lname)
+	function multiuserlist($any = true, $fname = "", $lname = "", $user = "")
 	{
 		$this->userinfo = new userinfo();
-		$this->multiuser($any,$fname,$lname);
+		parent::multiuser($any,$fname,$lname);
 	}
 
 	function get()
 	{
 		$box = new box();
-		for($tmp = 0; $tmp < $this->nItems; $tmp++) 
+		foreach($this->items as $item)
 		{
-			$dropdown = new dropdown($this->items[$tmp]->getname());
-			$dropdown->add($this->items[$tmp]->userinfo);
+			$dropdown = new dropdown($item->getname());
+			$dropdown->add($item->userinfo);
 			$box->add(&$dropdown);
 			unset($dropdown);
 		}
