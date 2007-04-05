@@ -46,7 +46,7 @@ function uinfolink($uname)
 	$url = $page->url() . "?page=Userinfo&amp;action=UserGetInfo&amp;user=" . $uname;
 	return $url;
 }
-class page extends box
+class page  extends box
 {
 	var $top1;
 	var $htmltitle = "No title";
@@ -69,7 +69,8 @@ class page extends box
 	var $ctrl3;
 	var $ctrl4;
 	var $logo;
-	
+
+	var $lp;
 	function page($title = "no title", $header = "no header")
 	{
 		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
@@ -91,8 +92,16 @@ class page extends box
 		$this->info3 = new info("3");
 		$this->warn = new info("warn");
 		$this->logo = new logo();
+		$this->pf = false;
+		global $page; // YES. PHP is this retarded. Try changing it to $this and see it fail.
+		$this->lp =& add_action("PrintFriendly",&$page);
 	}
-
+	
+	function actioncb($action)
+	{
+		$this->pf = true;
+		next_action($action,$this->lp);
+	}
 	function set_css($css) 
 	{
 		$this->css = $css;
@@ -105,7 +114,8 @@ class page extends box
 
 	function get_header()
 	{
-		return "<h1>" . $this->header . "</h1>\n";
+		if(!$this->pf)
+			return "<h1>" . $this->header . "</h1>\n";
 	}
 
 	function set_header($header)
@@ -142,7 +152,13 @@ class page extends box
 	}
 	function output()
 	{
-		$this->merge();
+		if($this->pf)
+		{
+			$this->set_css("printfriendly.css");
+			$this->add($this->content);
+		}
+		else
+			$this->merge();
 		print($this->get());
 	}
 	function url()
