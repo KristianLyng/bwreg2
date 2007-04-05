@@ -76,6 +76,7 @@ function next_action($action, &$object)
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
 		"action" => $_SERVER['PHP_SELF'] . '?action=%s', 
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
+	$wiki->setFormatConf('Xhtml',array('translate'=>HTML_SPECIALCHARS, 'charset'=>'UTF-8')); 
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
 	$wiki->setRenderConf('xhtml', 'url','target', null);

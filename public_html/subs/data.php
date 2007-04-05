@@ -292,7 +292,7 @@ class content
 		global $wiki;
 		if($this->renderme)
 		{
-			return $wiki->transform(utf8_decode($this->content));
+			return $wiki->transform($this->content);
 		}
 			return $this->content;
 	}
