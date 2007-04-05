@@ -1653,9 +1653,9 @@ class newuser
 		}
 		if (!$this->update)
 		{
-			if (strlen($user) < 2 || strlen($user) > 10)
+			if (strlen($user) < 2 || strlen($user) > 10 || !ctype_alnum($user))
 			{
-				$this->error = "Brukernavn må være minst 2 og maks 10 tegn";
+				$this->error = "Brukernavn må være minst 2 og maks 10 tegn, og kun vanlige bokstaver og tall.";
 				return false;
 			}
 		}
@@ -1671,6 +1671,20 @@ class newuser
 		if (!$res && $this->update)
 		{
 			$this->error = "Brukernavnet du oppga eksisterer ikke";
+			return false;
+		}
+		$query = "SELECT uname FROM users WHERE firstname = '";
+		$query .= $db->escape($firstname) . "' AND lastname = '";
+		$query .= $db->escape($lastname) . "';";
+		$res = $db->query($query);
+		if ($res && $this->update && $res != $user)
+		{
+			$this->error = "Du forsøker å bytte navn, men det finns allerede en bruker ($res) med det navnet.";
+			return false;
+		}
+		if ($res && !$this->update)
+		{
+			$this->error = "Du har allerede en bruker ($res) i systemet. ";
 			return false;
 		}
 		$this->firstname = $firstname;
