@@ -29,7 +29,7 @@ require_once("subs/config.php");
 require_once("subs/db.php");
 require_once("subs/plugins.php");
 require_once("subs/events.php");
-require_once("subs/data.php");
+require_once("subs/content.php");
 require_once("Text/Wiki.php");
 global $page;
 global $session;
