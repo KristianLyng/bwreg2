@@ -8,10 +8,4 @@ include "subs/env.php";
  * in other parts of bwreg2 as they are developed.
  */
 
-include "subs/news.php";
-
-$news = new news();
-
-global $page;
-$page->content->add($news);
 ?>

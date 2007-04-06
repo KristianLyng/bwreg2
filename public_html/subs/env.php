@@ -31,6 +31,7 @@ require_once("subs/plugins.php");
 require_once("subs/events.php");
 require_once("subs/content.php");
 require_once("Text/Wiki.php");
+require_once("subs/news.php");
 global $page;
 global $session;
 global $user;
@@ -70,7 +71,7 @@ function next_action($action, &$object)
 						 $_SERVER['PHP_SELF'] . '?page=');
 	$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
 	$sites = array(
-		"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
+		"news" => $_SERVER['PHP_SELF'] . '?page=News&action=ViewNews&news=%s', 
 		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
 		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
@@ -129,6 +130,12 @@ function next_action($action, &$object)
 	$act = $maincontent->get_keyword("ACTION");
 	if ($act != false && !isset($session->action))
 			$session->action = $act;
+
+/* Set up news handeling */
+	global $news;
+	$news = new news();
+	$page->content->add(&$news);
+
 /* Handle actions */
 	if (isset($execaction[$session->action]))
 		$execaction[$session->action]->actioncb($session->action);
