@@ -17,11 +17,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-/* This file deals with content. 
- * That includes news and general content. 
- * It will be one of the main work horses of bwreg2, and is critically
- * important.
- */
 
 require_once("subs/html.php");
 require_once("Text/Diff.php");

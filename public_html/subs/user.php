@@ -482,7 +482,7 @@ class group
 		$query = "SELECT COUNT(*) FROM groups WHERE gid = ';";
 		$query .= $db->escape($this->gid) . "' AND groupname = '";
 		$query .= $db->escape($this->name) . "';";
-		$result = $db->query($query);
+		list($result) = $db->query($query);
 		if ($result > 0 or $result == NULL or $result == false)
 			return false;
 		$query = "INSERT INTO groups (gid,group_name,group_description,owner) VALUES('";
@@ -494,7 +494,7 @@ class group
 		$query = "SELECT groupid FROM groups WHERE gid = ';";
 		$query .= $db->escape($this->gid) . "' AND groupname = '";
 		$query .= $db->escape($this->name) . "';";
-		$result = $db->query($query);
+		list($result) = $db->query($query);
 		if ($result == false)
 			return false;
 		$query = "INSERT INTO group_members VALUES('$result','";
@@ -921,7 +921,7 @@ class myuser extends user
 		$query .= $db->escape($res->resource) . "' AND permissions.groupid != '";
 		$query .= $db->escape($groupid) . "' AND permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND ";
 		$query .= "permissions.permissions = \"rwm\" AND users.uid = '" . $db->escape($me->uid) . "';";
-		$result = $db->query($query);
+		list($result) = $db->query($query);
 		if (($result == 0 || $result == "0") && !strstr($me->permission("BWReg2"),"rwm"))
 		{
 			$page->content->add(p("Can't delete the last group granting you rwm permissions"));
@@ -932,7 +932,7 @@ class myuser extends user
 		$query .= $db->escape($eid) . "' AND resource = '";
 		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
 		$query .= $db->escape($res->resource) . "';"; 
-		$result = $db->query($query);
+		list($result) = $db->query($query);
 		if ($result < 2) 
 		{
 			$page->content->add(p("Can't delete the last group..."));
@@ -982,7 +982,7 @@ class myuser extends user
 			$query = "SELECT count(*) FROM group_members WHERE groupid = '";
 			$query .= $db->escape($groupid) . "' AND uid = '";
 			$query .= $db->escape($uid) . "';";
-			$res = $db->query($query);
+			list($res) = $db->query($query);
 			if ($res && $res > 0)
 			{
 				global $page;
@@ -1122,7 +1122,7 @@ class myuser extends user
 		global $db;
 		$query = "SELECT COUNT(*) FROM users WHERE uname = '";
 		$query .= $db->escape($user) . "';";
-		$res = $db->query($query);
+		list($res) = $db->query($query);
 		if ($res != "1")
 		{
 			$page->warn->add(h1("Passordet ble ikke oppdatert"));
@@ -1226,7 +1226,7 @@ class myuser extends user
 			return;
 		}
 		$query = "SELECT max(resource) FROM permissions;";
-		$resid = $db->query($query);
+		list($resid) = $db->query($query);
 		
 		$query = "SELECT resource FROM permissions WHERE gid = '";
 		$query .= $db->escape($event->gid) . "' AND resource_name = '";
@@ -1662,7 +1662,7 @@ class newuser
 		$query = "SELECT uid FROM users WHERE uname = '";
 		$query .= $db->escape($user);
 		$query .= "';";
-		$res = $db->query($query);
+		list($res) = $db->query($query);
 		if ($res && !$this->update)
 		{
 			$this->error = "Brukernavnet du oppga eksisterer allerede";
@@ -1676,7 +1676,7 @@ class newuser
 		$query = "SELECT uname FROM users WHERE firstname = '";
 		$query .= $db->escape($firstname) . "' AND lastname = '";
 		$query .= $db->escape($lastname) . "';";
-		$res = $db->query($query);
+		list($res) = $db->query($query);
 		if ($res && $this->update && $res != $user)
 		{
 			$this->error = "Du forsøker å bytte navn, men det finns allerede en bruker ($res) med det navnet.";

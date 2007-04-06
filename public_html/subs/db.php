@@ -23,7 +23,7 @@ class database
 		print "Please contact the administrator if this happens again. \n";
 		if (is_object($me))
 		{
-				if($me->debug == true)
+				if(me_perm(null,"r"))
 					print "SQL query: $query\n";
 		}
 		return false;
@@ -42,7 +42,7 @@ class database
 		{
 			if($cb == null)
 			{
-				$ans = $row[0];
+				$ans = $row;
 				mysql_free_result($result);
 				return $ans;
 			}
