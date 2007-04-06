@@ -322,19 +322,19 @@ class userinfoboks extends namedbox {
 	}
 }
 
-class news extends box {
+class htmlnews extends box {
 	var $header1;
 	var $header2;
-	function news($header1,$header2)
+	function htmlnews($header1,$header2)
 	{
 		if(!is_object($header1))
-			$this->header1 =& str($header1);
+			$this->header1 = str($header1);
 		else
-			$this->header1 =& $header1;
+			$this->header1 = $header1;
 		if(!is_object($header2))
-			$this->header2 =& str($header2);
+			$this->header2 = str($header2);
 		else
-			$this->header2 =& $header2;
+			$this->header2 = $header2;
 	}
 	function get()
 	{	

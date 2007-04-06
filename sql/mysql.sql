@@ -86,6 +86,31 @@ CREATE TABLE `location` (
 ) TYPE=MyISAM;
 
 --
+-- Table structure for table `news`
+--
+
+CREATE TABLE `news` (
+  `eid` int(11) default NULL,
+  `sname` varchar(10) NOT NULL default '',
+  `title` varchar(100) default NULL,
+  `uid` int(11) NOT NULL default '0',
+  `content` text,
+  `date` datetime default NULL
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `news_categories`
+--
+
+CREATE TABLE `news_categories` (
+  `gid` int(11) NOT NULL default '0',
+  `permission` int(11) NOT NULL default '0',
+  `sname` varchar(10) default NULL,
+  `title` varchar(30) default NULL,
+  `description` varchar(100) default NULL
+) TYPE=MyISAM;
+
+--
 -- Table structure for table `permissions`
 --
 

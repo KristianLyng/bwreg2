@@ -53,13 +53,25 @@ class userinfo
 	var $options;
 	var $uname;
 	var $pluginextra; // Plugins add userinfo stuff here.
-	function userinfo()
+	function userinfo($row = null)
 	{
 		global $plugins;
 		$this->pluginextra = new box();
 		for($tmp = 0; $tmp < $plugins->nUserinfo; $tmp++)
 		{
 			$plugins->userinfo[$tmp]->userinfo(&$this);
+		}
+		if ($row != null)
+		{
+			$this->firstname = $row['firstname'];
+			$this->options = $row['private'];
+			$this->lastname = $row['lastname'];
+			$this->phone = $row['phone'];
+			$this->mail = $row['mail'];
+			$this->adress = $row['adress'];
+			$this->born = str($row['birthyear']); //FIXME
+			$this->uname = $row['uname'];
+			$this->extra = $row['extra'];
 		}
 	}
 	function get()
@@ -68,7 +80,21 @@ class userinfo
 		return $box->get();
 	
 	}
-
+	function get_name()
+	{
+		global $me;
+		global $event;
+		$seeall = false;
+		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r",$event->gid)))
+			$seeall = true;
+		if (!strstr($this->options,"f") || $seeall)
+			$name = $this->firstname;
+		if (!strstr($this->options,"l") || $seeall)
+			$name .= " " . $this->lastname;
+		if (!isset($name))
+			$name = "Anonym";
+		return $name;
+	}
 	function get_box()
 	{
 		global $me;
