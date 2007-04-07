@@ -179,13 +179,13 @@ class menu extends box{
 	}
 	function add(&$item)
 	{
-		parent::addst("<li>");
+		parent::addst("\t<li>");
 		parent::add($item);
 		parent::addst("</li>\n");
 	}
 	function addst($item)
 	{
-		parent::addst("<li>");
+		parent::addst("\t<li>");
 		parent::addst($item);
 		parent::addst("</li>\n");
 	}
@@ -201,9 +201,9 @@ class menu extends box{
 				$menu .= $this->title;
 			$menu .= "</h1>\n";
 		}
-		$menu .= "<ul>";
+		$menu .= "<ul>\n";
 		$menu .= parent::getraw();
-		$menu .= "</ul>";
+		$menu .= "</ul>\n";
 		$menu .= "</div>\n";
 		return $menu;
 	}
@@ -400,7 +400,6 @@ class htmlobject {
 		$this->open = $open;
 		$this->ctrl = $ctrl;
 		$this->content =& $content;
-
 	}
 
 	function get()
@@ -466,9 +465,9 @@ class selectbox extends box
 	function get()
 	{
 		$a = $this->name;
-		$str = "<SELECT name=\"$a\">\n";
+		$str = "<select name=\"$a\">\n";
 		$str .= parent::get();
-		$str .= "</SELECT>";
+		$str .= "</select>";
 		return $str;
 	}
 }

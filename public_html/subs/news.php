@@ -257,6 +257,7 @@ class newslist extends news
 	function get()
 	{
 		global $page;
+		global $event;
 		$box = new table(4,"newslist");
 		$box->add(h1("Overskrift"),false,"newstitle");
 		$box->add(h1("Kategori"),false,"newscategory");
@@ -273,24 +274,15 @@ class newslist extends news
 			$f->add($item->user);
 			$box->add($f,false,"newsauthor");
 		}
-		global $event;
-		global $page;
 		$link = false;
-		if (!is_array($this->category))
-		{
+		if (!is_array($this->category)) {
 			if (me_perm($this->category->permission,"w",$event->gid))
-			{
-				$link = htlink($page->url() . "?action=EditNews",str("Skriv en nyhet"));
-			}
-		} else
-		{
-			
+				$link = htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet"));
+		} else {
 			foreach ($this->category as $cat)
 			{
 				if (me_perm($cat->permission,"w",$event->gid))
-				{
-				$link = htlink($page->url() . "?action=EditNews",str("Skriv en nyhet"));
-				}
+					$link = htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet"));
 			}
 		}
 		if ($link == false)
@@ -460,10 +452,6 @@ class newsedit extends news
 	{
 		$form = new form();
 		$form->add(fhidden("EditNewsSave"));
-		$form->add(ftext("title",$this->title,80));
-		$form->add(htmlbr());
-		$form->add(textarea("content", htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
-		$form->add(htmlbr());
 		if (!$this->new)
 		{
 			$form->add(fhidden($this->sname,"sname"));
@@ -478,10 +466,19 @@ class newsedit extends news
 				$b->add(foption($item->sname,$item->heading));
 			}
 			$form->add(str("Kategori:"));
+			$form->add(htmlbr());
 			$form->add($b);
 			$form->add(htmlbr());
 			$form->add(fhidden("true","brandnew")); 
 		}
+		$form->add(str("Overskrift:"));
+		$form->add(htmlbr());
+		$form->add(ftext("title",$this->title,80));
+		$form->add(htmlbr());
+		$form->add(str("Nyhetsinnhold:"));
+		$form->add(htmlbr());
+		$form->add(textarea("content", htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
+		$form->add(htmlbr());
 		$form->add(fsubmit("Lagre"));
 		$this->form = $form;
 	}
