@@ -1626,7 +1626,9 @@ class newuser
 		$extra = $_REQUEST['extra'];
 		$user = $_REQUEST['user'];
 		foreach ($_REQUEST['private'] as $pr)
+		{
 			$private .= $pr;
+		}
 		$born = $_REQUEST['born'];	
 		global $db;
 		if (!$this->update)
@@ -1751,7 +1753,7 @@ class newuser
 			$query .= $db->escape($nborn) . "', phone = '";
 			$query .= $db->escape($phone) . "', extra = '";
 			$query .= $db->escape($extra) . "' WHERE uname = '";
-			$query .= $db->escape($user) . "' AND uid = '$res';";
+			$query .= $db->escape($user) . "';";
 			if (!$db->insert($query))
 			{
 				$this->error = "En ukjent feil oppstod når brukeren din ble opprettet. Dette skal ikke skje...";
