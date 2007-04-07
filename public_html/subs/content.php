@@ -173,7 +173,7 @@ class content
 				$diff= new Text_Diff($old, $new);
 				$opt = array("trailing_context_lines" => 0, "leading_context_lines" => 0);
 				$renderer = new Text_Diff_Renderer($opt);
-				$this->content = "<pre>" . $renderer->render($diff) . "</pre>";
+				$this->content = "<pre>" . htmlentities($renderer->render($diff)) . "</pre>";
 				$this->renderme = false;
 			}
 			next_action($action,$this->lastdiff);
