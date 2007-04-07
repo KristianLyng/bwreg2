@@ -37,6 +37,8 @@ class news
 	{
 		global $news; // PHP+$this in constructor == copy! Yes, we do hate PHP OO.
 		$this->action['ViewNews'] =& add_action("ViewNews",&$news);
+		$this->action['EditNews'] =& add_action("EditNews",&$news);
+		$this->action['EditNewsSave'] =& add_action("EditNewsSave",&$news);
 		if (!$sname)
 		{
 			global $maincontent;
@@ -64,6 +66,10 @@ class news
 				$this->content = new newslist($_REQUEST['sname']);
 			else
 				$this->content = new newslist(false);
+		} else if ($action == "EditNews") {
+			$this->content = new newsedit();
+		} else if ($action == "EditNewsSave") {
+			$this->content = new newsedit(true);
 		}
 		next_action($action,$this->action[$action]);
 	}
@@ -77,7 +83,7 @@ class news
 		$query = "SELECT users.uname,users.firstname,users.lastname,users.mail,users.birthyear,users.adress,users.phone,users.extra,users.private,";
 		$query .= "news.title,news.date,news.content,news.identifier FROM users,news WHERE news.uid = users.uid AND (eid = '0' OR eid = '";
 		$query .= $db->escape($event->eid) . "') AND sname = '";
-		$query .= $db->escape($this->sname) . "' LIMIT " . $this->display . ";";
+		$query .= $db->escape($this->sname) . "' ORDER BY news.date DESC LIMIT " . $this->display . ";";
 		$db->query($query,&$this);
 	}
 	
@@ -102,7 +108,7 @@ class news
 		global $page;
 		$box = new box();
 		$box->add(str("[ "));
-		$box->add(htlink($page->url() . "?action=NewsEdit&amp;page=NewsEditor&news=" . $newsname,str("Editer")));
+		$box->add(htlink($page->url() . "?action=EditNews&amp;page=NewsEditor&news=" . $newsname,str("Editer")));
 		$box->add(str(' | '));
 		$box->add(htlink($page->url() . "?action=NewsDelete&amp;page=NewsEditor&amp;news=" . $newsname,str("Slett")));
 		$box->add(str(' ] '));
@@ -150,14 +156,29 @@ class newscategory
 			$this->description = $row['description'];
 		}
 	}
+	function find($sname)
+	{
+		global $db;
+		global $event;
+		$query = "SELECT permission,sname,heading,description FROM news_categories WHERE gid = '";
+		$query .= $db->escape($event->gid) . "' AND sname = '";
+		$query .= $db->escape($sname) . "';";
+		$row = $db->query($query);
+		if (!$row) 
+			return false;
+		else 
+			$this->newscategory($row);
+		return true;
+	}
 }
 class newscategorylist
 {
 	var $list;
-	function newscategorylist()
+	function newscategorylist($right = "r")
 	{
 		global $event;
 		global $db;
+		$this->right = $right;
 		$query = "SELECT permission,sname,heading,description FROM news_categories WHERE ";
 		$query .= "gid = '" . $db->escape($event->gid) . "';";
 		$this->list = array();
@@ -168,7 +189,7 @@ class newscategorylist
 	function sqlcb($row)
 	{
 		global $event;
-		if(me_perm($row['permission'],"r",$event->gid))
+		if(me_perm($row['permission'],$this->right,$event->gid))
 			$this->list[] = new newscategory($row);
 	}
 }
@@ -221,7 +242,7 @@ class newslist extends news
 				return;
 			$query .= ")";
 		}
-		$query .= ";";
+		$query .= " ORDER BY date DESC;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
@@ -252,7 +273,30 @@ class newslist extends news
 			$f->add($item->user);
 			$box->add($f,false,"newsauthor");
 		}
-		return $box->get();
+		global $event;
+		global $page;
+		$link = false;
+		if (!is_array($this->category))
+		{
+			if (me_perm($this->category->permission,"w",$event->gid))
+			{
+				$link = htlink($page->url() . "?action=EditNews",str("Skriv en nyhet"));
+			}
+		} else
+		{
+			
+			foreach ($this->category as $cat)
+			{
+				if (me_perm($cat->permission,"w",$event->gid))
+				{
+				$link = htlink($page->url() . "?action=EditNews",str("Skriv en nyhet"));
+				}
+			}
+		}
+		if ($link == false)
+			return $box->get();
+		$a = htmlbr();
+		return $link->get() . $a->get() .  $box->get();
 	}
 }
 
@@ -271,7 +315,7 @@ class onenews extends news
 		global $wiki;
 		global $page;
 		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
-		$query .= "news.title,news.content,news.date,users.* FROM news,news_categories,users ";
+		$query .= "news.title,news.content,news.identifier,news.date,users.* FROM news,news_categories,users ";
 		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
 		$query .= "news_categories.gid = '";
 		$query .= $db->escape($event->gid) . "' AND news.identifier = '";
@@ -299,6 +343,180 @@ class onenews extends news
 	{
 		if(is_object($this->news))
 		return $this->news->get();
+	}
+}
+class newsedit extends news
+{
+	function newsedit($save = false)
+	{
+		global $me;
+		if ($me->uid == 0)
+			return; 
+		if ($_REQUEST['sname'])
+			$sname = $_REQUEST['sname'];
+		else 
+			$sname = false;
+		$this->sname = $sname;
+		if ($_REQUEST['news'])
+		{
+			$this->new = false;
+			$this->id = $_REQUEST['news'];
+		} else
+			$this->new = true;
+		
+		if (!$this->new) 
+			$this->get_content();
+		if(!$save)
+			$this->print_edit();
+		else
+		{
+			$this->get_edit();
+		}
+	}
+	
+	function get_edit()
+	{
+		global $event;
+		global $db;
+		global $me;
+		$brand = $_REQUEST['brandnew'];
+		$sname = $_REQUEST['sname'];
+		$title = $_REQUEST['title'];
+		$content = $_REQUEST['content'];
+		$eid = 0;
+		if ($_REQUEST['eid'] == "true")
+		{
+			$eid = $event->eid;
+		}
+		if ($brand == "true")
+			$id = $this->gen_id($title);
+		else
+			$id = $_REQUEST['identifier'];
+
+		$cat = new newscategory();
+		if(!$cat->find($sname))
+		{
+			return false;
+		}
+		if (!me_perm($cat->permission,"w",$event->gid))
+			return false;
+		if (strlen($title) < 4)
+		{
+			return false;
+		}
+		
+		if ($brand == "true")
+		{
+			$query = "INSERT INTO news VALUES('$eid','";
+			$query .= $db->escape($sname) . "','";
+			$query .= $db->escape($title) . "','";
+			$query .= $db->escape($me->uid) . "','";
+			$query .= $db->escape($content) . "',NOW(),'";
+			$query .= $db->escape($id) . "','";
+			$query .= $db->escape($event->gid) . "');";
+			if (!$db->insert($query))
+				return false;
+		} else {
+			$query = "UPDATE news SET title = '";
+			$query .= $db->escape($title) . "', content = '";
+			$query .= $db->escape($content) . "', uid = '";
+			$query .= $db->escape($me->uid) . "' WHERE gid = '";
+			$query .= $db->escape($event->gid) . "' AND identifier = '";
+			$query .= $db->escape($id) . "';";
+			if(!$db->insert($query))
+				return false;
+		}
+		global $page;
+		$page->setrefresh($page->url() . "?action=ViewNews&amp;news=" . $id);
+	}
+
+	/* Create a new identifier based on the title */
+	function gen_id($title)
+	{
+		global $event;
+		global $db;
+		$id = ucwords($title);
+		$id = eregi_replace('[^a-z]', "", $id);
+		$id = substr($id,0,95);
+		$basequery = "SELECT * FROM news WHERE gid = '";
+		$basequery .= $db->escape($event->gid) . "' AND identifier = '";
+		$query = $basequery . $db->escape($id) . "';";
+		$ret = $db->query($query);
+		if (!$ret)
+			return $id;
+		$i = $db->escape($id);
+		for ($num = 2; $num < 20; $num++)
+		{
+			$query = $basequery . $i . $num . "';";
+			if(!$db->query($query))
+			{
+				return $i . $num;
+			}
+		}
+		return false;
+	}
+
+	function print_edit()
+	{
+		$form = new form();
+		$form->add(fhidden("EditNewsSave"));
+		$form->add(ftext("title",$this->title,80));
+		$form->add(htmlbr());
+		$form->add(textarea("content", htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
+		$form->add(htmlbr());
+		if (!$this->new)
+		{
+			$form->add(fhidden($this->sname,"sname"));
+			$form->add(fhidden($this->id,"identifier"));
+		}
+		else
+		{
+			$b = new selectbox("sname");
+			$list = new newscategorylist("w");
+			foreach ($list->list as $item)
+			{
+				$b->add(foption($item->sname,$item->heading));
+			}
+			$form->add(str("Kategori:"));
+			$form->add($b);
+			$form->add(htmlbr());
+			$form->add(fhidden("true","brandnew")); 
+		}
+		$form->add(fsubmit("Lagre"));
+		$this->form = $form;
+	}
+	
+	function get_content()
+	{
+		global $event;
+		global $db;
+		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
+		$query .= "news.title,news.content,news.date,users.* FROM news,news_categories,users ";
+		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
+		$query .= "news_categories.gid = '";
+		$query .= $db->escape($event->gid) . "' AND news.identifier = '";
+		$query .= $db->escape($this->id) . "';";
+		$row = $db->query($query);
+		if (!$row)
+			return; //FIXME
+		$this->permission = $row['permission'];
+		if (!me_perm($this->permission,"r",$event->gid))
+			return;  
+			// You can SEE the edit box even if you can't use it. 
+			// The idea beeing that you can read it anyway, and if you know how to edit
+			// news, you might be interested in exactly how someone achived something,
+			// not actually modifying it. Besides, we are displaying text here, not
+			// actually writing. Keep in mind you still have to log in.
+		$this->title = $row['title'];
+		$this->content = $row['content'];
+		$this->sname = $row['sname'];
+	}
+	
+	function get()
+	{
+		if (!is_object($this->form))
+			return "";
+		return $this->form->get();
 	}
 }
 ?>

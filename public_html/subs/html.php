@@ -456,6 +456,22 @@ class form extends htmlobject
 		$this->fcontent->add($data);
 	}
 }
+class selectbox extends box
+{
+	function selectbox($name)
+	{
+		$this->name = $name;
+	}
+
+	function get()
+	{
+		$a = $this->name;
+		$str = "<SELECT name=\"$a\">\n";
+		$str .= parent::get();
+		$str .= "</SELECT>";
+		return $str;
+	}
+}
 
 /* Internal for the table class, you shouldn't use this directly. */
 class tableelement 
@@ -547,14 +563,25 @@ function textarea($name, $value = "", $cols="80", $rows = "30")
 	return new htmlobject("textarea",$ctrl,$value);
 }
 
-function ftext($name,$value = "",$length = false)
+function ftext($name,$value = "",$length = false, $maxlength = false)
 {
 	$obj = null;
 	if($length != false)
-		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+	{
+		if ($maxlength != false)
+			$max = $maxlength;
+		else
+			$max = $length;
+		$mylength = "maxlength=\"$max\" cols=\"$length\"";
+	}
 	else
 		$mylength = "";
 	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" value=\"$value\"", $obj);
+}
+
+function foption($value,$desc)
+{
+	return new htmlobject("option","value=\"$value\"",str($desc));
 }
 
 function fpass($name,$length = false)

@@ -96,7 +96,8 @@ CREATE TABLE `news` (
   `uid` int(11) NOT NULL default '0',
   `content` text,
   `date` datetime default NULL,
-  `identifier` varchar(100) default NULL
+  `identifier` varchar(100) default NULL,
+  `gid` int(11) NOT NULL default '0'
 ) TYPE=MyISAM;
 
 --
