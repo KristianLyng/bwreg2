@@ -430,11 +430,11 @@ class htmlobject {
 	}
 	function ctrl($ctrl)
 	{
-		$this->open = $ctrl;
+		$this->ctrl = $ctrl;
 	}
 	function content($content)
 	{
-		$this->open = $content;
+		$this->content = $content;
 	}
 }
 class form extends htmlobject

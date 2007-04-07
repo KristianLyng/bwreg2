@@ -39,6 +39,8 @@ class news
 		$this->action['ViewNews'] =& add_action("ViewNews",&$news);
 		$this->action['EditNews'] =& add_action("EditNews",&$news);
 		$this->action['EditNewsSave'] =& add_action("EditNewsSave",&$news);
+		$this->action['NewsDelete'] =& add_action("NewsDelete",&$news);
+		$this->action['NewsDeleteVerified'] =& add_action("NewsDeleteVerified",&$news);
 		if (!$sname)
 		{
 			global $maincontent;
@@ -70,6 +72,10 @@ class news
 			$this->content = new newsedit();
 		} else if ($action == "EditNewsSave") {
 			$this->content = new newsedit(true);
+		} else if ($action == "NewsDelete")  {
+			$this->content = new newsdelete();
+		} else if ($action == "NewsDeleteVerified")  {
+			$this->content = new newsdelete(true);
 		}
 		next_action($action,$this->action[$action]);
 	}
@@ -169,6 +175,14 @@ class newscategory
 		else 
 			$this->newscategory($row);
 		return true;
+	}
+	function get()
+	{
+		global $page;
+		if (!isset($this->sname))
+			return;
+		$link = htlink($page->url() . "?action=ViewNews&amp;page=News&amp;sname=" . $this->sname,str($this->heading));
+		return $link->get();
 	}
 }
 class newscategorylist
@@ -507,6 +521,9 @@ class newsedit extends news
 		$this->title = $row['title'];
 		$this->content = $row['content'];
 		$this->sname = $row['sname'];
+		$this->date = $row['date'];
+		$this->user = new userinfo($row);
+		return true;
 	}
 	
 	function get()
@@ -516,4 +533,75 @@ class newsedit extends news
 		return $this->form->get();
 	}
 }
+
+class newsdelete extends newsedit
+{
+	function newsdelete($verified = false)
+	{
+		global $me;
+		global $page;
+		if ($me->uid == 0)
+			return;
+		if (!isset($_REQUEST['news']))
+			return;
+		$this->id = $_REQUEST['news'];
+		if (!$this->get_content())
+			return;
+		if (!isset($this->title))
+			return;
+		if (!me_perm($this->permission,"w",$event->gid))
+			return;
+		if (!$verified) {
+			$this->set_verify_box();
+		} else {
+			$this->delete_it();
+		}
+	}
+	function delete_it()
+	{
+		global $db;
+		global $event;
+		global $page;	
+		$query = "DELETE FROM news WHERE gid = '";
+		$query .= $db->escape($event->gid) . "' AND sname = '";
+		$query .= $db->escape($this->sname) . "' AND identifier = '";
+		$query .= $db->escape($this->id) . "' LIMIT 1;";
+
+		if ($db->insert($query))
+			$page->warn->add(h1("Nyhet slettet."));
+
+	}
+	function set_verify_box()
+	{
+		$b = new form();
+		$table = new table(2,"newsdelete");
+		$b->add(fhidden("NewsDeleteVerified"));
+		$b->add(fhidden($this->id,"news"));
+		$b->add(h1("Er du sikker på at du vil slette: "));
+		$b->add(h2($this->title));
+		$table->add(str("Skrevet av"));
+		$u = new dropdown($this->user->get_name());
+		$u->add($this->user);
+		$table->add($u);
+		$table->add(str("Dato"));
+		$table->add(str($this->date));
+		$table->add(str("Kategori"));
+
+		$cat = new newscategory();
+		$cat->find($this->sname);
+		$table->add($cat);
+		$table->add(str("ID"));
+		$table->add(str($this->id));
+		$table->add(fsubmit("JA! Slett denne for godt."),2);
+		$b->add($table);
+		$this->content = $b;
+	}
+	function get()
+	{
+		if (isset($this->content) && $this->content != null && is_object($this->content))
+			return $this->content->get();
+		return;
+	}
+}
+
 ?>
