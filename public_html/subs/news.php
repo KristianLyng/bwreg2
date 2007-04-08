@@ -42,6 +42,10 @@ class news
 		$this->action['EditNewsSave'] =& add_action("EditNewsSave",&$news);
 		$this->action['NewsDelete'] =& add_action("NewsDelete",&$news);
 		$this->action['NewsDeleteVerified'] =& add_action("NewsDeleteVerified",&$news);
+		$this->action['ModifyNewsCategory'] =& add_action("ModifyNewsCategory",&$news);
+		$this->action['DeleteNewsCategory'] =& add_action("DeleteNewsCategory",&$news);
+		$this->action['StoreOldNewsCategory'] =& add_action("StoreOldNewsCategory",&$news);
+		$this->action['StoreNewNewsCategory'] =& add_action("StoreNewNewsCategory",&$news);
 		if (!$sname)
 		{
 			global $maincontent;
@@ -84,6 +88,18 @@ class news
 			else
 				$this->content = new newslist(false,true);
 			$page->rss = $this->content;
+		} else if ($action == "ModifyNewsCategory") {
+			if (!isset($_REQUEST['sname']))
+				$this->content = new newscategoryadmin(false);
+			else
+				$this->content = new newscategoryadmin($_REQUEST['sname']);
+		} else if ($action == "StoreNewNewsCategory") {
+			$this->content = new newscategoryadmin($_REQUEST['sname'],true);
+		} else if ($action == "StoreOldNewsCategory") {
+			$this->content = new newscategoryadmin($_REQUEST['sname'],true);
+		} else if ($action == "DeleteNewsCategory") {
+			if (isset($_REQUEST['sname'])) 
+				$this->content = new newscategorydeleter($_REQUEST['sname']);
 		}
 		next_action($action,$this->action[$action]);
 	}
@@ -159,7 +175,6 @@ class news
 		return $this->get();
 	}
 }
-
 class newscategory
 {
 	function newscategory($row = false)
@@ -193,6 +208,163 @@ class newscategory
 			return;
 		$link = htlink($page->url() . "?action=ViewNews&amp;page=News&amp;sname=" . $this->sname,str($this->heading));
 		return $link->get();
+	}
+}
+class newscategorydeleter extends newscategory
+{
+	function newscategorydeleter($sname)
+	{
+		global $event;
+		if(!$this->find($sname))
+			return false;
+		if(!me_perm(null,"w",$event->gid))
+			return;
+		if ($_REQUEST['deleteitall'] == "GetRidOfIt")
+			$this->delete_it_all();
+		if (!$this->delete_if_empty())
+			$this->set_form();
+	}
+	
+	function set_form()
+	{
+		$f = new form();
+		$f->add(h1("Nyhetskategorien \"" . $this->heading . "\" ( " . $this->sname . ") er ikke tom!"));
+		$f->add(fhidden("DeleteNewsCategory"));
+		$f->add(fhidden("GetRidOfIt","deleteitall"));
+		$f->add(fhidden($this->sname,"sname"));
+		$f->add(p("Kategorien inneholder fortsatt " . $this->count . " nyheter. Vil du slette alle disse nyhetene og denne nyhetskategorien?"));
+		$f->add(fsubmit("Ja, slett alle nyheter under denne kategorien."));
+		$this->content = $f;
+	}
+	
+	function delete_it_all()
+	{
+		global $event;
+		global $db;
+		$query = "DELETE FROM news WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		$db->insert($query);
+		return true;
+	}
+	
+	function delete_if_empty()
+	{
+		global $event;
+		global $db;
+		$query = "SELECT count(*) FROM news WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		list($ret) = $db->query($query);
+		if ($ret != 0)
+		{
+			$this->count = $ret;
+			return false;
+		}
+		$query = "DELETE FROM news_categories WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		$db->insert($query);
+		$this->content = str("Sletta " . $this->heading);
+		return true;
+	}
+	function get()
+	{
+		if ($this->content != null)
+			return $this->content->get();
+	}
+}
+
+class newscategoryadmin extends newscategory
+{
+	function newscategoryadmin($sname = false, $store = false)
+	{
+		global $event;
+		$this->content = null;
+		if ($sname) {
+			if ($store == false)
+				$this->new = false;
+			if (!$this->find($sname))
+			{
+				if (!$store)
+					return false;
+				$this->new = true;
+				$this->sname = $sname;
+				$this->permission = null;
+			}
+			if (!me_perm($this->permission,"w",$event->gid))
+				return false;
+		} else {
+			if (!me_perm(null,"w",$event->gid))
+				return false;
+			$this->new = true;
+		}
+		if ($store) {
+			$this->get_form();
+		} else {
+			$this->set_form();
+		}
+	}
+	function get_form()
+	{
+		global $event;
+		global $db;
+		$heading = $_REQUEST['heading'];
+		$desc = $_REQUEST['description'];
+		if (!isset($_REQUEST['permission']))
+			return;
+		$permission = $_REQUEST['permission'];
+		if(!is_numeric($permission))
+			return;
+		if(!me_perm($permission,"w",$event->gid))
+			return;
+		if($this->new) {
+			$query = "INSERT INTO news_categories VALUES('";
+			$query .= $event->gid . "','" . $db->escape($permission) . "','";
+			$query .= $db->escape($this->sname) . "','" . $db->escape($heading) . "','";
+			$query .= $db->escape($desc) . "');";
+			$db->insert($query);
+		} else {
+			$query = "UPDATE news_categories SET heading='" . $db->escape($heading) . "',";
+			$query .= "description = '" . $db->escape($desc) . "',permission = '";
+			$query .= $db->escape($permission) . "' WHERE gid = '" . $event->gid . "' AND ";
+			$query .= "sname = '" . $db->escape($this->sname) . "';";
+			$db->insert($query);
+		}
+		$this->content = str("Oppdaterte $heading");
+	}
+
+	function set_form()
+	{
+		$t = new table(2);
+		$f = new form();
+		$t->add(h1("Nyhetskategoriadministrasjon"),2);
+		$t->add(str("Kategorinavn"));
+		$t->add(ftext("heading",$this->heading,25));
+		$t->add(str("Kortnavn"));
+		if ($this->new) {
+			$f->add(fhidden("StoreNewNewsCategory"));
+			$t->add(ftext("sname"));
+		} else {
+			$f->add(fhidden("StoreOldNewsCategory"));
+			$f->add(fhidden($this->sname, "sname"));
+			$t->add(str($this->sname));
+		}
+		$t->add(str("Beskrivelse: "));
+		$t->add(ftext("description",$this->description,50));
+		$t->add(str("Rettighetsgruppe"));
+		global $me;
+		global $event;
+		$b = new box();
+		$b->add(str("<SELECT name=\"permission\">"));
+		$b->add(str($me->list_perms($event->gid, $this->permission,"w")));
+		$b->add(str("</SELECT>"));
+		$t->add($b);
+		if ($this->new)
+			$t->add(fsubmit("Lag ny kategori"),2);
+		else
+			$t->add(fsubmit("Oppdater kategorien"),2);
+		$f->add($t);
+		$this->content = $f;
+	}
+	function get()
+	{
+		if ($this->content != null)
+			return $this->content->get();
 	}
 }
 class newscategorylist
@@ -327,8 +499,10 @@ class newslist extends news
 			if (me_perm($this->category->permission,"w",$event->gid))
 			{
 				$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
-				if (me_perm(null,"w",$event->gid))
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory",str("Slett denne nyhetskategorien")));
+				if (me_perm(null,"w",$event->gid)) {
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser denne nyhetskategorien")));
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett denne nyhetskategorien")));
+				}
 			}
 		} else {
 			$ctrl->add(htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink"));
@@ -342,7 +516,7 @@ class newslist extends news
 			}
 		}
 		if (me_perm(null,"w",$event->gid))
-			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=MakeNewsCategory",str("Lag en nyhetskategori")));
+			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory",str("Lag en nyhetskategori")));
 		return $ctrl->get() .  $box->get();
 	}
 }
