@@ -62,6 +62,8 @@ function next_action($action, &$object)
 
 /* Make sure we render and update action when the page is done */
 	register_shutdown_function(down);
+	if ($_REQUEST['action'] == "RssNews")
+		header("Content-type: application/RSS+xml");
 
 /* Set up the wiki-object */
 	$wiki =& new Text_Wiki();

@@ -253,7 +253,7 @@ class content
 			$gid = $this->gid;
 		else 
 			$gid = $event->gid;
-		$permlist .= $me->list_perms($gid, $this->permission);
+		$permlist .= $me->list_perms($gid, $this->permission,"w");
 		$permlist .= "</select>";
 		
 		$box->add(str($permlist));

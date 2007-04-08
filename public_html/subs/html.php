@@ -150,14 +150,20 @@ class page  extends box
 		$data .= $this->bottom;
 		return $data;
 	}
+	function rss()
+	{
+		//header('Content-type: application/RSS+xml');
+	}
 	function output()
 	{
 		if($this->pf)
 		{
 			$this->set_css("printfriendly.css");
 			$this->add($this->content);
-		}
-		else
+		} else if (isset($this->rss)) {
+			print $this->rss->get();
+			return;
+		} else
 			$this->merge();
 		print($this->get());
 	}
@@ -614,9 +620,13 @@ function fhidden($action, $name = "action")
 	return new htmlobject("input","type=\"hidden\" name=\"$name\" value=\"$action\"", $obj);
 }
 
-function &htlink($link, &$text)
+function &htlink($link, &$text,$class = false)
 {
-	return new htmlobject("a","href=\"" . $link . "\"", $text);
+	if ($class)
+		$c = "class=\"$class\"";
+	else
+		$c = "";
+	return new htmlobject("a","href=\"" . $link . "\" $c", $text);
 }
 
 function &img($url, $desc="")

@@ -345,12 +345,12 @@ class user extends box
 			return $perm;
 		return false;
 	}
-	function list_perms($gid, $checker)
+	function list_perms($gid, $checker, $perm = "r")
 	{
 		$array  = array();
 		foreach ($this->perms->list as $value)
 		{
-			if($value->gid == $gid && !isset($array[$value->resource]))
+			if($value->gid == $gid && !isset($array[$value->resource]) && strstr($value->permission,$perm))
 			{
 				$array[$value->resource] = true;
 				$string .= "<option value=\"" . $value->resourceid . "\"";

@@ -37,6 +37,7 @@ class news
 	{
 		global $news; // PHP+$this in constructor == copy! Yes, we do hate PHP OO.
 		$this->action['ViewNews'] =& add_action("ViewNews",&$news);
+		$this->action['RssNews'] =& add_action("RssNews",&$news);
 		$this->action['EditNews'] =& add_action("EditNews",&$news);
 		$this->action['EditNewsSave'] =& add_action("EditNewsSave",&$news);
 		$this->action['NewsDelete'] =& add_action("NewsDelete",&$news);
@@ -60,6 +61,7 @@ class news
 	}
 	function actioncb($action)
 	{
+		global $page;
 		if ($action == "ViewNews")
 		{
 			if (isset($_REQUEST['news']))
@@ -76,6 +78,12 @@ class news
 			$this->content = new newsdelete();
 		} else if ($action == "NewsDeleteVerified")  {
 			$this->content = new newsdelete(true);
+		} else if ($action == "RssNews") {
+			if ($_REQUEST['sname'])
+				$this->content = new newslist($_REQUEST['sname'], true);
+			else
+				$this->content = new newslist(false,true);
+			$page->rss = $this->content;
 		}
 		next_action($action,$this->action[$action]);
 	}
@@ -96,12 +104,14 @@ class news
 	function sqlcb($row)
 	{
 		global $wiki;
+		global $page;
 		$user = new userinfo($row);
 		$h1 = $row['title'];
 		$h2 = new box();
 		if ($this->boss) $h2->add($this->edit_box($row['identifier'])); //fixme
-		$h2->add(str($row['date']));
-		$drop = new dropdown($user->get_name());
+		$h2->add(htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink"));
+		$h2->add(str(" " . $row['date']));
+		$drop = new dropdown("Skrevet av: " . $user->get_name());
 		$drop->add($user);
 		$h2->add($drop);
 		$news = new htmlnews(str($h1),$h2);
@@ -222,7 +232,7 @@ class newslistitem
 }
 class newslist extends news
 {
-	function newslist($sname = false)
+	function newslist($sname = false,$rss = false)
 	{
 		global $event;
 		global $db;
@@ -258,6 +268,7 @@ class newslist extends news
 		}
 		$query .= " ORDER BY date DESC;";
 		$db->query($query,&$this);
+		$this->rss = $rss;
 	}
 	function sqlcb($row)
 	{
@@ -272,6 +283,28 @@ class newslist extends news
 	{
 		global $page;
 		global $event;
+		if ($this->rss)
+		{
+			$page->rss();
+			$box = new box();
+			$box->add(str("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"));
+			$box->add(str("<rss version=\"2.0\">\n"));
+			$box->add(str("<channel>\n<title>" . $event->title . " Nyheter</title>\n"));
+			$box->add(str("<link>" . $page->url() . "</link>\n"));
+			$box->add(str("<description>Nyheter fra og om " . $event->title . "</description>\n"));
+			foreach ($this->list as $item)
+			{
+				$box->add(str("<item>\n"));
+				$box->add(str("<title>" . $item->title . "</title>\n"));
+				$box->add(str("<author>" . $item->user->get_name() . "&lt;" . $item->user->mail . "&gt;</author>"));
+				$box->add(str("<link>" . $page->url() . "?action=ViewNews&amp;page=News&amp;news=" . $item->identifier . "</link>\n"));
+				$box->add(str("<description>" . $item->title . "</description>\n"));
+				$box->add(str("</item>\n"));
+			}
+			$box->add(str("</channel>\n"));
+			$box->add(str("</rss>\n"));
+			return $box->get();
+		}
 		$box = new table(4,"newslist");
 		$box->add(h1("Overskrift"),false,"newstitle");
 		$box->add(h1("Kategori"),false,"newscategory");
@@ -288,21 +321,29 @@ class newslist extends news
 			$f->add($item->user);
 			$box->add($f,false,"newsauthor");
 		}
-		$link = false;
+		$ctrl = new box();
 		if (!is_array($this->category)) {
+			$ctrl->add(htlink($page->url() . "?action=RssNews&amp;sname=" . $this->category->sname,str("RSS"),"rsslink"));
 			if (me_perm($this->category->permission,"w",$event->gid))
-				$link = htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet"));
+			{
+				$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
+				if (me_perm(null,"w",$event->gid))
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory",str("Slett denne nyhetskategorien")));
+			}
 		} else {
+			$ctrl->add(htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink"));
 			foreach ($this->category as $cat)
 			{
 				if (me_perm($cat->permission,"w",$event->gid))
-					$link = htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet"));
+				{
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
+					break;
+				}
 			}
 		}
-		if ($link == false)
-			return $box->get();
-		$a = htmlbr();
-		return $link->get() . $a->get() .  $box->get();
+		if (me_perm(null,"w",$event->gid))
+			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=MakeNewsCategory",str("Lag en nyhetskategori")));
+		return $ctrl->get() .  $box->get();
 	}
 }
 
