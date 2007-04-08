@@ -2,6 +2,8 @@ body { background-color: gray; }
 * { font-family: sans-serif; margin: 0; padding: 0; }
 li { margin-left: 1em; }
 p { padding-bottom: 10px; }
+input { color: #781351; background: #f0f0f0; border: 1px solid #781351; } 
+input:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
 
 /* The main building blocks. Modify these to move the main items around (like menus) */
 
@@ -63,6 +65,11 @@ table.grouplist { width: 500px; }
 .userinfo p { font-size: small; font-weight: normal; }
 
 a.rsslink { margin: 1px; border:1px solid; border-color:#fcc7a5 #7d3302 #3e1a01 #ff954e; color:#ffffff; background-color:#ff6600; font-weight:bold; font-family:sans-serif; font-size:10px; text-align:center; text-decoration:none; }
+
+.loginboks { margin: 0px; background: silver; padding: 0px; background-color: silver; font-size: small; }
+table.loginboks { margin: 0px; background: inherit; padding: 0px; background-color: silver; border: 0px;}
+.loginboks td { background: silver; margin: 0px; padding: 0px; }
+.loginboks tr { background: silver; margin: 0px; padding: 0px; }
 
 .menuboks { background-color: inherit; margin: 1px; padding: 1px; }
 .menuboks ul { list-style: none; }

@@ -1334,11 +1334,18 @@ class myuser extends user
 	{
 		global $page;
 		global $event;
+		$t = new table("2","loginboks");
 		$form = new form();
-		$form->add(ftext("uname","Brukernavn",9));
-		$form->add(fpass("pass",8));
-		$form->add(fsubmit("Login", "action"));
-		$form->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Registrer deg")));
+		$t->add(str("Brukernavn"));
+		$t->add(ftext("uname","",9));
+		$t->add(str("Passord"));
+		$t->add(fpass("pass",9,8));
+		$t->add(str(""));
+		$b= new box();
+		$b->add(fsubmit("Login", "action"));
+		$b->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Ny bruker")));
+		$t->add($b);
+		$form->add($t);
 		return $form->get();
 	}
 	function print_logout($box)
@@ -1539,7 +1546,9 @@ class newuser
 		{
 			$form->add(str("Brukernavn"));
 			$form->add(ftext("user"));
-			$form->add($this->set_pass(true));
+			$p = $this->set_pass(true);
+			foreach ($p->items as $ob)
+				$form->add($ob);
 		} else
 			$t->add(fhidden($u->uname,"user"));
 		$form->add(str("Tilleggsinformasjon"));
@@ -1586,31 +1595,28 @@ class newuser
 	{
 		if (!$inline)
 		{
-			$form = new form();
+			$form = new form(2,"UserForm");
+			$t = new table(2);
 			$form->add(fhidden($this->userinfo->uname,"user"));
 			$form->add(fhidden("CommitPassChange"));
-			$form->add(str("<table style=\"UserForm\"><tr>"));
-			$form->add(str("<td colspan=\"2\">\n"));
-			$form->add(str("Bytt passord</td></tr><tr><td>\n"));
-			$form->add(str("Gammelt passord</td><td>"));
-			$form->add(fpass("oldpass",8));
-			$form->add(str("</td></tr><tr><td>\n"));
-		} else
+			$t->add(str("Bytt passord"),2);
+			$t->add(str("Gammelt passord"));
+			$t->add(fpass("oldpass",8));
+			$t->add(str("Passord"));
+			$t->add(fpass("pass",8));
+			$t->add(str("Bekreft passord"));
+			$t->add(fpass("pass_confirm",9));
+			$t->add(fsubmit("Endre"),2);
+			$form->add($t);
+			return $t;
+		} else {
 			$form = new box();
-		$form->add(str("Passord</td><td>"));
-		$form->add(fpass("pass",8));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Bekreft passord</td><td>"));
-		$form->add(fpass("pass_confirm",9));
-		$form->add(str("</td></tr><tr>"));
-		if (!$inline)
-		{
-			$form->add(str("<td colspan=\"2\">\n"));
-			$form->add(fsubmit("Endre"));
-			$form->add(str("</td></tr></table>"));
-		} else
-			$form->add(str("<td>\n"));
-		return $form;
+			$form->add(str("Passord"));
+			$form->add(fpass("pass",8));
+			$form->add(str("Bekreft passord"));
+			$form->add(fpass("pass_confirm",9));
+			return $form;
+		}
 	}
 
 	function get_form()

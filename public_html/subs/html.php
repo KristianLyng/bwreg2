@@ -580,7 +580,7 @@ function ftext($name,$value = "",$length = false, $maxlength = false)
 			$max = $maxlength;
 		else
 			$max = $length;
-		$mylength = "maxlength=\"$max\" cols=\"$length\"";
+		$mylength = "maxlength=\"$max\" size=\"$length\"";
 	}
 	else
 		$mylength = "";
@@ -596,7 +596,7 @@ function fpass($name,$length = false)
 {
 	$obj = null;
 	if($length != false)
-		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+		$mylength = "maxlength=\"$length\" size=\"$length\"";
 	else
 		$mylength = "";
 	return new htmlobject("input","type=\"password\" $mylength name=\"$name\"", $obj);
@@ -615,7 +615,7 @@ function fcheck($name,$value,$checked = false)
 function fsubmit($value = "Submit", $name = "SubmitButton")
 {
 	$obj = null;
-	return new htmlobject("input","type=\"submit\" name=\"$name\" value=\"$value\"", $obj);
+	return new htmlobject("input","type=\"submit\" class=\"submit\" name=\"$name\" value=\"$value\"", $obj);
 }
 function fhidden($action, $name = "action")
 {
