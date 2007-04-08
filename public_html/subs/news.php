@@ -441,6 +441,7 @@ class newslist extends news
 		$query .= " ORDER BY date DESC;";
 		$db->query($query,&$this);
 		$this->rss = $rss;
+		$this->add_ctrl();
 	}
 	function sqlcb($row)
 	{
@@ -493,31 +494,49 @@ class newslist extends news
 			$f->add($item->user);
 			$box->add($f,false,"newsauthor");
 		}
-		$ctrl = new box();
+		$rss = null;
 		if (!is_array($this->category)) {
-			$ctrl->add(htlink($page->url() . "?action=RssNews&amp;sname=" . $this->category->sname,str("RSS"),"rsslink"));
+			$rss = htlink($page->url() . "?action=RssNews&amp;sname=" . $this->category->sname,str("RSS"),"rsslink");
+		} else {
+			$rss = htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink");
+		}
+		return $rss->get() .  $box->get();
+	}
+	function add_ctrl()
+	{
+		global $page;
+		$top = new box();
+		$top->add(str("<hr />"));
+		$ctrl = new dropdown("Nyhetskontroll");
+		$blank = true;
+		if (!is_array($this->category)) {
 			if (me_perm($this->category->permission,"w",$event->gid))
 			{
+				$blank = false;
 				$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
 				if (me_perm(null,"w",$event->gid)) {
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser denne nyhetskategorien")));
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett denne nyhetskategorien")));
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser nyhetskategorien")));
+					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett nyhetskategorien")));
 				}
 			}
 		} else {
-			$ctrl->add(htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink"));
 			foreach ($this->category as $cat)
 			{
 				if (me_perm($cat->permission,"w",$event->gid))
 				{
 					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
+					$blank = false;
 					break;
 				}
 			}
 		}
-		if (me_perm(null,"w",$event->gid))
-			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory",str("Lag en nyhetskategori")));
-		return $ctrl->get() .  $box->get();
+		if (me_perm(null,"w",$event->gid)) {
+			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory",str("Legg til nyhetskategori")));
+			$blank = false;
+		}
+		$top->add($ctrl);
+		if (!$blank)
+			$page->ctrl2->add($top);
 	}
 }
 
