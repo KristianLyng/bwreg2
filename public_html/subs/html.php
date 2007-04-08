@@ -161,7 +161,7 @@ class page  extends box
 	{
 		if($this->pf)
 		{
-			$this->set_css("printfriendly.css");
+			$this->css = "css/printfriendly.css";
 			$this->add($this->content);
 		} else if (isset($this->rss)) {
 			print $this->rss->get();
