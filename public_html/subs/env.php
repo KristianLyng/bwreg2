@@ -78,6 +78,7 @@ function next_action($action, &$object)
 		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
 		"action" => $_SERVER['PHP_SELF'] . '?action=%s', 
+		"file" => '', // FIXME: doesn't really work because / gets encoded.
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
 	$wiki->setFormatConf('Xhtml',array('translate'=>HTML_SPECIALCHARS, 'charset'=>'UTF-8')); 
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);

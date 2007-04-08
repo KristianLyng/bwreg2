@@ -51,7 +51,7 @@ class page  extends box
 	var $top1;
 	var $htmltitle = "No title";
 	var $top2;
-	var $css = "default.css";
+	var $css = false;
 	var $top3;
 	var $top4;
 	var $header = "No header";
@@ -104,12 +104,15 @@ class page  extends box
 	}
 	function set_css($css) 
 	{
-		$this->css = $css;
+		if(!$this->css)
+			$this->css = $css;
 	}
 
 	function get_css()
 	{
-		return "<link href=\"css/" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\" />\n";
+		if (!$this->css)
+			$this->css = "css/default.css";
+		return "<link href=\"" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\" />\n";
 	}
 
 	function get_header()

@@ -366,7 +366,7 @@ class user extends box
 		global $db;
 		$myuser = $db->escape($user);
 		$mypass = $db->escapepass($password);
-		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra,private FROM users WHERE uname = '";
+		$query = "SELECT uid,uname,firstname,lastname,mail,birthyear,adress,phone,extra,private,css FROM users WHERE uname = '";
 		$query .= $myuser;
 		$query .= "' AND pass = ";
 		$query .= $mypass;
@@ -415,7 +415,10 @@ class user extends box
 		$this->userinfo->extra = $row['extra'];
 		$this->userinfo->options = $row['private'];
 		$this->userinfo->uname = $row['uname'];	
-		
+		global $page;
+		if ($row['css'] != null && $row['css'] != "")
+			$page->set_css($row['css']);
+		$this->userinfo->css = $row['css'];
 		for($tmp = 0; $tmp < $this->nItems; $tmp++)
 		{
 			if(function_exists($this->items[$tmp]->sqlcb))
@@ -1519,53 +1522,47 @@ class newuser
 	}
 	function set_form()
 	{
-		$form = new form();
+		$form = new table(2,"userform");
+		$t = new form();
 		$u = $this->userinfo;
-		$form->add(str("<table style=\"UserForm\"><tr>"));
-		$form->add(str("<td><label for=\"firstname\" title=\"Fornavn\">Fornavn</label></td><td>"));
+		$form->add(str("Fornavn"));
 		$form->add(ftext("firstname",$u->firstname));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Etternavn</td><td>"));
+		$form->add(str("Etternavn"));
 		$form->add(ftext("lastname",$u->lastname));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Telefonnummer</td><td>"));
+		$form->add(str("Telefonnummer"));
 		$form->add(ftext("phone",$u->phone));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("E-post</td><td>"));
+		$form->add(str("E-post"));
 		$form->add(ftext("mail",$u->mail));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Adresse</td><td>"));
+		$form->add(str("Adresse"));
 		$form->add(ftext("address",$u->adress));
-		$form->add(str("</td></tr><tr><td>\n"));
 		if (!$this->update)
 		{
-			$form->add(str("Brukernavn</td><td>"));
+			$form->add(str("Brukernavn"));
 			$form->add(ftext("user"));
-			$form->add(str("</td></tr><tr><td>\n"));
 			$form->add($this->set_pass(true));
 		} else
-			$form->add(fhidden($u->uname,"user"));
-		$form->add(str("Tilleggsinformasjon</td><td>"));
+			$t->add(fhidden($u->uname,"user"));
+		$form->add(str("Tilleggsinformasjon"));
 		$form->add(ftext("extra",$u->extra));
-		$form->add(str("</td></tr><tr><td>\n"));
-		$form->add(str("Fødselsår</td><td>"));
+		$form->add(str("Fødselsår"));
 		if (!isset($u->born))
 			$b = "19";
 		else 
 			$b = $u->born->get();
 		$form->add(ftext("born",$b,5));
-		$form->add(str("</td></tr><tr><td>\n"));
 		$form->add(str("Skjul *"));
-		$form->add(str("</td><td>"));
 		$form->add($this->set_private_form());
-		$form->add(str("</td></tr><tr><td colspan=\"2\">\n"));
 		if ($this->update)
-			$form->add(fhidden("CommitUserInfo"));
+		{
+			$form->add(str("CSS fil**"));
+			$form->add(ftext("css",$u->css));
+			$t->add(fhidden("CommitUserInfo"));
+		}
 		else
-			$form->add(fhidden("NewUserStore"));
-		$form->add(fsubmit("Lagre"));
-		$form->add(str("</td></tr></table>"));
-		return $form;
+			$t->add(fhidden("NewUserStore"));
+		$form->add(fsubmit("Lagre"),2);
+		$t->add($form);
+		return $t;
 	}
 
 	function get_pass()
@@ -1630,6 +1627,7 @@ class newuser
 			$private .= $pr;
 		}
 		$born = $_REQUEST['born'];	
+		$css = $_REQUEST['css'];
 		global $db;
 		if (!$this->update)
 		{
@@ -1715,6 +1713,7 @@ class newuser
 			$this->error = "Du har allerede en bruker ($res) i systemet. ";
 			return false;
 		}
+		$this->css = $css;
 		$this->firstname = $firstname;
 		$this->lastname = $lastname;
 		$this->phone = $phone;
@@ -1752,7 +1751,8 @@ class newuser
 			$query .= $db->escape($private) . "', birthyear = '";
 			$query .= $db->escape($nborn) . "', phone = '";
 			$query .= $db->escape($phone) . "', extra = '";
-			$query .= $db->escape($extra) . "' WHERE uname = '";
+			$query .= $db->escape($extra) . "', css = '";
+			$query .= $db->escape($css) . "' WHERE uname = '";
 			$query .= $db->escape($user) . "';";
 			if (!$db->insert($query))
 			{

@@ -141,6 +141,7 @@ CREATE TABLE `users` (
   `extra` varchar(50) default NULL,
   `pass` varchar(20) default NULL,
   `private` varchar(20) default NULL,
+  `css` varchar(50) default NULL,
   PRIMARY KEY  (`uid`)
 ) TYPE=MyISAM;
 
