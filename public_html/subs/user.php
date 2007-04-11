@@ -355,7 +355,7 @@ class user extends box
 				$array[$value->resource] = true;
 				$string .= "<option value=\"" . $value->resourceid . "\"";
 				if ( $value->resourceid == $checker )
-					$string .= " selected ";
+					$string .= " selected=\"selected\"";
 				$string .= ">" . $value->resource . "</option>\n";
 			}
 		}

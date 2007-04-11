@@ -247,20 +247,23 @@ class content
 		if (!me_perm($this->permission,"w",$event->gid))
 			return ;
 		$box = new form();
+		$box->add(str("<fieldset>"));
+		$box->add(flegend("Innholdsredigering"));
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
-		$permlist .= "<br /> Resource (ACL): <select name=\"permission\">";
+		$permlist .= "<p> Resource (ACL): <select name=\"permission\">";
 		if (isset($this->gid))
 			$gid = $this->gid;
 		else 
 			$gid = $event->gid;
 		$permlist .= $me->list_perms($gid, $this->permission,"w");
-		$permlist .= "</select>";
+		$permlist .= "</select></p>";
 		
 		$box->add(str($permlist));
 		$box->add(fhidden($this->version, "version"));
 		$box->add(fhidden("EditContentSave"));
 		$box->add(fhidden($this->title, "title"));
 		$box->add(fsubmit("Save changes"));
+		$box->add(str("</fieldset>"));
 		return $box->get();
 	}
 

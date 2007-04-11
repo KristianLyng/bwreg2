@@ -73,10 +73,11 @@ class page  extends box
 	var $lp;
 	function page($title = "no title", $header = "no header")
 	{
-		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
+		$this->top1 = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n";
+//		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
 		$this->top1 .= "<html><head><title>";
 		$this->htmltitle =  "$title";
-		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n";
+		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n";
 		$this->top4 = "</head><body><div id=\"titl\">\n";
 		$this->top5 = "</div>\n";
 		$this->header = $header;
@@ -112,7 +113,7 @@ class page  extends box
 	{
 		if (!$this->css)
 			$this->css = "css/default.css";
-		return "<link href=\"" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\" />\n";
+		return "<link href=\"" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\">\n";
 	}
 
 	function get_header()
@@ -404,11 +405,12 @@ class htmlobject {
 	var $ctrl="";
 	var $content=NULL;
 
-	function htmlobject($open, $ctrl, &$content)
+	function htmlobject($open, $ctrl, &$content,$end = false)
 	{
 		$this->open = $open;
 		$this->ctrl = $ctrl;
 		$this->content =& $content;
+		$this->end = $end;
 	}
 
 	function get()
@@ -416,15 +418,13 @@ class htmlobject {
 		$string = "<" . $this->open;
 		if ($this->ctrl != "")
 			$string .= " " . $this->ctrl;
-		if($this->content == "" || $this->content == null)
-			$string .= " /";
 		$string .= ">";
 		if(is_object($this->content))
 			$string .= $this->content->get();
 		else
 			$string .= $this->content;
 			
-		if($this->content != "" && $this->content != null)
+		if($this->content != null || $this->end)
 			$string .= "</" . $this->open . ">";
 		$string .= "\n";
 		return $string;
@@ -560,6 +560,17 @@ class table extends box
 	}
 }
 
+class dummy
+{
+	var $foo="bar";
+	function get()
+	{
+		return;
+	}
+	function getraw()
+	{
+	}
+}
 function htmlbr()
 {
 	$obj = null;
@@ -568,9 +579,12 @@ function htmlbr()
 function textarea($name, $value = "", $cols="80", $rows = "30")
 {
 	$ctrl="name=\"$name\" cols=\"$cols\" rows=\"$rows\"";
-	return new htmlobject("textarea",$ctrl,$value);
+	return new htmlobject("textarea",$ctrl,$value,true);
 }
-
+function flegend($val)
+{
+	return new htmlobject("legend","",$val,true);
+}
 function ftext($name,$value = "",$length = false, $maxlength = false)
 {
 	$obj = null;
