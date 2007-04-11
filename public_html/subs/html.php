@@ -350,7 +350,7 @@ class htmlnews extends box {
 	{	
 		$data = "<div class=\"news\">";
 		$data .= "<h1>" . $this->header1->get() . "</h1>";
-		$data .= "<h2>" . $this->header2->get() . "</h2>";
+		$data .= "<div class=\"h2\">" . $this->header2->get() . "</div>";
 		$data .= "<div class=\"newscontent\">\n";
 		$data .= parent::get();
 		$data .= "</div>\n";

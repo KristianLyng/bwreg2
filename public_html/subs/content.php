@@ -231,12 +231,14 @@ class content
 	function &editlink() {
 		global $page;
 		$meny = new menu();
-		$meny->add(str("<hr />"));
 		$meny->add(htlink($page->url() . "?action=EditContent&amp;page=" . $this->title,
 			str("Editer denne siden")));
 		$meny->add(htlink($page->url() . "?action=ContentHistory&amp;page=" . $this->title, 
 			str("Sidehistorie")));
-		return $meny;
+		$b = new box();
+		$b->add(str("<hr />"));
+		$b->add($meny);
+		return $b;
 	}
 
 	function editbox()

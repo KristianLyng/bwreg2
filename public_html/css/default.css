@@ -60,7 +60,7 @@ table.grouplist { width: 500px; }
 .infoboks { background-color: white; border-width: thin; border-style: dashed; border-color: black; }
 .infoboks p { display: block; }
 
-.userinfo { width: 200px; margin: 0; padding: 0; font-size: medium; font-weight: normal; }
+.userinfo { width: 250px; margin: 0; padding: 0; font-size: medium; font-weight: normal; }
 .userinfo h1{ font-size: large; font-weight: bold; }
 .userinfo p { font-size: small; font-weight: normal; }
 
@@ -75,7 +75,7 @@ table.loginboks { margin: 0px; background: inherit; padding: 0px; background-col
 .menuboks ul { list-style: none; }
 .menuboks li { display: block; background-color: inherit; margin: 0px; color: black; }
 .menuboks li ul { position: absolute; padding: 0px; left: -999em; } /* Hides menus until they are hovered */
-.menuboks li:hover ul { left: auto; padding: 0px; border-style: solid; border-width: medium; border-color: black; background-color: silver; z-index: 2;}
+.menuboks li:hover ul { left: auto; margin-left: 0px; border-style: solid; border-width: medium; border-color: black; background-color: silver; z-index: 2;}
 .menuboks li:hover { background-color: #aaa; }
 .menuboks li:hover .userinfo { background: silver; } /* Override hover-color for userinfo dropdowns */
 .menuboks h1 { color: purple; margin-top: 1px; margin-bottom: 1px; margin-left: 1px; margin-right: 1px; background-color: white; }

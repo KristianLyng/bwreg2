@@ -156,7 +156,7 @@ class news
 		global $page;
 		$box = new box();
 		$box->add(str("[ "));
-		$box->add(htlink($page->url() . "?action=EditNews&amp;page=NewsEditor&news=" . $newsname,str("Editer")));
+		$box->add(htlink($page->url() . "?action=EditNews&amp;page=NewsEditor&amp;news=" . $newsname,str("Editer")));
 		$box->add(str(' | '));
 		$box->add(htlink($page->url() . "?action=NewsDelete&amp;page=NewsEditor&amp;news=" . $newsname,str("Slett")));
 		$box->add(str(' ] '));
