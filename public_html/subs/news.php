@@ -49,10 +49,26 @@ class news
 		if (!$sname)
 		{
 			global $maincontent;
+			global $page;
 			$sname = $maincontent->get_keyword("NEWS");
 			if (!$sname)
 				return;
-			$ret = split(",",$sname);
+			$ret = split(":",$sname);
+			$i = 0;
+			foreach ($ret as $r)
+			{
+				if($i>0)
+				{
+					$tmp = split(",",$r);
+					if(isset($tmp[1]))
+						$c = $tmp[1];
+					else
+						$c = 10;
+					$page->content->add(new news($tmp[0],$c));
+				}
+				$i++;
+			}		
+			$ret = split(",",$ret[0]);
 			$sname = $ret[0];
 			if (isset($ret[1]))
 				$count = $ret[1];
@@ -165,6 +181,8 @@ class news
 		if ($this->content != null)
 			return $this->content->get();
 		$foo = "";
+		if (!isset($this->news))
+			return;
 		foreach ($this->news as $news)
 			$foo .= $news->get();
 		return $foo;
