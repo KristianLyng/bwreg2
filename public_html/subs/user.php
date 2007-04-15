@@ -463,18 +463,21 @@ class groupmember extends userinfo
 class group
 {
 	var $getit;
-	function group($name, $id, $gid, $desc)
+	function group($name="", $id=false, $gid="", $desc="", $level = false, $uname = false)
 	{
 		$this->getit = "name";
 		$this->name = $name;
 		$this->id = $id;
 		$this->gid = $gid;
 		$this->desc = $desc;
+		$this->level = $level;
+		$this->uname = $uname;
 	}
 	// TODO: Range checks.
 	function get_members()
 	{
 		global $db;
+		$this->members = array();
 		$this->getit = "members";
 		$query = "SELECT level, role, uname, firstname, lastname, phone, mail, birthyear, adress, extra,private FROM group_members,groups,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND groups.groupid = '";
 		$query .= $db->escape($this->id) . "' AND gid = '";
@@ -485,35 +488,323 @@ class group
 	{
 		$this->members[] = new groupmember($row);
 	}
-	function create()
+	function member_level($user,$level)
+	{
+		if ($user->uname == false || !isset($this->members))
+			return false;
+		foreach ($this->members as $mem)
+			if ($mem->uname == $user->uname && $mem->level >= $level)
+				return true;
+		global $event;
+		if (me_perm(null,"w",$event->gid))
+			return true;
+		return false;
+	}
+	function set_info_display()
 	{
 		global $me;
-		if ($me->uid == 0)
+		global $page;
+		global $event;
+		$this->id = $_REQUEST['groupid'];
+		if(!$this->fetch_old($this->id))
 			return false;
+		$this->get_members();
+		if (!$this->member_level($me,"1") && preg_match("/[ld]/",$this->options))
+			return false;
+		$tab = new table(2);
+		$tab->add(h1("Gruppeinformasjon"),2,"header");
+		$tab->add(flabel("name","Gruppenavn"));
+		$tab->add(p($this->name));
+		$tab->add(flabel("desc","Gruppebeskrivelse"));
+		$tab->add(p($this->desc));
+		$tab->add(flabel("name","Påmelding"));
+		if (strstr($this->options,'l'))
+			$tab->add(p("Låst"));
+		else if (strstr($this->options,'m'))
+			$tab->add(p("Moderert"));
+		else if (strstr($this->options,'o'))
+			$tab->add(p("Åpen"));
+		else if (strstr($this->options,'d'))
+			$tab->add(p("Gruppen er slettet"));
+		$tab->add(flabel("valg","Valg"));
+		$b = new box();
+		if ($this->get_opt("s"))
+			$b->add(p("Gruppeadministrator kan reservere plasser for medlemmene"));
+		if ($this->get_opt("t"))
+			$b->add(p("Gruppeadministrator kan bestille billetter for medlemmene"));
+		$tab->add($b);	
+		
+		$tab->add(flabel("compo","Compo"));
+		$foo = $this->get_opt("c");
+		if (!$foo)
+			$tab->add(str("Ikke en konkuransegruppe"));
+		else
+			$tab->add(str("$foo mot $foo"));
+		$page->content->add($tab);
+		$this->set_form_members();
+		
+	}
+	function get_opt($opt,$num = false)
+	{
+		if (!$num) {
+			if (strstr($opt,$this->options))
+				return true;
+			return false;
+		}
+		if (!preg_match("/$opt" . '[0-9]/',$this->options,$match))
+			return false;
+		return preg_replace("/$opt/","",$match[0]);
+	}
+	function set_form()
+	{
+		global $event;
+		global $me;
+		if ($this->id)
+		{
+			$this->get_members();
+			if (!$this->member_level($me,10))
+				return false;
+		}
+			
+		$tab = new table(2,"groupadmin");
+		$tab->add(h1("Gruppeadministrering"),2,"header");
+		$tab->add(flabel("groupname","Gruppenavn"));
+		$tab->add(ftext("groupname",$this->name));
+		$tab->add(flabel("groupdesc","Gruppebeskrivelse"));
+		$tab->add(ftext("groupdesc",$this->desc));
+		$tab->add(flabel("state","Påmelding"));
+		$b = new selectbox("state");
+		$tmp = strstr($this->options,"o");
+		$b->add(foption("o","Åpen påmelding",$tmp));
+		$tmp = strstr($this->options,"m");
+		$b->add(foption("m","Moderert påmelding",$tmp));
+		$tmp = strstr($this->options,"l");
+		$b->add(foption("l","Ingen påmelding",$tmp));
+		$tab->add($b);
+
+		$tab->add(flabel("options","Gruppeadmin kan"));
+		$bo = new box();
+		if ($this->id && !me_perm(null,"w",$event->gid))
+			$dis = true;
+		else
+			$dis = false;
+		$tmp = strstr($this->options,"s");
+		$bo->add(fcheck("options","s",$tmp,$dis));
+		$bo->add(flabel("optionss","Reservere plasser for gruppemedlemmene"));
+		$bo->add(htmlbr());
+		$tmp = strstr($this->options,"t");
+		$bo->add(fcheck("options","t",$tmp,$dis));
+		$bo->add(flabel("optionst","Bestille plasser for gruppemedlemmene"));
+		$bo->add(htmlbr());
+		$tab->add($bo);
+		
+		$tab->add(flabel("componumber","Compo-gruppe"));
+		$box = new selectbox("componumber");
+		$tmp = strstr($this->options,"c");
+		$box->add(foption("c0","Gruppa er ikke for compoer",!$tmp));
+		$tmp = strstr($this->options,"c2");
+		$box->add(foption("c2","2-on-2 gruppe",$tmp));
+		$tmp = strstr($this->options,"c3");
+		$box->add(foption("c3","3-on-3 gruppe",$tmp));
+		$tmp = strstr($this->options,"c4");
+		$box->add(foption("c4","4-on-4 gruppe",$tmp));
+		$tmp = strstr($this->options,"c5");
+		$box->add(foption("c5","5-on-5 gruppe",$tmp));
+		$tab->add($box);
+		if ($this->id)
+			$tab->add(fsubmit("Oppdater gruppa"),2);
+		else
+			$tab->add(fsubmit("Opprett gruppa"),2);
+
+		$form = new form();
+		$form->add(fhidden("GroupAdmin"));
+		if ($this->id) {
+			$form->add(fhidden($this->id,"groupid"));
+			$form->add(fhidden($this->gid,"ourgid"));
+		} else {
+			$form->add(fhidden($event->gid,"ourgid"));
+		}
+			
+		$form->add($tab);
+		global $page;
+		$page->content->add($form);
+		if ($this->id)
+			$this->set_form_members();
+	}
+	function get_form()
+	{
+		global $event;
+		global $me;
+		if ($_REQUEST['groupid'])
+		{ 
+			$groupid = $_REQUEST['groupid'];
+			$this->id = $groupid;
+			if (!$this->fetch_old($groupid))
+				return false;
+			$this->get_members();
+			if (!$this->member_level($me,10))
+				return false;
+		}
+		$gid = $_REQUEST['ourgid'];
+		$boss = me_perm(null,"w",$gid);
+		
+		$name = $_REQUEST['groupname'];
+		$desc = $_REQUEST['groupdesc'];
+		$state = $_REQUEST['state'];
+		$options = $_REQUEST['options'];
+		$componumber = $_REQUEST['componumber'];
+		global $page;
+		if (preg_match("/[^-æøå\w ]/",$name) || strlen($name) > 18) {
+			$page->warn->add(p("Navnet er ikke gyldig"));
+			return false;
+		}
+		$desc = htmlspecialchars($desc,ENT_NOQUOTES,'UTF-8');
+		if (preg_match("/[^oml]/",$state) || strlen($state) != 1) {
+			$page->warn->add(p("Påmeldingstypen er ikke gyldig"));
+			return false;
+		}
+		$t = "";
+		foreach ($options as $opt)
+		{
+			if ($opt != 's' && $opt != 't')
+			{
+				$page->warn->add(p("Valgene er ikke gyldig"));
+				return false;
+			}
+			$t .= $opt;
+		}
+		$options = $t;
+		if ($componumber == "c0") 
+			$comp = "";
+		else if (!preg_match("/c[0-9]/",$componumber))
+		{
+			$page->warn->add(p("Compovalget er ikke gyldig"));
+			return false;
+		} else
+			$comp = $componumber;
+		if ($this->id && !$boss) {
+			$opt = preg_replace("/[^st]/","",$this->options);
+			$opt .= $state . $comp;
+		} else {
+			$opt = $state . $options . $comp;
+		}
 		global $db;
-		$query = "SELECT COUNT(*) FROM groups WHERE gid = ';";
-		$query .= $db->escape($this->gid) . "' AND groupname = '";
-		$query .= $db->escape($this->name) . "';";
-		list($result) = $db->query($query);
-		if ($result > 0 or $result == NULL or $result == false)
-			return false;
-		$query = "INSERT INTO groups (gid,group_name,group_description,owner) VALUES('";
-		$query .= $db->escape($this->gid) . "','";
-		$query .= $db->escape($this->name) . "','";
-		$query .= $db->escape($this->desc) . "','";
-		$query .= $db->escape($me->uid) . "');";
-		$db->insert($query);
-		$query = "SELECT groupid FROM groups WHERE gid = ';";
-		$query .= $db->escape($this->gid) . "' AND groupname = '";
-		$query .= $db->escape($this->name) . "';";
-		list($result) = $db->query($query);
-		if ($result == false)
-			return false;
-		$query = "INSERT INTO group_members VALUES('$result','";
-		$query .= $db->escape($me->uid) . "','10','Group creator');";
-		$db->query($query);
+		if (!$this->id || $this->name != $name)
+		{
+			$query = "SELECT * FROM groups WHERE group_name = '";
+			$query .= $db->escape($name) . "' AND gid = '";
+			$query .= $db->escape($gid) . "';";
+			if ($db->query($query))
+			{
+				$page->warn->add(p("En gruppe med det navnet eksisterer alt"));
+				return false;
+			}
+		}
+
+		if ($this->id) {
+			$query = "UPDATE groups SET group_name = '";
+			$query .= $db->escape($name) . "', group_description = '";
+			$query .= $db->escape($desc) . "', options = '";
+			$query .= $db->escape($opt) . "' WHERE groupid = '";
+			$query .= $db->escape($groupid) . "' AND gid = '";
+			$query .= $db->escape($gid) . "' LIMIT 1;";
+			$db->insert($query);
+			$this->fetch_old($groupid);
+		} else {
+			$query = "INSERT INTO groups (gid,group_name,group_description,owner,options) VALUES('";
+			$query .= $db->escape($gid) . "','";
+			$query .= $db->escape($name) . "','" . $db->escape($desc) . "','";
+			$query .= $db->escape($me->uid) . "','" . $db->escape($opt) . "');";
+			$db->insert($query);
+			$query = "SELECT groupid FROM groups WHERE group_name = '";
+			$query .= $db->escape($name) . "' AND gid = '";
+			$query .= $db->escape($gid) . "';";
+			list($ret) = $db->query($query);
+			if (!$ret)
+				return false;
+			$query = "INSERT INTO group_members VALUES('" . $db->escape($ret) . "','";
+			$query .= $db->escape($me->uid) . "','10','Group Creator');";
+			$db->insert($query);
+			$this->fetch_old($ret);
+		}
+		$page->setrefresh($page->url() . "?action=ShowGroupAdmin&groupid=" . $this->id);
+	}
+	function set_form_members()
+	{
+		global $me;
+		global $event;
+		global $page;
+		$boss = me_perm(null,"w",$event->gid);
+		$set = false;
+		$guest = false;
+		if (!$this->member_level($me,1))
+			return;
+		if (!$this->member_level($me,10))
+			$guest = true;
+
+		$tab = new table(3);
+		$tab->add(h1("Gruppemedlemmer"),3,"header");
+		$tab->add(h1("Navn"));
+		if ($guest) {
+			$tab->add(h1("Nivå"),2);
+		} else {
+			$tab->add(h1("Nivå"));
+			$tab->add(str(" "));
+		}
+
+		foreach ($this->members as $mem)
+		{
+			$set = true;
+			$dropdown =& new dropdown($mem->get_name());
+			$dropdown->addst($mem->get());
+			$tab->add(&$dropdown);
+			if (($mem->uname == $me->uname && !$boss) || $guest)
+			{
+				if ($mem->level == 0)
+					$tab->add(str($mem->level . " (Søker på gruppe)"),2);
+				else
+					$tab->add(str($mem->level),2);
+				continue;
+			}
+			$f = new form();
+			$b =& new selectbox("level");
+			for ($i = 0; $i < 11; $i++)
+			{
+				if ($i == 0) 
+					$b->add(foption($i,$i . "(Søker)",$i == $mem->level));
+				else
+					$b->add(foption($i,$i,$i == $mem->level));
+			}
+			$f->add(&$b);
+			$f->add(fhidden($mem->uname,"user"));
+			$f->add(fhidden($this->id,"groupid"));
+			$f->add(fhidden($this->gid,"ourgid"));
+			$f->add(fhidden("GroupUserLevelChange"));
+			$f->add(fsubmit("Endre"));
+			$tab->add($f);
+			$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
+			$url .= $this->gid . "&amp;user=";
+			$url .= $mem->uname . "&amp;group=";
+			$url .= $this->id;
+			$link = htlink($url,str("Fjern fra gruppe"));
+			$tab->add($link);
+		}
+		if ($set)
+			$page->content->add($tab);
 	}
 
+	function fetch_old($id)
+	{
+		global $db;
+		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,options FROM groups WHERE groupid = '";
+		$query .= $db->escape($id) . "';";
+		$row = $db->query($query);
+		if (!$row)
+			return false;
+		$this->options = $row['options'];
+		$this->group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
+		return true;
+	}
 	function get()
 	{
 		if($this->getit == "name")
@@ -529,23 +820,6 @@ class group
 			}
 			return $string;
 		}
-	}
-}
-class oldgroup extends group
-{
-	function oldgroup($id)
-	{
-		global $db;
-		parent::group("","","","");
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,options FROM groups WHERE groupid = '";
-		$query .= $db->escape($id) . "';";
-		$db->query($query, &$this);
-	}
-
-	function sqlcb($row)
-	{
-		$this->options = $row['options'];
-		parent::group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
 	}
 }
 class groupresctrl extends group
@@ -585,7 +859,7 @@ class grouplist
 	}
 	function sqlcb($row)
 	{
-		$this->list[] = new group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
+		$this->list[] = new group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description'],$row['level'],$this->uname);
 	}
 	function get()
 	{
@@ -604,7 +878,7 @@ class grouplistopen extends grouplist
 		$this->title = $title;
 		parent::grouplist();
 		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
-		$query .= $db->escape($gid) . "' AND options LIKE '%$perm%';";
+		$query .= $db->escape($gid) . "' AND options LIKE '%$perm%' AND group_name != 'All';";
 		$this->uname = $uname;
 		$db->query($query,&$this);
 	}
@@ -627,7 +901,13 @@ class grouplistopen extends grouplist
 			if ($skip)
 				continue;
 			$notblank = true;
-			$tab->add(str($group->name));
+			if (me_perm(null,"w",$group->gid)) {
+				$top =& htlink($page->url() . "?page=GroupAdmin&amp;action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
+				$tab->add(&$top); 
+			} else {
+				$top =& htlink($page->url() . "?page=GroupInfo&amp;action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
+				$tab->add(&$top); 
+			}
 			$string = "";
 			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
 			{
@@ -654,11 +934,11 @@ class grouplistuser extends grouplist
 			$level = "=";
 		else
 			$level = ">";
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND group_members.level $level 0 AND users.uname = '";
+		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,group_members.level FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND group_members.level $level 0 AND users.uname = '";
 		$query .= $db->escape($uname) . "';";
-		$db->query($query,&$this);
 		$this->uname = $uname;
 		$this->title = $title;
+		$db->query($query,&$this);
 	}
 	function get()
 	{
@@ -670,9 +950,17 @@ class grouplistuser extends grouplist
 		$tab->add(h1($this->title),2,"header");
 		foreach ($this->list as $group)
 		{
-			$tab->add(str($group->name)); 
+			$super = me_perm(null,"w",$group->gid);
+			if (($group->level >= 10 && $group->uname == $me->uname) || $super) {
+				$top =& htlink($page->url() . "?page=GroupAdmin&amp;action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
+				$tab->add(&$top);
+			} else if (preg_match("/[^ld]/",$group->options)){
+				$top =& htlink($page->url() . "?page=GroupInfo&amp;action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
+				$tab->add(&$top); 
+			} else 
+				$tab->add(str($group->name));
 			$string = "";
-			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
+			if ($me->uname == $this->uname || $super)
 			{
 				$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
 				$url .= $group->gid . "&amp;user=";
@@ -815,6 +1103,10 @@ class myuser extends user
 		$this->lastcommitinfo =& add_action("CommitUserInfo",&$this);
 		$this->lastcommitpass =& add_action("CommitPassChange",&$this);
 		$this->lastresourcectrladdacl =& add_action("ResourceControlAddList",&$this);
+		$this->lastshowgroupadmin =& add_action("ShowGroupAdmin",&$this);
+		$this->lastgrouplevelchange =& add_action("GroupUserLevelChange",&$this);
+		$this->lastgroupadmin =& add_action("GroupAdmin",&$this);
+		$this->lastgroupinfodisplay =& add_action("GroupInfoDisplay",&$this);
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
@@ -905,8 +1197,16 @@ class myuser extends user
 			$page->content->add($modlist);
 			$list2 = new grouplistopen($user,$list,"o","Åpne grupper $caption kan meldes på");
 			$page->content->add($list2);
-			$list3 = new grouplistopen($user,$modlist,"m", "Modererte grupper $caption kan meldes på");
+			$modlist2 = $modlist;
+			foreach ($list->list as $item)
+				$modlist2->list[] = $item;
+			$list3 = new grouplistopen($user,$modlist2,"m", "Modererte grupper $caption kan meldes på");
 			$page->content->add($list3);
+			if (me_perm(null,"w",$event->gid))
+			{
+				$list4 = new grouplistopen($user,$modlist2,"l","Låste grupper $caption kan valse rett inn i");
+				$page->content->add($list4);
+			}
 		}	
 	}
 
@@ -966,7 +1266,8 @@ class myuser extends user
 		$user = $_REQUEST['user'];
 		$groupid = $_REQUEST['group'];
 		global $me;
-		$group = new oldgroup($groupid);
+		$group = new group();
+		$group->fetch_old($groupid);
 		if (!isset($group->id))
 		{
 			$page->warn->add(content("ErrorGroupNotFound"));
@@ -989,6 +1290,8 @@ class myuser extends user
 				$level = 1;
 			else if (strstr($group->options,"m"))
 				$level = 0;
+			else if (strstr($group->options,"l") && me_perm(null,"w",$group->gid))
+				$level = "1";
 			else
 				return ;
 			$query = "SELECT count(*) FROM group_members WHERE groupid = '";
@@ -1008,14 +1311,46 @@ class myuser extends user
 		}
 	}
 	
+	function handle_group_level_change()
+	{
+		$gid = $_REQUEST['ourgid'];
+		$user = $_REQUEST['user'];
+		$groupid = $_REQUEST['groupid'];
+		$level = $_REQUEST['level'];
+		global $me;
+		$group = new group();
+		if(!$group->fetch_old($groupid))
+			return false; // FIXME
+		$group->get_members();
+		if (!is_numeric($level))
+			return;
+		if (!$group->member_level($me,$level+1))
+			return;
+		if (me_perm(null,"w",$group->gid) || $group->member_level($me,10))
+		{
+			if (!isset($group->name))
+				return;
+			$userob = new user($user);
+			if (!isset($userob->uid) || $userob->uid == 0)
+				return;
+			$uid = $userob->uid;
+			global $db;
+			$query = "UPDATE group_members SET level = '" . $db->escape($level) . "' WHERE groupid = '";
+			$query .= $db->escape($groupid) . "' AND uid = '";
+			$query .= $db->escape($uid) . "' LIMIT 1;";
+			$db->insert($query);
+		}
+	}
 	function handle_leave_group()
 	{
 		$gid = $_REQUEST['ourgid'];
 		$user = $_REQUEST['user'];
 		$groupid = $_REQUEST['group'];
 		global $me;
-		$group = new oldgroup($groupid);
-		if ($user == $this->uname || me_perm(null,"w",$group->gid))
+		$group = new group();
+		$group->fetch_old($groupid);
+		$group->get_members();
+		if ($user == $this->uname || me_perm(null,"w",$group->gid) || $this->member_level($me,10))
 		{
 			if (!isset($group->name))
 				return;
@@ -1303,6 +1638,27 @@ class myuser extends user
 			$this->handle_leave_group();
 			$this->handle_user_info();
 			next_action($action,$this->lastleavegroup);
+		} else if ($action == "ShowGroupAdmin") {
+			$g = new group();
+			if ($_REQUEST['groupid'])
+				$g->fetch_old($_REQUEST['groupid']);
+			$g->set_form();
+			next_action($action,$this->lastshowgroupadmin);
+		} else if ($action == "GroupAdmin") {
+			$g = new group();
+			$g->get_form();
+			$g->set_form();
+			next_action($action,$this->lastgroupadmin);
+		} else if ($action == "GroupUserLevelChange") {
+			$this->handle_group_level_change();
+			$g = new group();
+			$g->fetch_old($_REQUEST['groupid']);
+			$g->set_form();
+			next_action($action,$this->lastgrouplevelchange);
+		} else if ($action == "GroupInfoDisplay") {
+			$g = new group();
+			$g->set_info_display();
+			next_action($action, $this->lastgroupinfodisplay);
 		} else {
 			parent::actioncb($action);
 		}

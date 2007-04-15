@@ -4,6 +4,10 @@ li { margin-left: 1em; }
 p { padding-bottom: 10px; }
 input { color: #781351; background: #f0f0f0; border: 1px solid #781351; } 
 input:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
+select { color: #781351; background: #f0f0f0; border: 1px solid #781351; } 
+select:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
+textarea { color: #781351; background: #f0f0f0; border: 1px solid #781351; } 
+textarea:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
 
 /* The main building blocks. Modify these to move the main items around (like menus) */
 
@@ -87,7 +91,7 @@ table.loginboks { margin: 0px; background: inherit; padding: 0px; background-col
 #infowarn .menuboks li { background-color: red; }
 #infowarn .menuboks li:hover ul { left: auto; padding: 0px; border-style: dotted; border-width: medium; border-color: black; background-color: red; }
 
-label { font-weight: bold; }
+label { }
 
 /* Most of these are for the wiki markup */
 table.nav_table { width: 100%; }

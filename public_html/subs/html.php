@@ -474,7 +474,7 @@ class selectbox extends box
 	function get()
 	{
 		$a = $this->name;
-		$str = "<select name=\"$a\">\n";
+		$str = "<select name=\"$a\" id=\"$a\">\n";
 		$str .= parent::get();
 		$str .= "</select>";
 		return $str;
@@ -598,12 +598,15 @@ function ftext($name,$value = "",$length = false, $maxlength = false)
 	}
 	else
 		$mylength = "";
-	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" value=\"$value\"", $obj);
+	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" id=\"$name\" value=\"$value\"", $obj);
 }
 
-function foption($value,$desc)
+function foption($value,$desc,$check = false)
 {
-	return new htmlobject("option","value=\"$value\"",str($desc));
+	if (!$check)
+		return new htmlobject("option","value=\"$value\"",str($desc));
+	return new htmlobject("option","value=\"$value\" selected=\"selected\"",str($desc));
+
 }
 
 function fpass($name,$length = false)
@@ -616,14 +619,16 @@ function fpass($name,$length = false)
 	return new htmlobject("input","type=\"password\" $mylength name=\"$name\"", $obj);
 }
 
-function fcheck($name,$value,$checked = false)
+function fcheck($name,$value,$checked = false,$dis=false)
 {
 	$obj = null;
 	if ($checked)
 		$add = "CHECKED";
 	else 
 		$add = "";
-	return new htmlobject("input","type=\"checkbox\" name=\"" . $name . "[]\" value=\"" . $value . "\" $add",$obj);
+	if ($dis)
+		$add .= " disabled=\"disabled\"";
+	return new htmlobject("input","type=\"checkbox\" id=\"$name$value\" name=\"" . $name . "[]\" value=\"" . $value . "\" $add",$obj);
 }
 
 function fsubmit($value = "Submit", $name = "SubmitButton")
@@ -631,6 +636,13 @@ function fsubmit($value = "Submit", $name = "SubmitButton")
 	$obj = null;
 	return new htmlobject("input","type=\"submit\" class=\"submit\" name=\"$name\" value=\"$value\"", $obj);
 }
+
+function flabel($for, $content)
+{
+	$obj = str($content);
+	return new htmlobject("label","for=\"$for\"",$obj);
+}
+
 function fhidden($action, $name = "action")
 {
 	$obj = null;
