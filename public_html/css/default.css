@@ -8,7 +8,11 @@ select { color: #781351; background: #f0f0f0; border: 1px solid #781351; }
 select:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
 textarea { color: #781351; background: #f0f0f0; border: 1px solid #781351; } 
 textarea:hover { color: #781351; background: #d0d0d0; border: 1px solid #781351; } 
-
+td[colspan="5"] { text-align: center; } 
+/* colspan="5" is a horrible trigger for this. It's used on the FremdriftsPlan page
+ * that I'm using throughout development, but this is more of a demonstration than
+ * anything else. This isn't even supported in IE as far as I know.
+ */
 /* The main building blocks. Modify these to move the main items around (like menus) */
 
 /* The title. Using "title" wasn't too popular  */
