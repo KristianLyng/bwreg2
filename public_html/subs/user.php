@@ -406,15 +406,7 @@ class user extends box
 	{
 		$this->uid = $row['uid'];
 		$this->uname = $row['uname'];
-		$this->userinfo->firstname = $row['firstname'];
-		$this->userinfo->lastname = $row['lastname'];
-		$this->userinfo->mail = $row['mail'];
-		$this->userinfo->born = new dateStuff($row['birthyear']);
-		$this->userinfo->adress = $row['adress'];
-		$this->userinfo->phone = $row['phone'];
-		$this->userinfo->extra = $row['extra'];
-		$this->userinfo->options = $row['private'];
-		$this->userinfo->uname = $row['uname'];	
+		$this->userinfo->userinfo($row);
 		global $page;
 		if ($row['css'] != null && $row['css'] != "")
 			$page->set_css($row['css']);
@@ -452,16 +444,7 @@ class groupmember extends userinfo
 {
 	function groupmember($row)
 	{
-		parent::userinfo();
-		$this->firstname = $row['firstname'];
-		$this->lastname = $row['lastname'];
-		$this->phone = $row['phone'];
-		$this->mail = $row['mail'];
-		$this->extra = $row['extra'];
-		$this->adress = $row['adress'];
-		$this->private = $row['private'];
-		$this->uname = $row['uname'];
-		$this->born = new dateStuff($row['birthyear']);
+		parent::userinfo($row);
 		$this->level = $row['level'];
 		$this->role = $row['role'];
 	}
