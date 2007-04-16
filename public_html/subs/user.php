@@ -547,7 +547,7 @@ class group
 	function get_opt($opt,$num = false)
 	{
 		if (!$num) {
-			if (strstr($opt,$this->options))
+			if (strstr($this->options,$opt))
 				return true;
 			return false;
 		}
@@ -893,10 +893,11 @@ class grouplistopen extends grouplist
 		foreach ($this->list as $group)
 		{
 			$skip = false;
-			foreach ($this->existing->list as $mygroup)
-			{
-				if ($group->id == $mygroup->id)
-					$skip = true;
+			if (is_array($this->existing->list)) {
+				foreach ($this->existing->list as $mygroup) {
+					if ($group->id == $mygroup->id)
+						$skip = true;
+				}
 			}
 			if ($skip)
 				continue;
@@ -948,6 +949,8 @@ class grouplistuser extends grouplist
 		$notblank = false;
 		$tab = new table(2,"grouplist");
 		$tab->add(h1($this->title),2,"header");
+		if (!is_array($this->list))
+				return "";
 		foreach ($this->list as $group)
 		{
 			$super = me_perm(null,"w",$group->gid);
@@ -1198,8 +1201,9 @@ class myuser extends user
 			$list2 = new grouplistopen($user,$list,"o","Åpne grupper $caption kan meldes på");
 			$page->content->add($list2);
 			$modlist2 = $modlist;
-			foreach ($list->list as $item)
-				$modlist2->list[] = $item;
+			if (is_array($list->list))
+				foreach ($list->list as $item)
+					$modlist2->list[] = $item;
 			$list3 = new grouplistopen($user,$modlist2,"m", "Modererte grupper $caption kan meldes på");
 			$page->content->add($list3);
 			if (me_perm(null,"w",$event->gid))
