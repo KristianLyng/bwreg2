@@ -31,6 +31,7 @@ require_once("subs/plugins.php");
 require_once("subs/events.php");
 require_once("subs/content.php");
 require_once("Text/Wiki.php");
+require_once("subs/news.php");
 global $page;
 global $session;
 global $user;
@@ -61,6 +62,8 @@ function next_action($action, &$object)
 
 /* Make sure we render and update action when the page is done */
 	register_shutdown_function(down);
+	if ($_REQUEST['action'] == "RssNews")
+		header("Content-type: application/RSS+xml");
 
 /* Set up the wiki-object */
 	$wiki =& new Text_Wiki();
@@ -70,11 +73,12 @@ function next_action($action, &$object)
 						 $_SERVER['PHP_SELF'] . '?page=');
 	$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
 	$sites = array(
-		"news" => $_SERVER['PHP_SELF'] . '?page=News&news=%s', 
+		"news" => $_SERVER['PHP_SELF'] . '?page=News&action=ViewNews&news=%s', 
 		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
 		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
 		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
 		"action" => $_SERVER['PHP_SELF'] . '?action=%s', 
+		"file" => '', // FIXME: doesn't really work because / gets encoded.
 		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
 	$wiki->setFormatConf('Xhtml',array('translate'=>HTML_SPECIALCHARS, 'charset'=>'UTF-8')); 
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
@@ -129,6 +133,12 @@ function next_action($action, &$object)
 	$act = $maincontent->get_keyword("ACTION");
 	if ($act != false && !isset($session->action))
 			$session->action = $act;
+
+/* Set up news handeling */
+	global $news;
+	$news = new news();
+	$page->content->add(&$news);
+
 /* Handle actions */
 	if (isset($execaction[$session->action]))
 		$execaction[$session->action]->actioncb($session->action);

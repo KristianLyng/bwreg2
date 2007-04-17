@@ -173,7 +173,7 @@ class content
 				$diff= new Text_Diff($old, $new);
 				$opt = array("trailing_context_lines" => 0, "leading_context_lines" => 0);
 				$renderer = new Text_Diff_Renderer($opt);
-				$this->content = "<pre>" . $renderer->render($diff) . "</pre>";
+				$this->content = "<pre>" . htmlentities($renderer->render($diff)) . "</pre>";
 				$this->renderme = false;
 			}
 			next_action($action,$this->lastdiff);
@@ -231,12 +231,14 @@ class content
 	function &editlink() {
 		global $page;
 		$meny = new menu();
-		$meny->add(str("<hr />"));
 		$meny->add(htlink($page->url() . "?action=EditContent&amp;page=" . $this->title,
 			str("Editer denne siden")));
 		$meny->add(htlink($page->url() . "?action=ContentHistory&amp;page=" . $this->title, 
 			str("Sidehistorie")));
-		return $meny;
+		$b = new box();
+		$b->add(str("<hr />"));
+		$b->add($meny);
+		return $b;
 	}
 
 	function editbox()
@@ -247,20 +249,23 @@ class content
 		if (!me_perm($this->permission,"w",$event->gid))
 			return ;
 		$box = new form();
+		$box->add(str("<fieldset>"));
+		$box->add(flegend("Innholdsredigering"));
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
-		$permlist .= "<br /> Resource (ACL): <select name=\"permission\">";
+		$permlist .= "<p> Resource (ACL): <select name=\"permission\">";
 		if (isset($this->gid))
 			$gid = $this->gid;
 		else 
 			$gid = $event->gid;
-		$permlist .= $me->list_perms($gid, $this->permission);
-		$permlist .= "</select>";
+		$permlist .= $me->list_perms($gid, $this->permission,"w");
+		$permlist .= "</select></p>";
 		
 		$box->add(str($permlist));
 		$box->add(fhidden($this->version, "version"));
 		$box->add(fhidden("EditContentSave"));
 		$box->add(fhidden($this->title, "title"));
 		$box->add(fsubmit("Save changes"));
+		$box->add(str("</fieldset>"));
 		return $box->get();
 	}
 

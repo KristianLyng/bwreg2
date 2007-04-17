@@ -95,7 +95,9 @@ CREATE TABLE `news` (
   `title` varchar(100) default NULL,
   `uid` int(11) NOT NULL default '0',
   `content` text,
-  `date` datetime default NULL
+  `date` datetime default NULL,
+  `identifier` varchar(100) default NULL,
+  `gid` int(11) NOT NULL default '0'
 ) TYPE=MyISAM;
 
 --
@@ -106,7 +108,7 @@ CREATE TABLE `news_categories` (
   `gid` int(11) NOT NULL default '0',
   `permission` int(11) NOT NULL default '0',
   `sname` varchar(10) default NULL,
-  `title` varchar(30) default NULL,
+  `heading` varchar(30) default NULL,
   `description` varchar(100) default NULL
 ) TYPE=MyISAM;
 
@@ -139,6 +141,7 @@ CREATE TABLE `users` (
   `extra` varchar(50) default NULL,
   `pass` varchar(20) default NULL,
   `private` varchar(20) default NULL,
+  `css` varchar(50) default NULL,
   PRIMARY KEY  (`uid`)
 ) TYPE=MyISAM;
 

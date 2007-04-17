@@ -51,7 +51,7 @@ class page  extends box
 	var $top1;
 	var $htmltitle = "No title";
 	var $top2;
-	var $css = "default.css";
+	var $css = false;
 	var $top3;
 	var $top4;
 	var $header = "No header";
@@ -73,10 +73,11 @@ class page  extends box
 	var $lp;
 	function page($title = "no title", $header = "no header")
 	{
-		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
+		$this->top1 = "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01//EN\" \"http://www.w3.org/TR/html4/strict.dtd\">\n";
+//		$this->top1 = "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
 		$this->top1 .= "<html><head><title>";
 		$this->htmltitle =  "$title";
-		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\" />\n";
+		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n";
 		$this->top4 = "</head><body><div id=\"titl\">\n";
 		$this->top5 = "</div>\n";
 		$this->header = $header;
@@ -104,12 +105,15 @@ class page  extends box
 	}
 	function set_css($css) 
 	{
-		$this->css = $css;
+		if(!$this->css)
+			$this->css = $css;
 	}
 
 	function get_css()
 	{
-		return "<link href=\"css/" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\" />\n";
+		if (!$this->css)
+			$this->css = "css/default.css";
+		return "<link href=\"" . $this->css . "\" type=\"text/css\" rel=\"stylesheet\">\n";
 	}
 
 	function get_header()
@@ -150,14 +154,20 @@ class page  extends box
 		$data .= $this->bottom;
 		return $data;
 	}
+	function rss()
+	{
+		//header('Content-type: application/RSS+xml');
+	}
 	function output()
 	{
 		if($this->pf)
 		{
-			$this->set_css("printfriendly.css");
+			$this->css = "css/printfriendly.css";
 			$this->add($this->content);
-		}
-		else
+		} else if (isset($this->rss)) {
+			print $this->rss->get();
+			return;
+		} else
 			$this->merge();
 		print($this->get());
 	}
@@ -179,13 +189,13 @@ class menu extends box{
 	}
 	function add(&$item)
 	{
-		parent::addst("<li>");
+		parent::addst("\t<li>");
 		parent::add($item);
 		parent::addst("</li>\n");
 	}
 	function addst($item)
 	{
-		parent::addst("<li>");
+		parent::addst("\t<li>");
 		parent::addst($item);
 		parent::addst("</li>\n");
 	}
@@ -201,9 +211,9 @@ class menu extends box{
 				$menu .= $this->title;
 			$menu .= "</h1>\n";
 		}
-		$menu .= "<ul>";
+		$menu .= "<ul>\n";
 		$menu .= parent::getraw();
-		$menu .= "</ul>";
+		$menu .= "</ul>\n";
 		$menu .= "</div>\n";
 		return $menu;
 	}
@@ -340,7 +350,7 @@ class htmlnews extends box {
 	{	
 		$data = "<div class=\"news\">";
 		$data .= "<h1>" . $this->header1->get() . "</h1>";
-		$data .= "<h2>" . $this->header2->get() . "</h2>";
+		$data .= "<div class=\"h2\">" . $this->header2->get() . "</div>";
 		$data .= "<div class=\"newscontent\">\n";
 		$data .= parent::get();
 		$data .= "</div>\n";
@@ -395,12 +405,12 @@ class htmlobject {
 	var $ctrl="";
 	var $content=NULL;
 
-	function htmlobject($open, $ctrl, &$content)
+	function htmlobject($open, $ctrl, &$content,$end = false)
 	{
 		$this->open = $open;
 		$this->ctrl = $ctrl;
 		$this->content =& $content;
-
+		$this->end = $end;
 	}
 
 	function get()
@@ -408,15 +418,13 @@ class htmlobject {
 		$string = "<" . $this->open;
 		if ($this->ctrl != "")
 			$string .= " " . $this->ctrl;
-		if($this->content == "" || $this->content == null)
-			$string .= " /";
 		$string .= ">";
 		if(is_object($this->content))
 			$string .= $this->content->get();
 		else
 			$string .= $this->content;
 			
-		if($this->content != "" && $this->content != null)
+		if($this->content != null || $this->end)
 			$string .= "</" . $this->open . ">";
 		$string .= "\n";
 		return $string;
@@ -431,11 +439,11 @@ class htmlobject {
 	}
 	function ctrl($ctrl)
 	{
-		$this->open = $ctrl;
+		$this->ctrl = $ctrl;
 	}
 	function content($content)
 	{
-		$this->open = $content;
+		$this->content = $content;
 	}
 }
 class form extends htmlobject
@@ -454,6 +462,22 @@ class form extends htmlobject
 	function add(&$data)
 	{
 		$this->fcontent->add($data);
+	}
+}
+class selectbox extends box
+{
+	function selectbox($name)
+	{
+		$this->name = $name;
+	}
+
+	function get()
+	{
+		$a = $this->name;
+		$str = "<select name=\"$a\" id=\"$a\">\n";
+		$str .= parent::get();
+		$str .= "</select>";
+		return $str;
 	}
 }
 
@@ -536,6 +560,17 @@ class table extends box
 	}
 }
 
+class dummy
+{
+	var $foo="bar";
+	function get()
+	{
+		return;
+	}
+	function getraw()
+	{
+	}
+}
 function htmlbr()
 {
 	$obj = null;
@@ -544,53 +579,83 @@ function htmlbr()
 function textarea($name, $value = "", $cols="80", $rows = "30")
 {
 	$ctrl="name=\"$name\" cols=\"$cols\" rows=\"$rows\"";
-	return new htmlobject("textarea",$ctrl,$value);
+	return new htmlobject("textarea",$ctrl,$value,true);
 }
-
-function ftext($name,$value = "",$length = false)
+function flegend($val)
+{
+	return new htmlobject("legend","",$val,true);
+}
+function ftext($name,$value = "",$length = false, $maxlength = false)
 {
 	$obj = null;
 	if($length != false)
-		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+	{
+		if ($maxlength != false)
+			$max = $maxlength;
+		else
+			$max = $length;
+		$mylength = "maxlength=\"$max\" size=\"$length\"";
+	}
 	else
 		$mylength = "";
-	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" value=\"$value\"", $obj);
+	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" id=\"$name\" value=\"$value\"", $obj);
+}
+
+function foption($value,$desc,$check = false)
+{
+	if (!$check)
+		return new htmlobject("option","value=\"$value\"",str($desc));
+	return new htmlobject("option","value=\"$value\" selected=\"selected\"",str($desc));
+
 }
 
 function fpass($name,$length = false)
 {
 	$obj = null;
 	if($length != false)
-		$mylength = "maxlength=\"$length\" cols=\"$length\"";
+		$mylength = "maxlength=\"$length\" size=\"$length\"";
 	else
 		$mylength = "";
 	return new htmlobject("input","type=\"password\" $mylength name=\"$name\"", $obj);
 }
 
-function fcheck($name,$value,$checked = false)
+function fcheck($name,$value,$checked = false,$dis=false)
 {
 	$obj = null;
 	if ($checked)
 		$add = "CHECKED";
 	else 
 		$add = "";
-	return new htmlobject("input","type=\"checkbox\" name=\"" . $name . "[]\" value=\"" . $value . "\" $add",$obj);
+	if ($dis)
+		$add .= " disabled=\"disabled\"";
+	return new htmlobject("input","type=\"checkbox\" id=\"$name$value\" name=\"" . $name . "[]\" value=\"" . $value . "\" $add",$obj);
 }
 
 function fsubmit($value = "Submit", $name = "SubmitButton")
 {
 	$obj = null;
-	return new htmlobject("input","type=\"submit\" name=\"$name\" value=\"$value\"", $obj);
+	return new htmlobject("input","type=\"submit\" class=\"submit\" name=\"$name\" value=\"$value\"", $obj);
 }
+
+function flabel($for, $content)
+{
+	$obj = str($content);
+	return new htmlobject("label","for=\"$for\"",$obj);
+}
+
 function fhidden($action, $name = "action")
 {
 	$obj = null;
 	return new htmlobject("input","type=\"hidden\" name=\"$name\" value=\"$action\"", $obj);
 }
 
-function &htlink($link, &$text)
+function &htlink($link, &$text,$class = false)
 {
-	return new htmlobject("a","href=\"" . $link . "\"", $text);
+	if ($class)
+		$c = "class=\"$class\"";
+	else
+		$c = "";
+	return new htmlobject("a","href=\"" . $link . "\" $c", $text);
 }
 
 function &img($url, $desc="")
