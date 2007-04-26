@@ -1,6 +1,6 @@
 <?
 /* BWreg2 Event and Genre classes
- * Copyright (C) yyyy  name of author
+ * Copyright (C) 2007 Kristian Lyngstøl
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
