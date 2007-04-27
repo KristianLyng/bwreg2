@@ -38,4 +38,4 @@ sql/ - SQL Schema files, mainly MySQL atm.
   started on the next lan? Just create a new event and data associated with
   the previous event is no longer cluttering the front page and similar.
 - Easy registration of groups for administration purposes and others. 
-
+- RSS feed on news

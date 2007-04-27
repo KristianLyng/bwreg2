@@ -201,7 +201,7 @@ class permissions
 			$query .= $db->escape($uid);
 		else
 			$query .= $uid;
-		$query .= "' OR group_members.uid = 0 OR @super > 0;";
+		$query .= "' OR group_members.uid = 1 OR @super > 0;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
