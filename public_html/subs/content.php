@@ -50,10 +50,9 @@ class content
 	var $version;
 	var $gid;
 	var $title;
-	var $contentid;
 	var $permission;
 	var $main;
-	function content($contentid = false, $version = -1)
+	function content($title = false, $version = -1)
 	{
 		global $db;
 		global $event;
@@ -64,9 +63,9 @@ class content
 		$this->renderme = true;
 		$this->gid = $event->gid;
 		$this->permission = $event->gname . "Info";
-		$query = "SELECT content,version,title,gid,permission,contentid FROM content WHERE gid='";
+		$query = "SELECT content,version,title,gid,permission FROM content WHERE gid='";
 		$query .= $db->escape($event->gid);
-		if (!$contentid)
+		if (!$title)
 		{
 			$query .= "' AND title = '";
 			if($_REQUEST['page'])
@@ -90,8 +89,8 @@ class content
 			$this->main = true;
 		} else {
 			$query .= "' AND title = '";
-			$query .= $db->escape($contentid);
-			$this->title = $contentid;
+			$query .= $db->escape($title);
+			$this->title = $title;
 			$this->main = false;
 		}
 		$query .= "'";
@@ -143,13 +142,12 @@ class content
 
 			$myversion = $db->escape($version);
 			$myversion++;
-			$query = "INSERT INTO content (gid,version,title,content,contentid,permission,uid) VALUES('";
+			$query = "INSERT INTO content (gid,version,title,content,permission,uid) VALUES('";
 			$query .= $db->escape($event->gid);
 			$query .= "','";
 			$query .= $myversion . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($content) . "','";
-			$query .= $db->escape($this->contentid) . "','";
 			$query .= $db->escape($_REQUEST['permission']) . "','";
 			$query .= $db->escape($me->uid) . "'";
 			$query .= ");";
@@ -202,7 +200,6 @@ class content
 		$this->gid = $row['gid'];
 		$this->title = $row['title'];
 		$this->permission = $row['permission'];
-		$this->contentid = $row['contentid'];
 	}
 	function gethistory()
 	{
