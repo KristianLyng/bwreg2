@@ -642,7 +642,7 @@ class newsedit extends news
 		$title = $_REQUEST['title'];
 		$content = $_REQUEST['content'];
 		$eid = 0;
-		if ($_REQUEST['eid'] == "true")
+		if (isset($_REQUEST['eid']))
 		{
 			$eid = $event->eid;
 		}
@@ -741,6 +741,13 @@ class newsedit extends news
 		$form->add(htmlbr());
 		$form->add(ftext("title",$this->title,80));
 		$form->add(htmlbr());
+		$form->add(str("Spesefikt for dette eventet: "));
+		if (isset($this->eid) && $this->eid != 0)
+			$form->add(fcheck("eid","eid",true));
+		else
+			$form->add(fcheck("eid","eid",false));
+		$form->add(htmlbr());
+
 		$form->add(str("Nyhetsinnhold:"));
 		$form->add(htmlbr());
 		$form->add(textarea("content", htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
@@ -754,7 +761,7 @@ class newsedit extends news
 		global $event;
 		global $db;
 		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
-		$query .= "news.title,news.content,news.date,users.* FROM news,news_categories,users ";
+		$query .= "news.title,news.content,news.date,news.eid,users.* FROM news,news_categories,users ";
 		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
 		$query .= "news_categories.gid = '";
 		$query .= $db->escape($event->gid) . "' AND news.identifier = '";
@@ -774,6 +781,7 @@ class newsedit extends news
 		$this->content = $row['content'];
 		$this->sname = $row['sname'];
 		$this->date = $row['date'];
+		$this->eid = $row['eid'];
 		$this->user = new userinfo($row);
 		return true;
 	}
