@@ -1938,7 +1938,7 @@ class newuser
 	{
 		if (!$inline)
 		{
-			$form = new form(2,"UserForm");
+			$form = new form();
 			$t = new table(2);
 			$form->add(fhidden($this->userinfo->uname,"user"));
 			$form->add(fhidden("CommitPassChange"));
@@ -1951,7 +1951,7 @@ class newuser
 			$t->add(fpass("pass_confirm",9));
 			$t->add(fsubmit("Endre"),2);
 			$form->add($t);
-			return $t;
+			return $form;
 		} else {
 			$form = new box();
 			$form->add(str("Passord"));
