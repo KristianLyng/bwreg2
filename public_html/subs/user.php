@@ -1188,8 +1188,9 @@ class myuser extends user
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
 			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",str("Endre brukerinformasjonen")));
-		$tmp = "Modererte grupper $caption har søkt på";
+		$tmp = "Modererte grupper $caption har s&oslash;kt p&aring;";
 		$modlist = new grouplistuser($user,true,$tmp);
+		$modlist2 = new grouplistuser($user,true,$tmp);
 		$tmp = "Grupper $caption er med i";
 		$list = new grouplistuser($user,false,$tmp);
 		if (!strstr($userinfo->options,"g") || $seeall) 
@@ -1198,9 +1199,8 @@ class myuser extends user
 		if ($this->userinfo == $userinfo || me_perm(null,"w",$event->gid))
 		{
 			$page->content->add($modlist);
-			$list2 = new grouplistopen($user,$list,"o","Åpne grupper $caption kan meldes på");
+			$list2 = new grouplistopen($user,$list,"o","&aring;pne grupper $caption kan meldes p&aring;");
 			$page->content->add($list2);
-			$modlist2 = $modlist;
 			if (is_array($list->list))
 				foreach ($list->list as $item)
 					$modlist2->list[] = $item;
