@@ -1680,7 +1680,7 @@ class myuser extends user
 		$t = new table("2","loginboks");
 		$form = new form();
 		$t->add(str("Brukernavn"));
-		$t->add(ftext("uname","",9));
+		$t->add(ftext("uname","",9,12));
 		$t->add(str("Passord"));
 		$t->add(fpass("pass",9,8));
 		$t->add(str(""));
@@ -1888,7 +1888,7 @@ class newuser
 		if (!$this->update)
 		{
 			$form->add(str("Brukernavn"));
-			$form->add(ftext("user"));
+			$form->add(ftext("user","",9,12));
 			$p = $this->set_pass(true);
 			foreach ($p->items as $ob)
 				$form->add($ob);
