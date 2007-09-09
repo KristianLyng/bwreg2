@@ -270,7 +270,7 @@ class Ticket
 		$db->insert($query);
 		$this->setState();
 		if (!$this->isOrdered())
-			$page->warn->add(h1("Biletten ble avbestillt."));
+			$page->warn->add(h1("Billetten ble avbestillt."));
 		else
 			return false;
 		return true;
@@ -370,7 +370,7 @@ class Ticket_System
 			if (!$this->loggedin)
 			{
 				$page->warn->add(h1("Bestillingen kunne ikke gjennomf&oslash;res."));
-				$page->warn->add(p("Du m&aring; logge inn for &aring; bestille en bilett."));
+				$page->warn->add(p("Du m&aring; logge inn for &aring; bestille en billett."));
 			}
 			elseif ($this->self_ticket->placeOrder())
 			{
@@ -413,24 +413,24 @@ class Ticket_System
 				case "queue":
 					$box->add(str("Nummer " . $this->self_ticket->getQueue() . " i k&oslash;en"));
 					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
-					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				case "ordered":
 					$box->add(str("Bestillt, men ikke betalt"));
 					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
-					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				case "payed":
 					$box->add(str("Bestillt og betalt"));
 					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
-					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				default:
 					$box->add(str("Ikke bestillt"));
 					break;
 			}
 		}
-		$box->add(str("Antall biletter: " . $this->ticket_state->getTickets()));
+		$box->add(str("Antall billetter: " . $this->ticket_state->getTickets()));
 		$box->add(str("Antall solgt: " . $this->ticket_state->getOrdered()));
 		$box->add(str("P&aring; venteliste: " . $this->ticket_state->getQueue()));
 		if ($this->ticket_state->isEnabled())
