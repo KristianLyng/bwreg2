@@ -229,6 +229,10 @@ class Ticket
 		return $this->ticket_state;
 	}
 	
+	public function getTicketId ()
+	{
+		return $this->ticket_id;
+	}
 	/* Returns how far down in the queue the ticket is */
 	public function getQueue()
 	{
@@ -249,7 +253,28 @@ class Ticket
 		return $this->state;
 	}
 
-	
+	public function cancelOrder ()
+	{
+		global $page;
+		global $db;
+		if (!$this->isOrdered())
+			return false;
+		if (!$this->in_db)
+			return false;
+		$new = 'canceled-not-payed';
+		if ($this->state == 'payed')
+			$new = 'canceled-payed';
+		$query = "UPDATE tickets SET state = '" . $new . "' WHERE ".
+			"eid = '" . $db->escape($this->eid) . "' AND ".
+			"ticket_id = '". $db->escape($this->ticket_id) . "' LIMIT 1;";
+		$db->insert($query);
+		$this->setState();
+		if (!$this->isOrdered())
+			$page->warn->add(h1("Biletten ble avbestillt."));
+		else
+			return false;
+		return true;
+	}	
 	/* Places an order if possible. Returns FALSE if unsuccessfull, TRUE if 
 	 * the order is placed and the user is confirmed as either ordered OR 
 	 * in the queue. Returns true if the user already placed an order too.
@@ -312,15 +337,16 @@ class Ticket_System
 			$this->admin = true;
 		if (me_perm($this->perm, "r"))
 			$this->crew = true;
+		$this->register_actioncb();
 		if ($me->uid <= 1)
 		{
 			$this->loggedin = false;
 			$this->ticket_state = new Ticket_state ($event->eid);
 			return;
 		}
+		$this->loggedin = true;
 		$this->self_ticket = new Ticket($me->uid, $event->eid);
 		$this->ticket_state = $this->self_ticket->getTicketState();
-		$this->register_actioncb();
 	}
 	
 	/* Register all the relevant action cb's
@@ -328,6 +354,12 @@ class Ticket_System
 	private function register_actioncb()
 	{
 		$this->last['OrderTicket'] =& add_action("OrderTicket", &$this);
+		if ($this->loggedin)
+		{
+			$this->last['PaymentInfo'] =& add_action("PaymentInfo", &$this);
+			$this->last['TicketCancel'] =& add_action('TicketCancel',&$this);
+			$this->last['TicketCancelConfirm'] =& add_action('TicketCancelConfirm',&$this);
+		}
 	}
 
 	public function actioncb($action)
@@ -335,8 +367,33 @@ class Ticket_System
 		global $page;
 		if ($action == "OrderTicket")
 		{
-			$this->self_ticket->placeOrder();
-
+			if (!$this->loggedin)
+			{
+				$page->warn->add(h1("Bestillingen kunne ikke gjennomf&oslash;res."));
+				$page->warn->add(p("Du m&aring; logge inn for &aring; bestille en bilett."));
+			}
+			elseif ($this->self_ticket->placeOrder())
+			{
+				$page->warn->add(h1("Bestillingen er gjennomf&oslash;rt!"));
+				$page->warn->add(p("Se p&aring; billettstatus for &aring; se om du er i ventelisten eller har f&aring;tt; tildelt en billett."));
+			}
+			else
+			{
+				$page->warn->add(h1("Bestillingen kunne ikke gjenommf&oslash;res"));
+			}
+		}
+		else if ($action == "PaymentInfo")
+		{
+			$page->content->add(htlink($page->url() . "?action=TicketCancel",str("Avbestill")));
+		}
+		else if ($action == "TicketCancel")
+		{
+			$page->content->add(htlink($page->url() . "?action=TicketCancelConfirm",str("Bekreft avbestilling")));
+		}
+		else if ($action == "TicketCancelConfirm")
+		{
+			if (is_object($this->self_ticket))
+				$this->self_ticket->cancelOrder ();
 		}
 		next_action($action,$this->last[$action]);
 	}
@@ -346,26 +403,33 @@ class Ticket_System
 	 */
 	private function generateStatus ()
 	{
-		if ($this->self_ticket == null)
-			return "";
 		$box = new htlist();
-		$state = $this->self_ticket->getState();
-		switch ($state)
+		global $page;
+		if ($this->self_ticket != null)
 		{
-			case "queue":
-				$box->add(str("Nummer " . $this->self_ticket->getQueue() . " i k&oslash;en"));
-				break;
-			case "ordered":
-				$box->add(str("Bestillt, men ikke betalt"));
-				break;
-			case "payed":
-				$box->add(str("Bestillt og betalt"));
-				break;
-			default:
-				$box->add(str("Ikke bestillt"));
-				break;
+			$state = $this->self_ticket->getState();
+			switch ($state)
+			{
+				case "queue":
+					$box->add(str("Nummer " . $this->self_ticket->getQueue() . " i k&oslash;en"));
+					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					break;
+				case "ordered":
+					$box->add(str("Bestillt, men ikke betalt"));
+					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					break;
+				case "payed":
+					$box->add(str("Bestillt og betalt"));
+					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(str("Bilettnummer: " . $this->self_ticket->getTicketId()));
+					break;
+				default:
+					$box->add(str("Ikke bestillt"));
+					break;
+			}
 		}
-
 		$box->add(str("Antall biletter: " . $this->ticket_state->getTickets()));
 		$box->add(str("Antall solgt: " . $this->ticket_state->getOrdered()));
 		$box->add(str("P&aring; venteliste: " . $this->ticket_state->getQueue()));
@@ -376,6 +440,7 @@ class Ticket_System
 
 		return $box;
 	}
+
 	public function get ()
 	{
 		$box = new infoboks();
