@@ -1,0 +1,37 @@
+The ticket system needs to:
+
+1. Be event-specific
+2. Max one row per user
+3. Allow multiple states - Queue, Ordered, Payed
+4. Allow independant arrival state - Arrived/not arrived
+5. QueueID - A unique ID for everyone in queue, incrementing.
+6. Ticket ID
+7. Have a state
+8. Also allow for seating
+7.1 - ticket_state
+7.2 One row per event
+7.3 force - Enable - Disable - None: Can forcefully disable/enable ticket registration during the ticket period
+7.4 period_start - Defines the start of ticket sale period
+7.5 period_end - Defines the end of ticket sale period
+7.6 option_queue - True/False: Whether queues are allowed
+7.7 seating_start
+7.8 seating_end
+
+ticket_state
+eid - 
+force
+period_start
+period_end
+option_queue
+seating_start
+seating_end
+seating_group_start
+seating_group_end
+seating_group_size
+
+eid
+uid
+state - queue/ordered/payed/canceled-not-payed/canceled-and-payed/canceled-and-refunded
+arrived - True/False
+queueID - autoincrement ?
+ticketID - Unique. Autoincrement?
