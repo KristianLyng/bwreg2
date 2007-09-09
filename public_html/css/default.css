@@ -79,6 +79,11 @@ table.loginboks { margin: 0px; background: inherit; padding: 0px; background-col
 .loginboks td { background: silver; margin: 0px; padding: 0px; }
 .loginboks tr { background: silver; margin: 0px; padding: 0px; }
 
+#ctrl2 .infoboks { background-color: inherit; margin: 1px; padding: 1px; border-style: none; }
+#ctrl2 .infoboks h1 { color: purple; margin-top: 1px; margin-bottom: 1px; margin-left: 1px; margin-right: 1px; background-color: white; }
+#ctrl2 .infoboks ul { list-style: none; }
+#ctrl2 .infoboks li { margin: 1px; font-size: small; }
+
 .menuboks { background-color: inherit; margin: 1px; padding: 1px; }
 .menuboks ul { list-style: none; }
 .menuboks li { display: block; background-color: inherit; margin: 0px; color: black; }

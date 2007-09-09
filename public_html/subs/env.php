@@ -32,6 +32,7 @@ require_once("subs/events.php");
 require_once("subs/content.php");
 require_once("Text/Wiki.php");
 require_once("subs/news.php");
+require_once("subs/ticket.php");
 global $page;
 global $session;
 global $user;
@@ -121,6 +122,8 @@ function next_action($action, &$object)
 	} 
 	$page->content->add($maincontent);
 
+/* Ticket handeling */
+	$ticket = new Ticket_System($event);
 
 /* Populate the menu */
 	$menu = new menuboks($event->title);
@@ -133,6 +136,8 @@ function next_action($action, &$object)
 	$act = $maincontent->get_keyword("ACTION");
 	if ($act != false && !isset($session->action))
 			$session->action = $act;
+
+	$page->ctrl2->add($ticket);
 
 /* Set up news handeling */
 	global $news;

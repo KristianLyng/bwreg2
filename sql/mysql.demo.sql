@@ -8,6 +8,7 @@
 -- Table structure for table `content`
 --
 
+SET foreign_key_checks = 0;
 CREATE TABLE `content` (
   `contentid` int(11) NOT NULL default '0',
   `version` int(11) NOT NULL default '0',

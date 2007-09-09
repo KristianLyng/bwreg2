@@ -177,10 +177,44 @@ class page  extends box
 	}
 }
 
+class htlist extends box 
+{
+	function add(&$item)
+	{
+		parent::addst("\t<li>");
+		parent::add($item);
+		parent::addst("</li>\n");
+	}
+	function addst($item)
+	{
+		parent::addst("\t<li>");
+		parent::addst($item);
+		parent::addst("</li>\n");
+	}
+	function get()
+	{
+		$menu = "<ul>\n";
+		$menu .= parent::getraw();
+		$menu .= "</ul>\n";
+		return $menu;
+	}
+
+	function getraw()
+	{
+		return $string . "<ul>\n" . parent::get() . "</ul>";
+	}
+
+	function output()
+	{
+		print($this->get());
+	}
+
+}
 /* This is a basic menu.
  * You can add this recursivly,. They will use the getraw
  */
-class menu extends box{
+class menu extends box
+{
 	var $title = "";
 
 	function menu($title = "")
