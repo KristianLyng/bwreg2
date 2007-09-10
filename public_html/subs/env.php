@@ -85,7 +85,9 @@ function next_action($action, &$object)
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
 	$wiki->setRenderConf('xhtml', 'url','target', null);
-
+// Normal exceptions until $page is up.
+try 
+{
 /* Set up the basic enviroment */
 	$session = new session();
 	$config = new config();
@@ -96,7 +98,13 @@ function next_action($action, &$object)
 
 /* Create the default top page */
 	$page = new page();
+} catch (Exception $e)
+{
+    print "En fatal feil oppstod: " . $e->getMessage();
+}
 
+try
+{
 /* Create information about the logged in user */
 	$me = new myuser();
 
@@ -147,7 +155,11 @@ function next_action($action, &$object)
 /* Handle actions */
 	if (isset($execaction[$session->action]))
 		$execaction[$session->action]->actioncb($session->action);
-
+}
+catch (Error $e)
+{
+    $page->warn->add($e);
+}
 /* Enviromental classes too small for their own file
  */
 class session

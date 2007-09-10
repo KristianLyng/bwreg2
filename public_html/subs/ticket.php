@@ -324,7 +324,7 @@ class Ticket_Admin
 	{
 		$this->event = $event;
 		if (!me_perm($event->gname . "Ticket", "w"))
-			throw new Exception("Not sufficient permission");
+			throw new Error("Not sufficient permission");
 	}
 	public function get()
 	{
@@ -417,13 +417,7 @@ class Ticket_System
 		}
 		else if ($action == "TicketAdmin")
 		{
-			try {
-				$page->content->add(new Ticket_Admin($this->event));
-			}
-			catch (Exception $e)
-			{
-				$page->warn->add(str($e->getMessage()));
-			}
+			$page->content->add(new Ticket_Admin($this->event));
 		}
 		next_action($action,$this->last[$action]);
 	}
