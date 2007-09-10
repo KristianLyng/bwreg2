@@ -317,6 +317,21 @@ class Ticket
 	}
 }
 
+class Ticket_Admin
+{
+	private $event;
+	function Ticket_Admin(Event $event)
+	{
+		$this->event = $event;
+		if (!me_perm($event->gname . "Ticket", "w"))
+			throw new Exception("Not sufficient permission");
+	}
+	public function get()
+	{
+		return "hei";
+	}
+}
+
 /* The user-facing class, this presents the user with an interface to the Ticket
  * class. Both from a sysadmin and normal user perspective.
  */
@@ -329,6 +344,7 @@ class Ticket_System
 	private $last = null;
 	private $self_ticket = null;
 	private $ticket_state = null;
+	private $eid;
 	public function Ticket_System(Event $event)
 	{
 		global $me;
@@ -348,6 +364,7 @@ class Ticket_System
 			$this->ticket_state = $this->self_ticket->getTicketState();
 			$this->loggedin = true;
 		}
+		$this->event = $event;
 		$this->register_actioncb();
 	}
 	
@@ -361,6 +378,7 @@ class Ticket_System
 			$this->last['PaymentInfo'] =& add_action("PaymentInfo", &$this);
 			$this->last['TicketCancel'] =& add_action('TicketCancel',&$this);
 			$this->last['TicketCancelConfirm'] =& add_action('TicketCancelConfirm',&$this);
+			$this->last['TicketAdmin'] =& add_action('TicketAdmin',&$this);
 		}
 	}
 
@@ -396,6 +414,16 @@ class Ticket_System
 		{
 			if (is_object($this->self_ticket))
 				$this->self_ticket->cancelOrder ();
+		}
+		else if ($action == "TicketAdmin")
+		{
+			try {
+				$page->content->add(new Ticket_Admin($this->event));
+			}
+			catch (Exception $e)
+			{
+				$page->warn->add(str($e->getMessage()));
+			}
 		}
 		next_action($action,$this->last[$action]);
 	}
