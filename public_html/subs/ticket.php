@@ -337,16 +337,18 @@ class Ticket_System
 			$this->admin = true;
 		if (me_perm($this->perm, "r"))
 			$this->crew = true;
-		$this->register_actioncb();
 		if ($me->uid <= 1)
 		{
 			$this->loggedin = false;
 			$this->ticket_state = new Ticket_state ($event->eid);
-			return;
 		}
-		$this->loggedin = true;
-		$this->self_ticket = new Ticket($me->uid, $event->eid);
-		$this->ticket_state = $this->self_ticket->getTicketState();
+		else
+		{
+			$this->self_ticket = new Ticket($me->uid, $event->eid);
+			$this->ticket_state = $this->self_ticket->getTicketState();
+			$this->loggedin = true;
+		}
+		$this->register_actioncb();
 	}
 	
 	/* Register all the relevant action cb's
