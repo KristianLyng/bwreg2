@@ -317,18 +317,386 @@ class Ticket
 	}
 }
 
-class Ticket_Admin
+/* Builds a dynamic table.
+ */
+class Table_Builder
 {
-	private $event;
-	function Ticket_Admin(Event $event)
+	private $cols = 0;
+	private $class = false;
+	private $rows;
+	function Table_Builder($header = null, $class = false)
 	{
-		$this->event = $event;
-		if (!me_perm($event->gname . "Ticket", "w"))
-			throw new Error("Not sufficient permission");
+		$this->class = $class;
+		$this->header = $header;
+		$this->rows = array();
+	}
+
+	public function addRow (array $data)
+	{
+		$this->rows[] = $data;
+		if ($this->cols < count($data))
+			$this->cols = count($data);
+	}
+
+	public function get()
+	{
+		$tab = new table($this->cols, $this->class);
+		if (is_array($this->header))
+		{
+			foreach ($this->header as $tmp)
+				$tab->add(str($tmp));
+		}
+		foreach ($this->rows as $row)
+		{
+			$pad = $this->cols - count($row);
+			$counter = count($row);
+			foreach ($row as $col)
+			{
+				if (!is_object($col))
+					$col = str($col);
+				if ($counter == 0)
+					$tab->add($col,$pad);
+				$tab->add($col);
+			}
+		}
+		return $tab->get();
+	}
+}
+
+class Search_Builder
+{
+	private $callback;
+	private $tbuilder;
+	function Search_Builder($query, $header = null, $callback = null)
+	{
+		global $db;
+		$this->callback = $callback;
+		$this->tbuilder = new Table_Builder($header);
+		$db->query($query,&$this);
+	}
+	private function sqlCleaner($row)
+	{
+		$newrow = array();
+		foreach ($row as $a => $r)
+		{
+			if (is_int($a))
+				continue;
+			$newrow[$a] = $r;
+		}
+		return $newrow;
+	}
+	public function sqlcb($row)
+	{
+		$row = $this->sqlCleaner($row);
+		if ($this->callback == null)
+			$this->tbuilder->addRow($row);
+		else
+		{
+			$r = $this->callback->searchcb($row);
+			$this->tbuilder->addRow($r);
+		}
 	}
 	public function get()
 	{
-		return "hei";
+		return $this->tbuilder->get();
+	}
+}
+class Search_Criteria
+{
+	public $state; // AND NOT OR
+	public $value;
+	public function Search_Criteria ($value,$state = "AND")
+	{
+		$this->value = $value;
+		$this->state = $state;
+	}
+	public function getSql($name, $first = false)
+	{
+		if (!$first)
+			$q = database::escape($this->state);
+		else
+			$q = "WHERE";
+	    $q .= " $name LIKE '" . database::escape($this->value) . "' ";
+		return $q;
+	}
+}
+
+class Ticket_Criteria
+{
+	private $firstname;
+	private $lastname;
+	private $state; // ordered,queue,etc
+	private $ticket_id;
+	private $orderby = "firstname";
+
+	public function Ticket_Criteria()
+	{
+		if (isset($_REQUEST['searchfirstname']) && $_REQUEST['searchfirstname'] != "")
+			$this->firstname = new Search_Criteria ($_REQUEST['searchfirstname']);
+		if (isset($_REQUEST['searchlastname']) && $_REQUEST['searchlastname'] != "")
+			$this->lastname = new Search_Criteria ($_REQUEST['searchlastname']);
+		if (isset($_REQUEST['searchstate']) && $_REQUEST['searchstate'] != "")
+			$this->state = new Search_Criteria ($_REQUEST['searchstate']);
+		if (isset($_REQUEST['searchticketid']) && $_REQUEST['searchticket_id'] != "")
+			$this->ticketid = new Search_Criteria ($_REQUEST['searchticket_id']);
+		if (isset($_REQUEST['searchorderby']) && $_REQUEST['searchorderby'] != "")
+			$this->orderby = $_REQUEST['searchorderby'];
+	}
+
+	// Fetches the parts after WHERE
+	public function getSqlMatch ()
+	{
+		$query = "";
+		$first = true;
+		if ($this->firstname != null)
+		{
+			$query .= $this->firstname->getSql('firstname',$first);
+			$first = false;
+		}
+		if ($this->lastname != null)
+		{
+			$query .= $this->lastname->getSql('lastname',$first);
+			$first = false;
+		}
+		if ($this->state != null)
+		{
+			$query .= $this->state->getSql('state',$first);
+			$first = false;
+		}
+		if ($this->ticket_id != null)
+		{
+			$query .= $this->ticket_id->getSql('ticket_id',$first);
+		}
+		$query .= "ORDER BY " . database::escape($this->orderby);
+		return $query;
+	}
+}
+
+class Ticket_Admin
+{
+	private $event;
+	private $criteria;
+	private $admin = false;
+	private $DEFAULTDISPLAY = array('ticket_id','firstname','lastname','state','uname');
+	function Ticket_Admin(Event $event)
+	{
+		$this->event = $event;
+		if (!me_perm($event->gname . "Ticket", "r"))
+			throw new Error("Not sufficient permission");
+		if (me_perm($event->gname . "Ticket", "w"))
+			$this->admin = True;
+		$this->dispatchEvent ();
+	}
+
+	/* Lists tickets based on criteria */
+	private function displayList ()
+	{
+		if (is_array($_REQUEST['searchshow']))
+			$display = $_REQUEST['searchshow'];
+		else
+			$display = $this->DEFAULTDISPLAY;
+		$query = "SELECT ";
+		$first = true;
+		foreach ($display as $d)
+		{
+			if ($d == "pass")
+				continue;
+			if (!$first)
+			{
+				$query .= ",";
+			}
+			else
+			{
+				$first = false;
+			}
+			$query .= database::escape($d);
+		}
+		$this->display = $display;
+
+		$query .= " FROM users join tickets on users.uid = tickets.uid ";
+		$this->criteria = new Ticket_Criteria();
+		$query .= $this->criteria->getSqlMatch();
+		$foo = array("Control");
+		foreach ($display as $d)
+		{
+			if ($d == 'ticket_id' || $d == 'seat' || $d == 'state')
+				continue;
+			$foo[] = $d;
+		}
+		$sb = new Search_Builder($query,$foo,&$this);
+		$form = new form();
+		$b = $this->rebuildSearchForm();
+		$form->add($b);
+		$form->add(fsubmit("Search",'searchaction'));
+		$form->add($sb);
+		$form->add(fsubmit("Save All",'searchaction'));
+		$form->add(fhidden('TicketAdmin'));
+		$this->sb = $form;
+	}
+	
+	/* Rebuilds the search form supplied using fhidden(), so submitting will
+	 * reproduce the last search.
+	 */
+	private function rebuildSearchForm ()
+	{
+		$box = new box();
+		$temptable = new table(3);
+		$tm = array ('firstname','lastname','seat','seater','ticket_id','state','users.uid');
+		$tmp = array('searchfirstname','searchlastname','searchticket_id','searchstate');
+		$state = array('','queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
+		$orderbox = new selectbox('searchorderby');
+		foreach ($tm as $t)
+		{
+			$temptable->add(str($t));
+			if (in_array($t, $this->display))
+				$true = true;
+			else
+				$true = false;
+			if (in_array('search' . $t, $tmp))
+			{
+				$temptable->add(fcheck('searchshow',$t, $true));
+				if ($t != 'state') 
+				{
+					if (isset($_REQUEST['search' . $t]))
+						$temptable->add(ftext('search' . $t, $_REQUEST['search' . $t]));
+					else
+						$temptable->add(ftext('search' . $t, ""));
+				}
+				else
+				{
+					$s = new selectbox('searchstate');
+					foreach ($state as $onestate)
+					{
+						if ($_REQUEST['searchstate']  == $onestate)
+						{
+							$s->add(foption($onestate,$onestate,true));
+						}
+						else
+						{
+							$s->add(foption($onestate,$onestate,false));
+						}
+					}
+					$temptable->add($s);
+
+
+				}
+			} else
+				$temptable->add(fcheck('searchshow',$t, $true),2);
+			if ($_REQUEST['searchorderby'] == $t) 
+				$orderbox->add(foption($t,$t,true));
+			else
+				$orderbox->add(foption($t,$t,false));
+		}
+		$box->add($temptable);
+		$box->add(str("Sorter etter:"));
+		$box->add($orderbox);
+		return $box;
+	}
+	function searchcb($row)
+	{
+		$box = new box();
+		if (isset($row['ticket_id']))
+		{
+			$box->add(fcheck("searchcommit",$row['ticket_id']));
+			if (isset($row['state']))
+			{
+				$s = new selectbox("searchstatecommit" . $row['ticket_id']);
+				$state = array('queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
+				foreach ($state as $st)
+				{
+					if ($row['state'] == $st)
+						$s->add(foption($st,$st,true));
+					else
+						$s->add(foption($st,$st,false));
+				}
+				$box->add($s);
+			}
+			if (isset($row['seat']))
+			{
+				$box->add(ftext('commitseat' . $row['ticket_id'],$row['seat'],2,4));
+			}
+			$box->add(fradio("saveoneid",$row['ticket_id']));
+			$box->add(str($row['ticket_id']));
+			$box->add(fsubmit("Save One","searchaction" ));
+		}
+		
+		$newrow = array();
+		$newrow[] = $box;
+		foreach ($row as $a => $item)
+		{
+			if ($a == 'ticket_id' || $a == 'seat' || $a == 'state')
+				continue;
+			$newrow[] = $item;
+		}
+
+		return $newrow;
+	}
+
+	private function saveId($id)
+	{
+		if (!$this->admin)
+			throw new Error ("Ikke tilstrekkelig rettigheter til &aring; lagre endringer");
+		$state = $_REQUEST['searchstatecommit' . $id];
+		if (isset($_REQUEST['commitseat' . $id]))
+		{
+			$seat = $_REQUEST['commitseat' . $id];
+			$query = "UPDATE tickets SET state = '" . database::escape($state) . "',seat='" . database::escape($seat) . "' WHERE ticket_id = '" . database::escape($id) . "';";
+		}
+		else
+		{
+			$query = "UPDATE tickets SET state = '" . database::escape($state) . "' WHERE ticket_id = '" . database::escape($id) . "';";
+		}
+		global $db;
+		global $page;
+		$page->warn->add(p("TicketAdmin: Lagrer endring for ticket_id $id"));
+		$db->insert($query);
+	}
+	private function saveAll()
+	{
+		if (!is_array($_REQUEST['searchcommit']))
+			throw new Error ("No ID submitted");
+		foreach ($_REQUEST['searchcommit'] as $id)
+			$this->saveId($id);
+
+	}
+	private function saveOne()
+	{
+		if (!isset($_REQUEST['saveoneid']))
+			throw new Error("No ID submitted");
+		$this->saveId($_REQUEST['saveoneid']);
+	}
+
+	/* Handles the "internal" ticket admin event/action dispatching.
+	 */
+	private function dispatchEvent ()
+	{
+		$event = $_REQUEST['searchaction'];
+		try
+		{
+			switch ($event)
+			{
+				case 'Save All':
+					$this->saveAll();
+					break;
+				case 'Save One':
+					$this->saveOne();
+
+					break;
+				default:
+			}
+		} catch (Error $e)
+		{
+			global $page;
+			$page->warn->add($e);
+		}
+		$this->displayList();
+	}
+	public function get()
+	{
+		if (is_object($this->sb))
+			return $this->sb->get();
+		else
+			return "";
 	}
 }
 

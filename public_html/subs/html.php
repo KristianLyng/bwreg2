@@ -635,6 +635,14 @@ function ftext($name,$value = "",$length = false, $maxlength = false)
 	return new htmlobject("input","type=\"text\" $mylength name=\"$name\" id=\"$name\" value=\"$value\"", $obj);
 }
 
+function fradio($name,$value,$check = false)
+{
+	$obj = null;
+	if (!$check)
+		return new htmlobject("input","type=\"radio\" name=\"$name\" value=\"$value\"",$obj);
+	return new htmlobject("input","type=\"radio\" name=\"$name\" value=\"$value\" checked=\"checked\"",$obj);
+
+}
 function foption($value,$desc,$check = false)
 {
 	if (!$check)
