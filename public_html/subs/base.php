@@ -157,4 +157,16 @@ class Error extends Exception
 	return $this->message;
     }
 }
+
+function BWlog($level,$message,$module = "")
+{
+	global $db;
+	if (!is_object($db))
+		return false;
+	global $event;
+	global $me;
+	$query = "INSERT INTO log (uid,gid,eid,level,module,message) VALUES('" . database::escape($me->uid) . "','" . $event->gid . "','" . $event->eid . "','" . database::escape($level) . "','" . database::escape($module) . "','" . database::escape($message) . "');";
+	$db->insert($query);
+	
+}
 ?>

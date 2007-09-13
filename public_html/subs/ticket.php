@@ -477,7 +477,7 @@ class Ticket_Admin
 	private $event;
 	private $criteria;
 	private $admin = false;
-	private $DEFAULTDISPLAY = array('ticket_id','firstname','lastname','state','uname');
+	private $DEFAULTDISPLAY = array('ticket_id','state');
 	function Ticket_Admin(Event $event)
 	{
 		$this->event = $event;
@@ -495,7 +495,7 @@ class Ticket_Admin
 			$display = $_REQUEST['searchshow'];
 		else
 			$display = $this->DEFAULTDISPLAY;
-		$query = "SELECT ";
+		$query = "SELECT ticket_id,seat,users.uname,users.firstname,users.lastname,users.private,users.phone,users.extra,users.mail,users.adress,users.birthyear,";
 		$first = true;
 		foreach ($display as $d)
 		{
@@ -516,10 +516,13 @@ class Ticket_Admin
 		$query .= " FROM users join tickets on users.uid = tickets.uid ";
 		$this->criteria = new Ticket_Criteria();
 		$query .= $this->criteria->getSqlMatch();
-		$foo = array("Control");
+		$foo = array("|","State","Seat","Ticket","","User");
+		$ignore = array('uname','firstname','private','lastname','phone','extra','mail','adress','birthyear');
 		foreach ($display as $d)
 		{
 			if ($d == 'ticket_id' || $d == 'seat' || $d == 'state')
+				continue;
+			if (in_array($d,$ignore))
 				continue;
 			$foo[] = $d;
 		}
@@ -541,7 +544,7 @@ class Ticket_Admin
 	{
 		$box = new box();
 		$temptable = new table(3);
-		$tm = array ('firstname','lastname','seat','seater','ticket_id','state','users.uid');
+		$tm = array ('firstname','lastname','seat','seater','ticket_id','state','uname','users.uid');
 		$tmp = array('searchfirstname','searchlastname','searchticket_id','searchstate');
 		$state = array('','queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
 		$orderbox = new selectbox('searchorderby');
@@ -594,37 +597,35 @@ class Ticket_Admin
 	}
 	function searchcb($row)
 	{
-		$box = new box();
-		if (isset($row['ticket_id']))
-		{
-			$box->add(fcheck("searchcommit",$row['ticket_id']));
-			if (isset($row['state']))
-			{
-				$s = new selectbox("searchstatecommit" . $row['ticket_id']);
-				$state = array('queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
-				foreach ($state as $st)
-				{
-					if ($row['state'] == $st)
-						$s->add(foption($st,$st,true));
-					else
-						$s->add(foption($st,$st,false));
-				}
-				$box->add($s);
-			}
-			if (isset($row['seat']))
-			{
-				$box->add(ftext('commitseat' . $row['ticket_id'],$row['seat'],2,4));
-			}
-			$box->add(fradio("saveoneid",$row['ticket_id']));
-			$box->add(str($row['ticket_id']));
-			$box->add(fsubmit("Save One","searchaction" ));
-		}
-		
 		$newrow = array();
-		$newrow[] = $box;
+		$newrow[] = fcheck("searchcommit",$row['ticket_id']);
+		$s = new selectbox("searchstatecommit" . $row['ticket_id']);
+		$state = array('queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
+		foreach ($state as $st)
+		{
+			if ($row['state'] == $st)
+				$s->add(foption($st,$st,true));
+			else
+				$s->add(foption($st,$st,false));
+		}
+		$newrow[] = $s;
+		$newrow[] = ftext('commitseat' . $row['ticket_id'],$row['seat'],2,4);
+		$tmpbox = new box();
+		$tmpbox->add(fradio("saveoneid",$row['ticket_id']));
+		$tmpbox->add(str($row['ticket_id']));
+		$newrow[] = $tmpbox;
+		$newrow[] = fsubmit("Save One","searchaction" );
+
+		$userinfo = new userinfo($row);
+		$ubox = new dropdown($userinfo->get_name());
+		$ubox->add($userinfo);
+		$newrow[] = $ubox;
+		$ignore = array('uname','firstname','private','lastname','phone','extra','mail','adress','birthyear');
 		foreach ($row as $a => $item)
 		{
 			if ($a == 'ticket_id' || $a == 'seat' || $a == 'state')
+				continue;
+			if (in_array($a, $ignore))
 				continue;
 			$newrow[] = $item;
 		}
@@ -640,16 +641,18 @@ class Ticket_Admin
 		if (isset($_REQUEST['commitseat' . $id]))
 		{
 			$seat = $_REQUEST['commitseat' . $id];
-			$query = "UPDATE tickets SET state = '" . database::escape($state) . "',seat='" . database::escape($seat) . "' WHERE ticket_id = '" . database::escape($id) . "';";
+			$query = "UPDATE tickets SET state = '" . database::escape($state) . "',seat='" . database::escape($seat) . "' WHERE eid='" . $this->event->eid . "' AND ticket_id = '" . database::escape($id) . "';";
 		}
 		else
 		{
-			$query = "UPDATE tickets SET state = '" . database::escape($state) . "' WHERE ticket_id = '" . database::escape($id) . "';";
+			$seat = "no change";
+			$query = "UPDATE tickets SET state = '" . database::escape($state) . "' WHERE eid = '" . $this->event->eid . "' AND ticket_id = '" . database::escape($id) . "';";
 		}
 		global $db;
 		global $page;
 		$page->warn->add(p("TicketAdmin: Lagrer endring for ticket_id $id"));
 		$db->insert($query);
+		BWlog('info',"Changing state($state) and seat($seat) for ticket $id");
 	}
 	private function saveAll()
 	{
