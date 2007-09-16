@@ -102,6 +102,8 @@ table.loginboks { margin: 0px; background: inherit; padding: 0px; background-col
 
 label { }
 
+table em strong { position: absolute; padding: 0px; left: -999em; } /* Hides menus until they are hovered */
+table em:hover strong { left: auto; margin-left: 0px; border-style: solid; border-width: medium; border-color: black; background-color: silver; z-index: 2;}
 /* Most of these are for the wiki markup */
 table.nav_table { width: 100%; }
 td.tabs_marginal { background: white; border-bottom: 1px solid black; }

@@ -554,7 +554,7 @@ class newslist extends news
 		}
 		$top->add($ctrl);
 		if (!$blank)
-			$page->ctrl2->add($top);
+			$page->ctrl1->add($top);
 	}
 }
 
