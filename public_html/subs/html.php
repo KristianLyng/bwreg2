@@ -563,6 +563,8 @@ class table extends box
 	function get()
 	{
 		$ct = $this->cols;
+		if (!isset($this->items))
+		    return "";
 		$c = 0;
 		$set = false;
 		$str = "<table";
@@ -712,6 +714,18 @@ function &fieldset($content)
 function &p($content)
 {
 	return new htmlobject("p","",$content);
+}
+function &seat_free($content)
+{
+	return new htmlobject("div", "class=\"seatfree\"", $content);
+}
+function &seat_taken($content)
+{
+	return new htmlobject("div", "class=\"seattaken\"", $content);
+}
+function &seat_self($content)
+{
+	return new htmlobject("div", "class=\"seatself\"", $content);
 }
 function &h1($content)
 {

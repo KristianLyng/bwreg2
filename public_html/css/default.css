@@ -59,6 +59,14 @@ td[colspan="5"] { text-align: center; }
 .news .menuboks li:hover ul { color: yellow;	}
 .newscontent { background-color: silver; } 
 
+.seatself { color: blue; }
+.seattaken { color: red; }
+.seatfree { color: green; }
+.SeatMap h1 { text-align: center; }
+.SeatMap .left { text-align: left; }
+.SeatMap .right { text-align: right; }
+.SeatMap .right li ul li { text-align: left; }
+
 table.grouplist { width: 500px; } 
 .grouplist td.actions { width: 170px; text-align: right } 
 .grouplist tr:hover td { background: #ccc; }

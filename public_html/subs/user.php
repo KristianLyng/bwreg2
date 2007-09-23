@@ -50,6 +50,7 @@ class userinfo
 	var $extra = "";
 	var $adress = "";
 	var $born = null;
+	var $uid;
 	var $options;
 	var $uname;
 	var $pluginextra; // Plugins add userinfo stuff here.
@@ -72,6 +73,7 @@ class userinfo
 			$this->born = str($row['birthyear']); //FIXME
 			$this->uname = $row['uname'];
 			$this->extra = $row['extra'];
+			$this->uid = $row['uid'];
 		}
 	}
 	function get()

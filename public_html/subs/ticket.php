@@ -30,12 +30,26 @@ class Ticket_state
 	private $queue_allowed;
 	private $seating_start;
 	private $seating_end;
+	private $seating_in_period;
+	private $seating_group_in_period;
 	private $seating_group_start;
 	private $seating_group_end;
 	private $seating_group_size;
 	private $init = false;
 	private $in_period = false;
 	private $eid;
+	public function seatingEnabled($groupSize = 1)
+	{
+		if (!$this->init)
+			return false;
+		if ($this->seating_in_period)
+			return true;
+		if ($this->seating_group_size > $groupSize)
+			return false;
+		if ($this->seating_group_in_period)
+			return true;
+		return false;
+	}
 	function Ticket_state ($eid)
 	{
 		global $me;
@@ -46,6 +60,8 @@ class Ticket_state
 				"period_start,".
 				"period_end,".
 				"NOW() > period_start && NOW() < period_end,".
+				"NOW() > seating_start && NOW() < seating_end,".
+				"NOW() > seating_group_start && NOW() < seating_group_end,".
 				"option_queue,".
 				"seating_start,".
 				"seating_end,".
@@ -66,6 +82,8 @@ class Ticket_state
 		$this->period_end = $result['period_end'];
 		$this->queue_allowed = $result['option_queue'];
 		$this->in_period = $result['NOW() > period_start && NOW() < period_end'];
+		$this->seating_in_period = $result['NOW() > seating_start && NOW() < seating_end'];
+		$this->seating_group_in_period = $result['NOW() > seating_group_start && NOW() < seating_group_end'];
 		$this->seating_start = $result['seating_start'];
 		$this->seating_end = $result['seating_end'];
 		$this->seating_group_start = $result['seating_group_start'];
@@ -111,7 +129,7 @@ class Ticket_state
 			return -1;
 		return $result['count(tickets.ticket_id)'];
 	}
-
+	
 	/* Checks if there are any free tickets. */
 	private function hasFree()
 	{
@@ -427,6 +445,7 @@ class Ticket_Criteria
 	private $lastname;
 	private $state; // ordered,queue,etc
 	private $ticket_id;
+	private $uname;
 	private $orderby = "firstname";
 
 	public function Ticket_Criteria()
@@ -439,6 +458,8 @@ class Ticket_Criteria
 			$this->state = new Search_Criteria ($_REQUEST['searchstate']);
 		if (isset($_REQUEST['searchticketid']) && $_REQUEST['searchticket_id'] != "")
 			$this->ticketid = new Search_Criteria ($_REQUEST['searchticket_id']);
+		if (isset($_REQUEST['searchuname']) && $_REQUEST['searchuname'] != "")
+			$this->uname = new Search_Criteria ($_REQUEST['searchuname']);
 		if (isset($_REQUEST['searchorderby']) && $_REQUEST['searchorderby'] != "")
 			$this->orderby = $_REQUEST['searchorderby'];
 	}
@@ -461,6 +482,11 @@ class Ticket_Criteria
 		if ($this->state != null)
 		{
 			$query .= $this->state->getSql('state',$first);
+			$first = false;
+		}
+		if ($this->uname != null)
+		{
+			$query .= $this->uname->getSql('uname',$first);
 			$first = false;
 		}
 		if ($this->ticket_id != null)
@@ -545,7 +571,7 @@ class Ticket_Admin
 		$box = new box();
 		$temptable = new table(3);
 		$tm = array ('firstname','lastname','seat','seater','ticket_id','state','uname','users.uid');
-		$tmp = array('searchfirstname','searchlastname','searchticket_id','searchstate');
+		$tmp = array('searchfirstname','searchlastname','searchticket_id','searchstate','searchuname');
 		$state = array('','queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
 		$orderbox = new selectbox('searchorderby');
 		foreach ($tm as $t)
@@ -703,6 +729,168 @@ class Ticket_Admin
 	}
 }
 
+/* A seat map, also takes care of registration etc.
+ */
+class Seat_Map
+{
+	private $admin = false;
+	private $crew = false;
+	private $perm;
+	private $event;
+	private $seats; 
+	private $self;
+	private $canSeat = false;
+
+	public function Seat_Map (event $event, Ticket_State $state)
+	{
+		$this->event = $event;
+		$this->state = $state;
+		$this->perm = $event->gname . "Seating";
+		if (me_perm($this->perm, "w"))
+			$this->admin = true;
+		if (me_perm($this->perm, "r"))
+			$this->crew = true;
+		$this->populateSeats();
+		$this->populateSelf();
+		$this->checkCanSeat();
+		$this->dispatchEvent();
+	}
+
+	private function checkCanSeat()
+	{
+		if (false && $this->admin)
+		{
+			$this->canSeat = true;
+			return;
+		}
+		if ($this->state->seatingEnabled(sizeof($this->self)))
+		{
+			$this->canSeat = true;
+			return true;
+		}
+		$this->canSeat = false;
+		return false;
+	}
+	/* Fetches seating information */
+	private function populateSeats()
+	{
+		global $db;
+		$query = "SELECT users.*,tickets.ticket_id,tickets.seat,tickets.state FROM users,tickets WHERE tickets.uid = users.uid AND tickets.seat != 0 AND eid = '" . database::escape($this->event->eid) . "'";
+		$this->mode = "seats";
+		$db->query($query,&$this);
+	}
+
+	private function isSelf ($uid)
+	{
+		if (!is_array($this->self))
+			return false;
+		foreach ($this->self as $me)
+		{
+			if ($me->uid == $uid)
+				return true;
+		}
+		return false;
+	}
+	/* Fetches users that has $me as seater, or just ourself */
+	private function populateSelf()
+	{
+		global $db;
+		global $me;
+		$query = "SELECT users.* FROM users,tickets WHERE users.uid = tickets.uid AND tickets.eid = '" . database::escape($this->event->eid) . "' AND (tickets.seater = '" . database::escape($me->uid) . "' OR tickets.uid = '" . database::escape($me->uid) . "');";
+	       $this->mode = "self";
+	       $db->query($query,&$this);
+
+	}
+	private function dispatchEvent ()
+	{
+		if (!isset($_REQUEST['seatEvent']))
+			return;
+	}
+
+	public function sqlcb ($row)
+	{
+		if ($this->mode == "seats")
+		{
+			$user = new userinfo($row);
+			$this->seat[$row['seat']] = $user;
+		}
+		else if ($this->mode == "self")
+		{
+			$this->self[] = new userinfo($row);
+		}
+	}
+	public function get()
+	{
+		$cols = $this->event->location->cols;
+		$rows = $this->event->location->rows;
+		$stride = 2;
+		$a = 0;
+		$box = new table($rows + 2, "SeatMap");
+		$box->add(h1($this->event->location->north),$rows + 2);
+		$box->add(str(""));
+		for (; $a < $rows/$stride; $a++)
+			$box->add(h1("Rad " . ($a+1)),2);
+		$box->add(str(""));
+
+		$half = false;
+		for ($col = 0; $col < $cols; $col++)
+		{
+			if (!$half && $col >= $cols/2)
+				$box->add(str($this->event->location->west));
+			else
+				$box->add(str(""));
+			for ($row = 0; $row < $rows; $row ++)
+			{
+				$seat = ($col+1) + ($cols * $row);
+				if(is_object($this->seat[$seat]))
+					$free = false;
+				else
+					$free = true;
+				if ($free)
+				{
+					$ubox = new dropdown(seat_free($seat));
+					if ($this->canSeat)
+					{
+						$url = page::url() . "?action=SeatMap&amp;seatEvent=setReservation&amp;seat=" . $seat;
+						$ubox->add(htlink($url,str("Reserver sete")));
+					}
+				}
+				else
+				{
+					if ($this->isSelf($this->seat[$seat]->uid))
+					{
+						$ubox = new dropdown(seat_self($seat));
+						if($this->canSeat)
+						{
+							$url = page::url() . "?action=SeatMap&amp;seatEvent=setReservation&amp;uid=";
+							$url .= $this->seat[$seat]->uid . "&amp;seat=0";
+							$ubox->add(htlink($url,str("Fjern fra sete")));
+						}
+					}
+					else
+						$ubox = new dropdown(seat_taken($seat));
+					$ubox->add($this->seat[$seat]);
+				}
+				if ($row%2 == 0)
+				$class = "right";
+				else
+					$class = "left";
+				$box->add($ubox,false,$class);
+			}
+			if (!$half && $col >= $cols/2)
+			{
+				$half = true;
+				$box->add(str($this->event->location->east));
+			}
+			else
+				$box->add(str(""));
+		}
+
+		$box->add(h1($this->event->location->south),$rows + 2);
+		return $box->get();
+	}
+}
+
 /* The user-facing class, this presents the user with an interface to the Ticket
  * class. Both from a sysadmin and normal user perspective.
  */
@@ -744,6 +932,7 @@ class Ticket_System
 	private function register_actioncb()
 	{
 		$this->last['OrderTicket'] =& add_action("OrderTicket", &$this);
+		$this->last['SeatMap'] =& add_action("SeatMap", &$this);
 		if ($this->loggedin)
 		{
 			$this->last['PaymentInfo'] =& add_action("PaymentInfo", &$this);
@@ -790,6 +979,8 @@ class Ticket_System
 		{
 			$page->content->add(new Ticket_Admin($this->event));
 		}
+		else if ($action == "SeatMap")
+			$page->content->add(new Seat_Map($this->event, $this->ticket_state));
 		next_action($action,$this->last[$action]);
 	}
 	
