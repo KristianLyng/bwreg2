@@ -517,7 +517,7 @@ class Ticket_Admin
 	private $event;
 	private $criteria;
 	private $admin = false;
-	private $DEFAULTDISPLAY = array('ticket_id','state');
+	private $DEFAULTDISPLAY = array('ticket_id','state','seater');
 	function Ticket_Admin(Event $event)
 	{
 		$this->event = $event;
@@ -738,7 +738,7 @@ class Seat_Map
 	private $crew = false;
 	private $perm;
 	private $event;
-	private $seats; 
+	private $seat; 
 	private $self;
 	private $canSeat = false;
 
@@ -759,10 +759,10 @@ class Seat_Map
 
 	private function checkCanSeat()
 	{
-		if (false && $this->admin)
+		if ($this->admin)
 		{
 			$this->canSeat = true;
-			return;
+			return true;
 		}
 		if ($this->state->seatingEnabled(sizeof($this->self)))
 		{
@@ -792,6 +792,13 @@ class Seat_Map
 		}
 		return false;
 	}
+
+	private function isFree($seat)
+	{
+		if (isset($this->seat[$seat]))
+			return false;
+		return true;
+	}
 	/* Fetches users that has $me as seater, or just ourself */
 	private function populateSelf()
 	{
@@ -802,10 +809,72 @@ class Seat_Map
 	       $db->query($query,&$this);
 
 	}
+
+	private function changeSeat($uid,$seat)
+	{
+		if (!$this->isSelf($uid))
+			throw new Error("Du kan ikke endre plass for denne brukeren ($uid).");
+		if ($seat > 0 && !$this->isFree($seat))
+			throw new Error("Plass $seat er ikke ledig");
+		if (!$this->checkCanSeat())
+			throw new Error("Du kan ikke reservere plass enda.");
+		$query = "UPDATE tickets SET seat = '" . database::escape($seat) . "' WHERE eid = '" . database::escape($this->event->eid) . "' AND uid = '" . database::escape($uid) . "';";
+		global $db;
+		$db->insert($query);
+		global $page;
+		$page->setrefresh();
+	}
+
+	private function showConfirmation($seat)
+	{
+		$box = new form();
+		$box->add(h2("Du har valgt sete nummer $seat"));
+		$tab = new table(2);
+		if (!isset($this->self))
+			throw new Error("Du kan ikke reservere plass. Har du logget inn?");
+		foreach ($this->self as $self)
+		{
+			$b = new dropdown($self->get_name);
+			$b->add($self);
+			$tab->add(fradio("uid",$self->uid));
+			$tab->add($self);
+		}
+		$box->add($tab);
+		$box->add(fhidden("SeatMap"));
+		$box->add(fhidden($seat,"seat"));
+		$box->add(fhidden("setReservation","seatEvent"));
+		$box->add(fsubmit("Lagre"));
+		$this->confirmationBox = $box;
+	}
+	private function setReservation()
+	{
+		if (!isset($_REQUEST['seat']))
+			throw new Error("Fant ikke noen setereferanse under plassreservering.");
+		$seat = $_REQUEST['seat'];
+		if (isset($_REQUEST['uid']))
+			$this->changeSeat($_REQUEST['uid'],$seat);
+		else
+			$this->showConfirmation($seat);
+	}
 	private function dispatchEvent ()
 	{
 		if (!isset($_REQUEST['seatEvent']))
 			return;
+		try 
+		{
+		switch ($_REQUEST['seatEvent'])
+		{
+			case 'setReservation':
+				$this->setReservation();
+			default: 
+				break;
+		}
+		} catch (Error $e)
+		{
+			global $page;
+			$page->warn->add($e);
+		}
+
 	}
 
 	public function sqlcb ($row)
@@ -888,6 +957,11 @@ class Seat_Map
 		}
 
 		$box->add(h1($this->event->location->south),$rows + 2);
+		if (isset($this->confirmationBox))
+		{
+			$this->confirmationBox->add($box);
+			return $this->confirmationBox->get();
+		}
 		return $box->get();
 	}
 }
