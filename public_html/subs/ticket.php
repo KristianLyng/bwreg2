@@ -293,6 +293,17 @@ class Ticket
 			return false;
 		return true;
 	}	
+	public function setSeater()
+	{
+		$seater = $_REQUEST['seater'];
+		global $db;
+		$uid = $db->query("SELECT uid FROM users WHERE uname = '" . database::escape($seater) . "';");
+		if (!$uid)
+			throw new Error("Ugyldig bruker");
+		$query = "UPDATE tickets SET seater = '". $uid['uid'] . "' WHERE uid = '" . database::escape($this->uid) . "';";
+		echo $query;
+		$db->insert($query);
+	}
 	/* Places an order if possible. Returns FALSE if unsuccessfull, TRUE if 
 	 * the order is placed and the user is confirmed as either ordered OR 
 	 * in the queue. Returns true if the user already placed an order too.
@@ -804,7 +815,12 @@ class Seat_Map
 	{
 		global $db;
 		global $me;
-		$query = "SELECT users.* FROM users,tickets WHERE users.uid = tickets.uid AND tickets.eid = '" . database::escape($this->event->eid) . "' AND (tickets.seater = '" . database::escape($me->uid) . "' OR tickets.uid = '" . database::escape($me->uid) . "');";
+		if ($this->admin)
+			$extra = "OR true";
+		else
+			$extra ="";
+
+		$query = "SELECT users.* FROM users,tickets WHERE users.uid = tickets.uid AND tickets.eid = '" . database::escape($this->event->eid) . "' AND (tickets.seater = '" . database::escape($me->uid) . "' OR tickets.uid = '" . database::escape($me->uid) . "' $extra);";
 	       $this->mode = "self";
 	       $db->query($query,&$this);
 
@@ -834,10 +850,15 @@ class Seat_Map
 			throw new Error("Du kan ikke reservere plass. Har du logget inn?");
 		foreach ($this->self as $self)
 		{
-			$b = new dropdown($self->get_name);
+			global $me;
+			$b = new dropdown($self->get_name());
 			$b->add($self);
-			$tab->add(fradio("uid",$self->uid));
-			$tab->add($self);
+			if ($self->uid == $me->uid)
+				$check = true;
+			else
+				$check = false;
+			$tab->add(fradio("uid",$self->uid,$check));
+			$tab->add($b);
 		}
 		$box->add($tab);
 		$box->add(fhidden("SeatMap"));
@@ -1010,6 +1031,7 @@ class Ticket_System
 		$this->last['SeatMap'] =& add_action("SeatMap", &$this);
 		if ($this->loggedin)
 		{
+			$this->last['TicketSetSeater'] =& add_action("TicketSetSeater", &$this);
 			$this->last['PaymentInfo'] =& add_action("PaymentInfo", &$this);
 			$this->last['TicketCancel'] =& add_action('TicketCancel',&$this);
 			$this->last['TicketCancelConfirm'] =& add_action('TicketCancelConfirm',&$this);
@@ -1050,6 +1072,12 @@ class Ticket_System
 			if (is_object($this->self_ticket))
 				$this->self_ticket->cancelOrder ();
 		}
+		else if ($action == "TicketSetSeater")
+		{
+			if (is_object($this->self_ticket))
+				$this->self_ticket->setSeater ();
+		}
+
 		else if ($action == "TicketAdmin")
 		{
 			$page->content->add(new Ticket_Admin($this->event));
