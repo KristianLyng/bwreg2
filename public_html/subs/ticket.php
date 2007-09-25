@@ -846,7 +846,7 @@ class Seat_Map
 		else
 			$extra ="";
 
-		$query = "SELECT users.* FROM users,tickets WHERE users.uid = tickets.uid AND tickets.eid = '" . database::escape($this->event->eid) . "' AND (tickets.seater = '" . database::escape($me->uid) . "' OR tickets.uid = '" . database::escape($me->uid) . "' $extra);";
+		$query = "SELECT users.* FROM users,tickets WHERE users.uid = tickets.uid AND tickets.eid = '" . database::escape($this->event->eid) . "' AND (tickets.seater = '" . database::escape($me->uid) . "' OR tickets.uid = '" . database::escape($me->uid) . "' $extra) AND state = 'Payed' ;";
 	       $this->mode = "self";
 	       $db->query($query,&$this);
 
