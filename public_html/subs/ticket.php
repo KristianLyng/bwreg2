@@ -297,12 +297,38 @@ class Ticket
 	{
 		$seater = $_REQUEST['seater'];
 		global $db;
+		global $page;
 		$uid = $db->query("SELECT uid FROM users WHERE uname = '" . database::escape($seater) . "';");
 		if (!$uid)
 			throw new Error("Ugyldig bruker");
 		$query = "UPDATE tickets SET seater = '". $uid['uid'] . "' WHERE uid = '" . database::escape($this->uid) . "';";
-		echo $query;
 		$db->insert($query);
+		$page->warn->add(str("Seater oppdatert."));
+		$page->setRefresh();
+	}
+
+	public function showSeater()
+	{
+		global $page;
+		global $db;
+		$ret = $db->query("SELECT * FROM users WHERE uid = '" . database::escape($this->seater) . "';");
+		$form = new form();
+		if ($ret)
+		{
+			$user = new userinfo($ret);
+			$form->add(str("N&aring;vaerende seater:"));
+			$aaa = new dropdown($user->get_name());
+			$aaa->add($user);
+			$form->add($aaa);
+			$uname = $user->uname;
+		}
+		else
+			$uname = "";
+		$form->add(fhidden("TicketSetSeater"));
+		$form->add(str("Brukernavn til en ny seater: "));
+		$form->add(ftext("seater",$uname));
+		$form->add(fsubmit("Sett seater"));
+		$page->content->add($form);
 	}
 	/* Places an order if possible. Returns FALSE if unsuccessfull, TRUE if 
 	 * the order is placed and the user is confirmed as either ordered OR 
@@ -1031,6 +1057,7 @@ class Ticket_System
 		$this->last['SeatMap'] =& add_action("SeatMap", &$this);
 		if ($this->loggedin)
 		{
+			$this->last['TicketShowSeater'] =& add_action("TicketShowSeater",&$this);
 			$this->last['TicketSetSeater'] =& add_action("TicketSetSeater", &$this);
 			$this->last['PaymentInfo'] =& add_action("PaymentInfo", &$this);
 			$this->last['TicketCancel'] =& add_action('TicketCancel',&$this);
@@ -1076,6 +1103,11 @@ class Ticket_System
 		{
 			if (is_object($this->self_ticket))
 				$this->self_ticket->setSeater ();
+		}
+		else if ($action == "TicketShowSeater")
+		{
+			if (is_object($this->self_ticket))
+				$this->self_ticket->showSeater ();
 		}
 
 		else if ($action == "TicketAdmin")
