@@ -460,6 +460,10 @@ class Ticket_Criteria
 			$this->ticketid = new Search_Criteria ($_REQUEST['searchticket_id']);
 		if (isset($_REQUEST['searchuname']) && $_REQUEST['searchuname'] != "")
 			$this->uname = new Search_Criteria ($_REQUEST['searchuname']);
+		if (isset($_REQUEST['searchseat']) && $_REQUEST['searchseat'] != "")
+			$this->seat = new Search_Criteria ($_REQUEST['searchseat']);
+		if (isset($_REQUEST['searchseater']) && $_REQUEST['searchseater'] != "")
+			$this->seater = new Search_Criteria ($_REQUEST['searchseater']);
 		if (isset($_REQUEST['searchorderby']) && $_REQUEST['searchorderby'] != "")
 			$this->orderby = $_REQUEST['searchorderby'];
 	}
@@ -487,6 +491,16 @@ class Ticket_Criteria
 		if ($this->uname != null)
 		{
 			$query .= $this->uname->getSql('uname',$first);
+			$first = false;
+		}
+		if ($this->seat != null)
+		{
+			$query .= $this->seat->getSql('seat',$first);
+			$first = false;
+		}
+		if ($this->seater != null)
+		{
+			$query .= $this->seater->getSql('seater',$first);
 			$first = false;
 		}
 		if ($this->ticket_id != null)
@@ -517,10 +531,7 @@ class Ticket_Admin
 	/* Lists tickets based on criteria */
 	private function displayList ()
 	{
-		if (is_array($_REQUEST['searchshow']))
-			$display = $_REQUEST['searchshow'];
-		else
-			$display = $this->DEFAULTDISPLAY;
+		$display = $this->DEFAULTDISPLAY;
 		$query = "SELECT ticket_id,seat,users.uname,users.firstname,users.lastname,users.private,users.phone,users.extra,users.mail,users.adress,users.birthyear,";
 		$first = true;
 		foreach ($display as $d)
@@ -542,7 +553,7 @@ class Ticket_Admin
 		$query .= " FROM users join tickets on users.uid = tickets.uid ";
 		$this->criteria = new Ticket_Criteria();
 		$query .= $this->criteria->getSqlMatch();
-		$foo = array("|","State","Seat","Ticket","","User");
+		$foo = array("|","State","Seat","Ticket","User");
 		$ignore = array('uname','firstname','private','lastname','phone','extra','mail','adress','birthyear');
 		foreach ($display as $d)
 		{
@@ -569,9 +580,9 @@ class Ticket_Admin
 	private function rebuildSearchForm ()
 	{
 		$box = new box();
-		$temptable = new table(3);
+		$temptable = new table(2);
 		$tm = array ('firstname','lastname','seat','seater','ticket_id','state','uname','users.uid');
-		$tmp = array('searchfirstname','searchlastname','searchticket_id','searchstate','searchuname');
+		$tmp = array('searchfirstname','searchseat','searchseater','searchusers.uid','searchlastname','searchticket_id','searchstate','searchuname');
 		$state = array('','queue','ordered','payed','canceled-not-payed','canceled-payed','canceled-refunded');
 		$orderbox = new selectbox('searchorderby');
 		foreach ($tm as $t)
@@ -583,7 +594,6 @@ class Ticket_Admin
 				$true = false;
 			if (in_array('search' . $t, $tmp))
 			{
-				$temptable->add(fcheck('searchshow',$t, $true));
 				if ($t != 'state') 
 				{
 					if (isset($_REQUEST['search' . $t]))
@@ -609,8 +619,7 @@ class Ticket_Admin
 
 
 				}
-			} else
-				$temptable->add(fcheck('searchshow',$t, $true),2);
+			} 
 			if ($_REQUEST['searchorderby'] == $t) 
 				$orderbox->add(foption($t,$t,true));
 			else
@@ -636,11 +645,10 @@ class Ticket_Admin
 		}
 		$newrow[] = $s;
 		$newrow[] = ftext('commitseat' . $row['ticket_id'],$row['seat'],2,4);
-		$tmpbox = new box();
-		$tmpbox->add(fradio("saveoneid",$row['ticket_id']));
-		$tmpbox->add(str($row['ticket_id']));
-		$newrow[] = $tmpbox;
-		$newrow[] = fsubmit("Save One","searchaction" );
+		$tbox = new box();
+		$tbox->add(str("Save #"));
+		$tbox->add(fsubmit($row['ticket_id'],"SaveOne" ));
+		$newrow[] = $tbox;
 
 		$userinfo = new userinfo($row);
 		$ubox = new dropdown($userinfo->get_name());
@@ -690,9 +698,9 @@ class Ticket_Admin
 	}
 	private function saveOne()
 	{
-		if (!isset($_REQUEST['saveoneid']))
+		if (!isset($_REQUEST['SaveOne']))
 			throw new Error("No ID submitted");
-		$this->saveId($_REQUEST['saveoneid']);
+		$this->saveId($_REQUEST['SaveOne']);
 	}
 
 	/* Handles the "internal" ticket admin event/action dispatching.
@@ -702,17 +710,10 @@ class Ticket_Admin
 		$event = $_REQUEST['searchaction'];
 		try
 		{
-			switch ($event)
-			{
-				case 'Save All':
-					$this->saveAll();
-					break;
-				case 'Save One':
-					$this->saveOne();
-
-					break;
-				default:
-			}
+			if (isset($_REQUEST['SaveOne']))
+				$this->saveOne();
+			else if (isset($_REQUEST['SaveAll']))
+				$this->saveAll();
 		} catch (Error $e)
 		{
 			global $page;
