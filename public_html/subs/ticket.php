@@ -484,9 +484,12 @@ class Ticket_Criteria
 	private $ticket_id;
 	private $uname;
 	private $orderby = "firstname";
+	private $eid;
 
 	public function Ticket_Criteria()
 	{
+		global $event;
+		$this->eid = $event->eid;
 		if (isset($_REQUEST['searchfirstname']) && $_REQUEST['searchfirstname'] != "")
 			$this->firstname = new Search_Criteria ($_REQUEST['searchfirstname']);
 		if (isset($_REQUEST['searchlastname']) && $_REQUEST['searchlastname'] != "")
@@ -509,7 +512,8 @@ class Ticket_Criteria
 	public function getSqlMatch ()
 	{
 		$query = "";
-		$first = true;
+		$first = false;
+		$query .= "WHERE eid = '" . $this->eid . "' ";
 		if ($this->firstname != null)
 		{
 			$query .= $this->firstname->getSql('firstname',$first);
