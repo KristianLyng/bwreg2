@@ -609,6 +609,8 @@ class Ticket_Admin
 		$b = $this->rebuildSearchForm();
 		$form->add($b);
 		$form->add(fsubmit("Search",'searchaction'));
+		global $db;
+		$form->add(str("Returned rows: " . $db->ret_num));
 		$form->add($sb);
 		$form->add(fsubmit("Save All",'searchaction'));
 		$form->add(fhidden('TicketAdmin'));

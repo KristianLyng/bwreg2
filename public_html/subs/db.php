@@ -6,6 +6,7 @@
 class database
 {
 	var $link;
+	public $ret_num; // number of rows returned
 	function database()
 	{
 		global $config;
@@ -50,6 +51,7 @@ class database
 			
 			$cb->sqlcb($row);
 		}
+		$this->ret_num = mysql_num_rows($result);
 		mysql_free_result($result);
 		return $bla;
 	}

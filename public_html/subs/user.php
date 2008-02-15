@@ -892,6 +892,8 @@ class grouplistopen extends grouplist
 		$tab = new table(2,"grouplist");
 		$tab->add(h1($this->title),2,"header");
 		$notblank = false;
+		if (!is_array($this->list))
+			return "";
 		foreach ($this->list as $group)
 		{
 			$skip = false;
@@ -1112,6 +1114,8 @@ class myuser extends user
 		$this->lastgrouplevelchange =& add_action("GroupUserLevelChange",&$this);
 		$this->lastgroupadmin =& add_action("GroupAdmin",&$this);
 		$this->lastgroupinfodisplay =& add_action("GroupInfoDisplay",&$this);
+		$this->lastnewpassword =& add_action("NewPassword",&$this);
+		$this->lastnewpasswordconfirmed =& add_action("NewPasswordConfirmed",&$this);
 		$resources = $this->perms->find_resource_rights("m");
 		if ($resources == false)
 			return;
@@ -1665,9 +1669,52 @@ class myuser extends user
 			$g = new group();
 			$g->set_info_display();
 			next_action($action, $this->lastgroupinfodisplay);
+		} else if ($action == "NewPassword") {
+			$this->handle_new_password();
+			next_action($action, $this->lastnewpassword);
+		} else if ($action == "NewPasswordConfirmed") {
+			$this->handle_new_password_confirmed();
+			next_action($action, $this->lastnewpasswordconfirmed);
 		} else {
 			parent::actioncb($action);
 		}
+	}
+	function handle_new_password()
+	{
+		$form = new form();
+		$form->add (fhidden("NewPasswordConfirmed"));
+		$form->add (ftext("emailadd","",40));
+		$form->add (fsubmit("Send nytt passord til denne e-postadressen"));
+		global $page;
+		$page->content->add($form);
+	}
+	function handle_new_password_confirmed()
+	{
+		global $db;
+		if (!isset($_REQUEST['emailadd']))
+			throw new Error("Fors&oslash;kte &aring; resette en konto uten &aring; legge ved e-post adresse.");
+		$query = "SELECT count(*) FROM users WHERE mail = '" . $db->escape($_REQUEST['emailadd']) . "';";
+		$ret = $db->query($query);
+	
+		if ($ret[0] != "1")
+			throw new Error("Ingen slik bruker, eller det er mer enn en bruker med denne e-post adressen.");
+		$totalChar = 7; // number of chars in the password
+		$salt = "abcdefghijklmnpqrstuvwxyzABCDEFGHIJKLMNPQRSTUVWXYZ123456789";  // salt to select chars from
+		srand((double)microtime()*1000000); // start the random generator
+		$password=""; // set the inital variable
+		for ($i=0;$i<$totalChar;$i++)  // loop and create password
+			$password = $password . substr ($salt, rand() % strlen($salt), 1);
+		$query = "UPDATE users SET pass = '" . $password . "' WHERE mail = '" . $db->escape($_REQUEST['emailadd']) . "' LIMIT 1;";
+		$db->insert($query);
+		$subject = "Nytt BWReg2 passord";
+		$to = $_REQUEST['emailadd'];
+		if (!mail ($to, $subject, "Ditt nye passord er: \"" . $password . "\".","From: noreply@bolerlan.com"))
+			throw new Error ("En feil oppstod under sending av e-post. Kontakt administratoren.");
+
+		global $page;
+		$page->content->add(p("Ett nytt passord er sendt."));
+
+		
 	}
 	function logout()
 	{
@@ -1689,6 +1736,7 @@ class myuser extends user
 		$b= new box();
 		$b->add(fsubmit("Login", "action"));
 		$b->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Ny bruker")));
+		$b->add(htlink( $page->url() . "?action=NewPassword&amp;page=" . $event->gname . "NewPassword",str("Glemt passord?")));
 		$t->add($b);
 		$form->add($t);
 		return $form->get();
@@ -1809,6 +1857,10 @@ class multiuserlist extends multiuser
 	function get()
 	{
 		$box = new box();
+		if (!is_array($this->items))
+		{
+			return "";
+		}
 		foreach($this->items as $item)
 		{
 			$dropdown = new dropdown($item->getname());
