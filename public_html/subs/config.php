@@ -6,6 +6,7 @@
 class config
 {
 	var $db;
+	var $base_path = "/index.php";
 	function config()
 	{
 		$this->db = new dbconfig();
@@ -16,7 +17,7 @@ class dbconfig
 {
 	var $user = "bwreg2";
 	var $pass = "bwreg2";
-	var $host = "localhost";
+	var $host = "db.lyngstol.int";
 	var $db = "bwreg2";
 }
 ?>

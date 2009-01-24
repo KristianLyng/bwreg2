@@ -34,6 +34,8 @@ require_once("subs/compotemp.php");
 require_once("Text/Wiki.php");
 require_once("subs/news.php");
 require_once("subs/ticket.php");
+global $base;
+$base = "/template.php";
 global $page;
 global $session;
 global $user;
@@ -70,18 +72,18 @@ function next_action($action, &$object)
 /* Set up the wiki-object */
 	$wiki =& new Text_Wiki();
 	$wiki->setRenderConf('xhtml', 'wikilink', 'view_url', 
-						 $_SERVER['PHP_SELF'] . '?page=');
+						 $base . '/');
 	$wiki->setRenderConf('xhtml', 'wikilink', 'new_url', 
-						 $_SERVER['PHP_SELF'] . '?page=');
+						 $base . '/');
 	$wiki->setRenderConf('xhtml', 'wikilink', 'pages',null);
 	$sites = array(
-		"news" => $_SERVER['PHP_SELF'] . '?page=News&action=ViewNews&news=%s', 
-		"force" => $_SERVER['PHP_SELF'] . '?page=%s', 
-		"version" => $_SERVER['PHP_SELF'] . '?action=ContentGetVersion&version=%s', 
-		"diff" => $_SERVER['PHP_SELF'] . '?action=ContentDiff&version=%s', 
+		"news" => $base . '/News?action=ViewNews&news=%s', 
+		"force" => $base . '/%s', 
+		"version" => $base . '?action=ContentGetVersion&version=%s', 
+		"diff" => $base . '?action=ContentDiff&version=%s', 
 		"action" => $_SERVER['PHP_SELF'] . '?action=%s', 
 		"file" => '', // FIXME: doesn't really work because / gets encoded.
-		"user" => $_SERVER['PHP_SELF'] . '?page=Userinfo&action=UserGetInfo&user=%s');
+		"user" => $base . '/Userinfo?action=UserGetInfo&user=%s');
 	$wiki->setFormatConf('Xhtml',array('translate'=>HTML_SPECIALCHARS)); 
 	$wiki->setRenderConf('xhtml', 'interwiki','sites', $sites);
 	$wiki->setRenderConf('xhtml', 'interwiki','target', null);
@@ -127,9 +129,9 @@ try
 	$maincontent =& new content();
 	if(!isset($maincontent->content))
 	{
-		$page->warn->add(new content("ErrorPageNotFound"));
+		$page->warn->add(new content("/Error/PageNotFound"));
 		if(me_perm($maincontent->permission,"w",$event->gid))
-			$page->warn->add(new content("ErrorPageNotFoundAdmin"));
+			$page->warn->add(new content("/Error/PageNotFoundAdmin"));
 	} 
 	$page->content->add($maincontent);
 
@@ -138,10 +140,10 @@ try
 
 /* Populate the menu */
 	$menu = new menuboks($event->title);
-	$menu->add(new content($event->gname . "Menu"));
+	$menu->add(new content("/" . $event->gname . "Menu"));
 	$page->ctrl1->add(&$menu);
-	$menucrew = new menuboks($event->title);
-	$menucrew->add(new content($event->gname . "CrewMenu"));
+	$menucrew = new menuboks("/" . $event->title);
+	$menucrew->add(new content("/" . $event->gname . "CrewMenu"));
 	$page->ctrl1->add(&$menucrew);
 	
 	$act = $maincontent->get_keyword("ACTION");

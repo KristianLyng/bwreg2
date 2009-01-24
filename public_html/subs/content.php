@@ -68,21 +68,20 @@ class content
 		if (!$title)
 		{
 			$query .= "' AND title = '";
-			if($_REQUEST['page'])
+			if($_SERVER['PATH_INFO'])
 			{
-				$pg = $_REQUEST['page'];
-				$_SESSION['page'] = $_REQUEST['page'];
+				$pg = $_SERVER['PATH_INFO'];
+				$_SESSION['page'] = $pg;
 			}
-			else if ($_SESSION['page'])
-				$pg = $_SESSION['page'];
 				
-			if(isset($pg) && $pg != "FrontPage")
+			if(isset($pg) && $pg != "/FrontPage")
 			{
 				$query .= $db->escape($pg);
 				$this->title = $pg;
 			}
 			else
 			{
+				$query .= "/";
 				$query .= $db->escape($event->title);
 				$this->title = $event->title;
 			}
@@ -289,7 +288,7 @@ class content
 		global $wiki;
 		if($this->renderme)
 		{
-			return $wiki->transform($this->content);
+			return str_replace("%2F", "/", $wiki->transform($this->content));
 		}
 			return $this->content;
 	}
