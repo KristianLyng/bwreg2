@@ -42,8 +42,8 @@
 
 function uinfolink($uname)
 {
-	global $page;
-	$url = $page->url() . "?page=Userinfo&amp;action=UserGetInfo&amp;user=" . $uname;
+	global $base;
+	$url = $base . "/User/Info?action=UserGetInfo&amp;user=" . $uname;
 	return $url;
 }
 class page  extends box
@@ -173,6 +173,7 @@ class page  extends box
 	}
 	function url()
 	{
+		global $base;
 		return $_SERVER['PHP_SELF'];
 	}
 }

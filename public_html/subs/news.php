@@ -154,11 +154,12 @@ class news
 	function edit_box($newsname)
 	{
 		global $page;
+		global $base;
 		$box = new box();
 		$box->add(str("[ "));
-		$box->add(htlink($page->url() . "?action=EditNews&amp;page=NewsEditor&amp;news=" . $newsname,str("Editer")));
+		$box->add(htlink($base . "/News/Editor?action=EditNews&amp;news=" . $newsname,str("Editer")));
 		$box->add(str(' | '));
-		$box->add(htlink($page->url() . "?action=NewsDelete&amp;page=NewsEditor&amp;news=" . $newsname,str("Slett")));
+		$box->add(htlink($base . "/News/Editor?action=NewsDelete&amp;news=" . $newsname,str("Slett")));
 		$box->add(str(' ] '));
 		return $box;
 	}
@@ -221,10 +222,10 @@ class newscategory
 	}
 	function get()
 	{
-		global $page;
+		global $base;
 		if (!isset($this->sname))
 			return;
-		$link = htlink($page->url() . "?action=ViewNews&amp;page=News&amp;sname=" . $this->sname,str($this->heading));
+		$link = htlink($base . "/News?action=ViewNews&amp&amp;sname=" . $this->sname,str($this->heading));
 		return $link->get();
 	}
 }
@@ -474,6 +475,7 @@ class newslist extends news
 	{
 		global $page;
 		global $event;
+		global $base;
 		if ($this->rss)
 		{
 			$page->rss();
@@ -488,7 +490,7 @@ class newslist extends news
 				$box->add(str("<item>\n"));
 				$box->add(str("<title>" . $item->title . "</title>\n"));
 				$box->add(str("<author>" . $item->user->get_name() . "&lt;" . $item->user->mail . "&gt;</author>"));
-				$box->add(str("<link>" . $page->url() . "?action=ViewNews&amp;page=News&amp;news=" . $item->identifier . "</link>\n"));
+				$box->add(str("<link>" . $base . "/News?action=ViewNews&amp;news=" . $item->identifier . "</link>\n"));
 				$box->add(str("<description>" . $item->title . "</description>\n"));
 				$box->add(str("</item>\n"));
 			}
@@ -503,9 +505,9 @@ class newslist extends news
 		$box->add(h1("Forfatter"),false,"newsauthor");
 		foreach ($this->list as $item)
 		{
-			$link = htlink($page->url() . "?action=ViewNews&amp;page=News&amp;news=" . $item->identifier, str($item->title));
+			$link = htlink($base . "/News?action=ViewNews&amp;news=" . $item->identifier, str($item->title));
 			$box->add($link,false,"newstitle");
-			$link = htlink($page->url() . "?action=ViewNews&amp;page=News&amp;sname=" . $item->sname, str($item->heading));
+			$link = htlink($base . "/News?action=ViewNews&amp;sname=" . $item->sname, str($item->heading));
 			$box->add($link,false,"newscategory");
 			$box->add(str($item->date),false,"newsdate");
 			$f = new dropdown($item->user->get_name());
@@ -523,6 +525,7 @@ class newslist extends news
 	function add_ctrl()
 	{
 		global $page;
+		global $base;
 		$top = new box();
 		$top->add(str("<hr />"));
 		$ctrl = new dropdown("Nyhetskontroll");
@@ -531,10 +534,10 @@ class newslist extends news
 			if (me_perm($this->category->permission,"w",$event->gid))
 			{
 				$blank = false;
-				$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
+				$ctrl->add(htlink($base . "/News/Editor?action=EditNews",str("Skriv en nyhet")));
 				if (me_perm(null,"w",$event->gid)) {
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser nyhetskategorien")));
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett nyhetskategorien")));
+					$ctrl->add(htlink($base .  "/News/Editor?action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser nyhetskategorien")));
+					$ctrl->add(htlink($base .  "/News/Editor?action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett nyhetskategorien")));
 				}
 			}
 		} else {
@@ -542,14 +545,14 @@ class newslist extends news
 			{
 				if (me_perm($cat->permission,"w",$event->gid))
 				{
-					$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=EditNews",str("Skriv en nyhet")));
+					$ctrl->add(htlink($base .  "/News/Editor?action=EditNews",str("Skriv en nyhet")));
 					$blank = false;
 					break;
 				}
 			}
 		}
 		if (me_perm(null,"w",$event->gid)) {
-			$ctrl->add(htlink($page->url() . "?page=NewsEditor&amp;action=ModifyNewsCategory",str("Legg til nyhetskategori")));
+			$ctrl->add(htlink($base . "/News/Editor?action=ModifyNewsCategory",str("Legg til nyhetskategori")));
 			$blank = false;
 		}
 		$top->add($ctrl);

@@ -227,9 +227,9 @@ class content
 	function &editlink() {
 		global $page;
 		$meny = new menu();
-		$meny->add(htlink($page->url() . "?action=EditContent&amp;page=" . $this->title,
+		$meny->add(htlink($page->url() . "?action=EditContent",
 			str("Editer denne siden")));
-		$meny->add(htlink($page->url() . "?action=ContentHistory&amp;page=" . $this->title, 
+		$meny->add(htlink($page->url() . "?action=ContentHistoryp", 
 			str("Sidehistorie")));
 		$b = new box();
 		$b->add(str("<hr />"));

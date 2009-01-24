@@ -889,6 +889,7 @@ class grouplistopen extends grouplist
 		global $me;
 		global $page;
 		global $event;
+		global $base;
 		$tab = new table(2,"grouplist");
 		$tab->add(h1($this->title),2,"header");
 		$notblank = false;
@@ -907,10 +908,10 @@ class grouplistopen extends grouplist
 				continue;
 			$notblank = true;
 			if (me_perm(null,"w",$group->gid)) {
-				$top =& htlink($page->url() . "?page=GroupAdmin&amp;action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
+				$top =& htlink($base .  "/Group/Admin?action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top); 
 			} else {
-				$top =& htlink($page->url() . "?page=GroupInfo&amp;action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
+				$top =& htlink($base . "/Group/Info?action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top); 
 			}
 			$string = "";
@@ -950,6 +951,7 @@ class grouplistuser extends grouplist
 		global $me;
 		global $page;
 		global $event;
+		global $base;
 		$notblank = false;
 		$tab = new table(2,"grouplist");
 		$tab->add(h1($this->title),2,"header");
@@ -959,10 +961,10 @@ class grouplistuser extends grouplist
 		{
 			$super = me_perm(null,"w",$group->gid);
 			if (($group->level >= 10 && $group->uname == $me->uname) || $super) {
-				$top =& htlink($page->url() . "?page=GroupAdmin&amp;action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
+				$top =& htlink($base .  "/Group/Admin?action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top);
 			} else if (preg_match("/[^ld]/",$group->options)){
-				$top =& htlink($page->url() . "?page=GroupInfo&amp;action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
+				$top =& htlink($base . "/Group/Info?action=GroupInfoDisplay&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top); 
 			} else 
 				$tab->add(str($group->name));
@@ -1122,16 +1124,17 @@ class myuser extends user
 		$this->lastresourcectrl = add_action("ResourceControl", &$this);
 		$this->lastresourceadd = add_action("ResourceAddGroup",&$this);
 		$this->lastresourcedel = add_action("ResourceRmGroup",&$this);
-		global $page;
-		$s = htlink($page->url() . "?page=ResourceControl&amp;action=ResourceControl",str("Rettighetskontroll"));
+		global $base;
+		$s = htlink($base . "/Admin/ResourceControl?action=ResourceControl",str("Rettighetskontroll"));
 		$t = $s->get();
 		$menu = new dropdown($t);
 		foreach ($resources as $item)
 		{
-			$link = $page->url() . "?action=ResourceControl&amp;resource=";
-			$link .= $item . "&amp;page=ResourceControl";
+			$link = $base . "/Admin/ResourceControl?action=ResourceControl&amp;resource=";
+			$link .= $item;
 			$menu->add(htlink($link,str($item)));
 		}
+		global $page;
 		$page->ctrl3->add($menu);
 	}
 	function handle_resource_add()
@@ -1173,6 +1176,7 @@ class myuser extends user
 		global $page;
 		global $me;
 		global $event;
+		global $base;
 		if ($user == null)
 			$user = $_REQUEST['user'];
 		if ($user == $this->uname) {
@@ -1193,7 +1197,7 @@ class myuser extends user
 			$seeall = true;
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
-			$page->content->add(htlink($page->url() . "?page=UserinfoChange&amp;action=EditUserInfo&amp;user=$user",str("Endre brukerinformasjonen")));
+			$page->content->add(htlink($base .  "/User/Change?action=EditUserInfo&amp;user=$user",str("Endre brukerinformasjonen")));
 		$tmp = "Modererte grupper $caption har s&oslash;kt p&aring;";
 		$modlist = new grouplistuser($user,true,$tmp);
 		$modlist2 = new grouplistuser($user,true,$tmp);
@@ -1726,6 +1730,7 @@ class myuser extends user
 	{
 		global $page;
 		global $event;
+		global $base;
 		$t = new table("2","loginboks");
 		$form = new form();
 		$t->add(str("Brukernavn"));
@@ -1735,8 +1740,8 @@ class myuser extends user
 		$t->add(str(""));
 		$b= new box();
 		$b->add(fsubmit("Login", "action"));
-		$b->add(htlink( $page->url() . "?action=PrintNewUser&amp;page=" . $event->gname . "PrintNewUser",str("Ny bruker")));
-		$b->add(htlink( $page->url() . "?action=NewPassword&amp;page=" . $event->gname . "NewPassword",str("Glemt passord?")));
+		$b->add(htlink( $base . "/User/New?action=PrintNewUser",str("Ny bruker")));
+		$b->add(htlink( $base . "/User/NewPassword?action=NewPassword",str("Glemt passord?")));
 		$t->add($b);
 		$form->add($t);
 		return $form->get();
@@ -1745,11 +1750,12 @@ class myuser extends user
 	{
 		global $page;
 		global $me;
+		global $base;
 		$url = $page->url();
 		$url .= "?action=Logout";
 		$object = htlink($url, str("Logg ut"));
-		$url = $page->url();
-		$url .= "?page=Userinfo&amp;action=UserGetInfo&amp;user=";
+		$url = $base;
+		$url .= "/User/Info?action=UserGetInfo&amp;user=";
 		$url .= $me->uname;
 		$object2 = htlink($url, str("Brukerinformasjon"));
 		$box->add($object);

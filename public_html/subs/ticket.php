@@ -1132,6 +1132,7 @@ class Ticket_System
 	{
 		$box = new htlist();
 		global $page;
+		global $base;
 		if ($this->self_ticket != null)
 		{
 			$state = $this->self_ticket->getState();
@@ -1139,17 +1140,17 @@ class Ticket_System
 			{
 				case "queue":
 					$box->add(str("Nummer " . $this->self_ticket->getQueue() . " i k&oslash;en"));
-					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(htlink($base .  "/Ticket/PaymentInfo?action=PaymentInfo",str("Betalingsinformasjon")));
 					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				case "ordered":
 					$box->add(str("Bestillt, men ikke betalt"));
-					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(htlink($base .  "/Ticket/PaymentInfo?action=PaymentInfo",str("Betalingsinformasjon")));
 					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				case "payed":
 					$box->add(str("Bestillt og betalt"));
-					$box->add(htlink($page->url() . "?page=PaymentInfo&amp;action=PaymentInfo",str("Betalingsinformasjon")));
+					$box->add(htlink($base .  "/Ticket/PaymentInfo?action=PaymentInfo",str("Betalingsinformasjon")));
 					$box->add(str("Billettnummer: " . $this->self_ticket->getTicketId()));
 					break;
 				default:
