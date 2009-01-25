@@ -20,12 +20,25 @@ class database
 	function error($query)
 	{
 		global $me;
-		print "An SQL error occured while loading the page. \n";
-		print "Please contact the administrator if this happens again. \n";
+		global $page;
+		$quer = "";	
 		if (is_object($me))
 		{
 				if(me_perm(null,"r"))
-					print "SQL query: $query\n";
+				{
+					$quer = "SQL query: $query\n";
+					$quer .= mysql_error();
+				}
+		}
+		if (is_object($page)) {
+			$page->warn->add(h1("An SQL error occured while loading the page."));
+			$page->warn->add(p("Please contact the administrator if this happens again."));
+			if ($quer != "")
+				$page->warn->add(p($quer));
+		} else {
+			print "An SQL error occured while loading the page. \n";
+			print "Please contact the administrator if this happens again. \n";
+			print "$quer";
 		}
 		return false;
 	}
