@@ -137,15 +137,14 @@ class news
 	{
 		global $wiki;
 		global $page;
+		global $base;
 		$user = new userinfo($row);
 		$h1 = $row['title'];
 		$h2 = new box();
 		if ($this->boss) $h2->add($this->edit_box($row['identifier'])); //fixme
-		$h2->add(htlink($page->url() . "?action=RssNews",str("RSS"),"rsslink"));
 		$h2->add(str(" " . $row['date']));
-		$drop = new dropdown("Skrevet av: " . $user->get_name());
-		$drop->add($user);
-		$h2->add($drop);
+		$h2->add(str(" Skrevet av: "));
+		$h2->add(htlink($base .  "/User/Info?action=UserGetInfo&amp;user=" .  $user->uname, $user->get_name()));
 		$news = new htmlnews(str($h1),$h2);
 		$news->add(str($wiki->transform($row['content'])));
 		$this->news[] = $news;

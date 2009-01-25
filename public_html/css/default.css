@@ -89,12 +89,15 @@ td[colspan="5"] { text-align: center; }
 #ctrl1 h1 { 
 	font-size: medium; 
 	background-color: #ffbb00;
-	padding: 0 0 0 0;
+	padding: 0px 5px 0px 5px;
 }
 #ctrl1 a {
 	text-decoration: none;
 	color: black;
 }
+#ctrl1 li {
+	padding: 0px 5px 0px 5px;
+	}
 #ctrl1 .menuboks {
 	padding: 0;
 	margin: 0;
@@ -109,11 +112,20 @@ td[colspan="5"] { text-align: center; }
 }
 
 #ctrl2 h1 { 
+	padding: 0px 5px 0px 5px;
 	font-size: medium;
 }
 #ctrl2 .menuboks {
 	padding: 0;
 	margin: 0;
+}
+#ctrl2 a {
+	color: black;
+	text-decoration: none;
+}
+#ctrl2 li {
+	padding: 0px 5px 0px 5px;
+
 }
 #ctrl3 { 
 	width: 200px; 
@@ -125,6 +137,7 @@ td[colspan="5"] { text-align: center; }
 }
 
 #ctrl3 h1 { 
+	padding: 0px 5px 0px 5px;
 	font-size: medium; 
 }
 #ctrl4 { 
@@ -136,6 +149,7 @@ td[colspan="5"] { text-align: center; }
 	background-color: #fff5d9; 
 }
 #ctrl4 h1 { 
+	padding: 0px 5px 0px 5px;
 	font-size: large; 
 }
 
@@ -172,7 +186,7 @@ td[colspan="5"] { text-align: center; }
 	top: 5px;
 /*	height: auto; */
 	background-color: #fff5d9;
-	padding: 2px;
+	padding: 5px;
 	border: solid 1px;
 }
 
@@ -182,20 +196,33 @@ td[colspan="5"] { text-align: center; }
 	border-color: black;
 	border-style: solid;
 	background-color: #ffbb00;
-	margin: 5px; 
+	margin: 5px 0px 5px 0px;
 	color: #840;
 }
 .news h1 { 
 	font-size: medium; 
+	padding: 0px 5px 0px 5px;
 	color: black; 
 } 
 .news .h2 {
+	padding: 0px 5px 0px 5px;
 	font-size: xx-small;
 	font-weight: normal; 
-} 
+}
+.news .h2 a {
+	color: #840;
+	text-decoration: none;
+}
+.news .h2 a:hover {
+	color: black;
+}
 .news .menuboks { background-color: inherit; }
 .news .menuboks li:hover ul { color: black;	}
-.newscontent { background-color: #fff5d9; color: black;} 
+.newscontent { 
+	background-color: #fff5d9; 
+	padding: 0px 5px 0px 5px;
+	color: black;
+} 
 
 .seatself { color: blue; }
 .seattaken { color: red; }
@@ -212,7 +239,6 @@ table.grouplist { width: 500px; }
 
 .infoboks { background-color: #fff5d9; border-width: thin; border-style: dashed; border-color: black; }
 .infoboks p { display: block; }
-
 .userinfo { width: 250px; margin: 0; padding: 0; font-size: medium; font-weight: normal; }
 .userinfo h1{ font-size: medium; font-weight: bold; }
 .userinfo p { font-size: small; font-weight: normal; }

@@ -78,6 +78,7 @@ class page  extends box
 		$this->top1 .= "<html><head><title>";
 		$this->htmltitle =  "$title";
 		$this->top2 = "</title>\n<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n";
+		$this->top2 .= "<link href=\"/favicon.png\" rel=\"shortcut icon\" type=\"image/png\">\n";
 		$this->top4 = "</head><body><div id=\"titl\">\n";
 		$this->top5 = "</div>\n";
 		$this->header = $header;
