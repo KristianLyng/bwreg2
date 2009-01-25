@@ -61,6 +61,7 @@ td[colspan="5"] { text-align: center; }
 	top: 0; 
 	clear: left; 
 	float: left; 
+	display: none;
 	text-align: center;
 }
 
@@ -71,10 +72,10 @@ td[colspan="5"] { text-align: center; }
 
 #logo { 
 	width: 200px; 
-	top: 0; 
 	float: left; 
 	clear: left; 
 	text-align: center; 
+	margin: 5px 5px 0px;
 }
 
 #ctrl1 { 
