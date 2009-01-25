@@ -1,7 +1,7 @@
 <?
 /* BWReg2 user classes
  *
- * Copyright (C) 2007 Kristian Lyngstol <kristian@bohemians.org>
+ * Copyright 2007-2009 Kristian Lyngstol <kristian@bohemians.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -38,6 +38,26 @@ function me_perm($resource, $perm)
 		return true;
 	return false;
 }
+
+/* New permission function. $resouce is Built from /Foo/Bar/Baz.
+ * parm_path will check the most specific resource that exist and return
+ * it. Start with /, if /Foo exist, set that, if /Foo/Bar exist, use that,
+ * if /Foo/Bar/Baz exist, use that, then return..
+ */
+ function perm_path($resource, $perm)
+ {
+	$arr = split("/",$resource);
+	$str = "/";
+	//$permission = strstr($me->permission($str),$perm);
+	if (!$permission)
+		return false;
+	foreach ($arr as $foo) {
+		
+		$str.= "You can haz: $foo\n";
+	}
+	
+	return $str;
+ }
 /* Userinfo object. Plugins get noticed when this is created and a get
  * is called. 
  */
@@ -183,7 +203,7 @@ class permissions
 		global $db;
 		if(!isset($uid) or $uid == "")
 			$uid = 0;
-		$query = "SELECT @super := COUNT(*) FROM permissions,users,group_members WHERE permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND permissions.gid = 0 AND permissions.eid = 0 ";
+		$query = "SELECT @super := COUNT(*) FROM permissions,users,group_members WHERE permissions.groupid = group_members.groupid AND group_members.uid = users.uid AND permissions.eid = 0 ";
 		$query .= "AND users.uid = '";
 		$query .= $db->escape($uid);
 		$query .= "';";
@@ -1127,9 +1147,7 @@ class myuser extends user
 			return;
 		global $db;
 		global $page;
-		// FIXME: gid
 		$query = "INSERT INTO permissions VALUES('";
-		$query .= "1" . "','";
 		$query .= $db->escape($eid) . "','";
 		$query .= $db->escape($res->resourceid) . "','";
 		$query .= $db->escape($res->resource) . "','";

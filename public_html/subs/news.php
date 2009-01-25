@@ -1,7 +1,7 @@
 <?
 
 /* BWReg2 News classes
- * Copyright (C) 2007 Kristian Lyngstol <kristian@bohemians.org>
+ * Copyright (C) 2007-2009 Kristian Lyngstol <kristian@bohemians.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -331,9 +331,8 @@ class newscategoryadmin extends newscategory
 		if(!me_perm($permission,"w"))
 			return;
 		if($this->new) {
-			// FIXME: GID
 			$query = "INSERT INTO news_categories VALUES('";
-			$query .= "1','" . $db->escape($permission) . "','";
+			$query .= $db->escape($permission) . "','";
 			$query .= $db->escape($this->sname) . "','" . $db->escape($heading) . "','";
 			$query .= $db->escape($desc) . "');";
 			$db->insert($query);
@@ -665,14 +664,12 @@ class newsedit extends news
 		
 		if ($brand == "true")
 		{
-			//FIXME: gid
 			$query = "INSERT INTO news VALUES('$eid','";
 			$query .= $db->escape($sname) . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($me->uid) . "','";
 			$query .= $db->escape($content) . "',NOW(),'";
-			$query .= $db->escape($id) . "','";
-			$query .= "1');";
+			$query .= $db->escape($id) . "');";
 			if (!$db->insert($query))
 				return false;
 		} else {

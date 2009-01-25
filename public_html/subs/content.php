@@ -1,7 +1,7 @@
 <?
 
 /* BWReg2 Data classes
- * Copyright (C) 2007 Kristian Lyngstol <kristian@bohemians.org>
+ * Copyright 2007-2009 Kristian Lyngstol <kristian@bohemians.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
