@@ -123,6 +123,16 @@ try
 	$page->logo->add(img($event->logo,$event->title));
 	$page->set_css($event->css);
 
+	$menu = new menuboks($event->title);
+	$menu->add(new content("/" . $event->gname . "Menu"));
+	$page->ctrl1->add(&$menu);
+
+/* Permission */
+	$allowed = perm_path($_SERVER['PATH_INFO'],"r");
+	if (!$allowed)
+	{
+		throw new Error("Permission denied.");	
+	}
 /* Get the content of the currently selected page and add it to $page */
 	$maincontent =& new content();
 	if(!isset($maincontent->content))
@@ -137,9 +147,6 @@ try
 	$ticket = new Ticket_System($event);
 
 /* Populate the menu */
-	$menu = new menuboks($event->title);
-	$menu->add(new content("/" . $event->gname . "Menu"));
-	$page->ctrl1->add(&$menu);
 	$menucrew = new menuboks("/" . $event->title);
 	$menucrew->add(new content("/" . $event->gname . "CrewMenu"));
 	$page->ctrl1->add(&$menucrew);

@@ -69,7 +69,7 @@ class content
 				$_SESSION['page'] = $pg;
 			}
 				
-			if(isset($pg) && $pg != "/FrontPage")
+			if(isset($pg) && $pg != "/FrontPage" && $pg != "/")
 			{
 				$query .= $db->escape($pg);
 				$this->title = $pg;

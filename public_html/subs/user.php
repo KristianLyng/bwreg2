@@ -75,6 +75,8 @@ function perm_end_path($resource, $perm)
  function perm_path($resource, $perm)
  {
  	global $me;
+	
+	$resource = preg_replace("/^\//","",$resource);
 	$arr = split("/",$resource);
 	$str = "";
 	// Special case - Initial page is /, not "".
