@@ -39,6 +39,34 @@ function me_perm($resource, $perm)
 	return false;
 }
 
+function me_perm_yai($resource, $perm)
+{
+	global $me;
+	global $event;
+	if ($resource != null && strstr($me->permission($resource),$perm))
+		return true;
+	if (strstr($me->permission("BWReg2"),$perm))
+		return true;
+	if (strstr($me->permission($event->gname),$perm))
+		return true;
+	return false;
+}
+
+define("PERMISSION_OK",1); // Permission is there and ok
+define("PERMISSION_NOTOK",2); // Permission is there, but you don't have it
+define("PERMISSION_NA",3); // No such permission
+function perm_end_path($resource, $perm)
+{
+	global $me;
+	$permission = $me->permission($resource);
+	if (!$permission)
+		return PERMISSION_NA;
+	if (strstr($permission,$perm))
+	{	
+		return PERMISSION_OK;
+	}
+	return PERMISSION_NOTOK;
+}
 /* New permission function. $resouce is Built from /Foo/Bar/Baz.
  * parm_path will check the most specific resource that exist and return
  * it. Start with /, if /Foo exist, set that, if /Foo/Bar exist, use that,
@@ -46,17 +74,22 @@ function me_perm($resource, $perm)
  */
  function perm_path($resource, $perm)
  {
+ 	global $me;
 	$arr = split("/",$resource);
-	$str = "/";
-	//$permission = strstr($me->permission($str),$perm);
-	if (!$permission)
+	$str = "";
+	// Special case - Initial page is /, not "".
+	$test = perm_end_path("/", $perm);
+	if($test != PERMISSION_OK)
 		return false;
-	foreach ($arr as $foo) {
-		
-		$str.= "You can haz: $foo\n";
-	}
 	
-	return $str;
+	foreach ($arr as $foo) 
+	{
+		$str .= "/" . $foo;
+		$res = perm_end_path($str,$perm);
+		if ($res == PERMISSION_NOTOK)
+			return false;
+	}
+	return true;
  }
 /* Userinfo object. Plugins get noticed when this is created and a get
  * is called. 
@@ -208,23 +241,37 @@ class permissions
 		$query .= $db->escape($uid);
 		$query .= "';";
 		$db->query($query);
+		$euid = "";
+		if (!is_int($uid))
+			$euid = $db->escape($uid);
+		else
+			$euid = $uid;
 		$query = "SELECT " . 
 			 "permissions.resource, " . 
 			 "permissions.resource_name, " .
-			 "IF(@super > 0, \"rwm\", permissions.permissions) as permissions, " .
+			 "IF(@super > 0, \"rwm\", IF(group_members.uid = $euid OR group_members.uid = 1,permissions.permissions,\"-\")) as permissions, " .
 			 "permissions.eid " .
 			 "FROM permissions LEFT JOIN groups ON groups.groupid = permissions.groupid " .
 			 "LEFT JOIN group_members ON group_members.groupid = groups.groupid " .
-			 "WHERE group_members.level > 0 && group_members.uid = '";
-		if (!is_int($uid))
-			$query .= $db->escape($uid);
-		else
-			$query .= $uid;
-		$query .= "' OR group_members.uid = 1 OR @super > 0;";
+			 "WHERE group_members.level > 0;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
 	{
+		$exist = $this->find_specific_resource($row['resource_name']);
+		if (is_object($exist)) {
+			if ($row['permissions'] == "-")
+				return;
+			if ($exist->permission == "-")
+			{
+				$exist->permission = $row['permissions'];
+				return;
+			}
+			if (strlen($exist->permission) < strlen($row['permissions'])) {
+				$exist->permissions = $row['permissions'];
+			}
+			return;
+		}
 		$this->keys[$row['resource']] = $row['resource_name'];
 		$this->list[] = new perm($row['eid'], $row['resource'], $row['resource_name'], $row['permissions']);
 	}
@@ -444,7 +491,7 @@ class user extends box
 		global $me;
 		global $event;
 		$seeall = false;
-		if($me->uid == $this->uid || me_perm(null,"r"))
+		if($me->uid == $this->uid || me_PERM(NULL,"r"))
 			$seeall = true;
 		$string = "";
 		if (!strstr($this->userinfo->options,"f") || $seeall)
