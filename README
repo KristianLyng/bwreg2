@@ -17,8 +17,8 @@ following should give you something to work with:
  This will give you a demonstration of BWReg2, with some random content
  and a user. Using sql/mysql.sql will work too, but you'll need to manually
  create a user and set up the initial pages to get something usable. 
- By the time this is production-ready, there will be a more proper installation
- procedure.
+ By the time this is production-ready, there will be a more proper
+ installation procedure.
 
 2. Directory layout
 ===================
@@ -28,8 +28,6 @@ sql/ - SQL Schema files, mainly MySQL atm.
 
 3. Core features
 ================
-- Host multiple genre of events (Multiple LAN parties sharing the same
-  solution). The genre's are independent, but the users are shared. 
 - ACL based permission control for maximum flexibility.
 - Dynamic content. Even most error messages are stored in the database. 
   For convenience, a Wiki-markup is used for this. Who has access to what
