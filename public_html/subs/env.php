@@ -124,7 +124,7 @@ try
 	$page->set_css($event->css);
 
 	$menu = new menuboks($event->title);
-	$menu->add(new content("/" . $event->gname . "Menu"));
+	$menu->add(new content("/Menu"));
 	$page->ctrl1->add(&$menu);
 
 /* Permission */
@@ -148,9 +148,12 @@ try
 	$page->ctrl2->add($ticket);
 
 /* Populate the menu */
-	$menucrew = new menuboks("/" . $event->title);
-	$menucrew->add(new content("/" . $event->gname . "CrewMenu"));
-	$page->ctrl1->add(&$menucrew);
+	$allowed = perm_path("/Crew/Menu","r");
+	if ($allowed) {
+		$menucrew = new menuboks("/" . $event->title);
+		$menucrew->add(new content("/Crew/Menu"));
+		$page->ctrl1->add(&$menucrew);
+	}
 	
 	$act = $maincontent->get_keyword("ACTION");
 	if ($act != false && !isset($session->action))

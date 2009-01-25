@@ -48,7 +48,6 @@ class content
 	var $content;
 	var $version;
 	var $title;
-	var $permission;
 	var $main;
 	function content($title = false, $version = -1)
 	{
@@ -59,7 +58,6 @@ class content
 		global $session;
 		global $execaction;
 		$this->renderme = true;
-		$this->permission = $event->gname . "Info";
 		$query = "SELECT content,version,title,permission FROM content WHERE title='";
 		if (!$title)
 		{
@@ -91,10 +89,6 @@ class content
 			$query .= " AND version = '" . $db->escape("$version") . "'";
 		$query .= " ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
-		if (!me_perm($this->permission,"r"))
-		{
-			$this->content = null;
-		}
 		$this->lastedit =& add_action("EditContent",$this);
 		$this->lastsave =& add_action("EditContentSave", $this);
 		$this->lastdiff =& add_action("ContentDiff", $this);
@@ -102,7 +96,7 @@ class content
 		$this->lastgetversion =& add_action("ContentGetVersion", $this);
 		if($this->main)
 		{
-			if (me_perm($this->permission,"w"))
+			if (perm_path($this->title,"w"))
 			{
 				$page->ctrl2->add($this->editlink());
 			}
@@ -130,7 +124,7 @@ class content
 			{
 				return "Error!";
 			}
-			if (!me_perm($this->permission,"w"))
+			if (!perm_path($this->title,"w"))
 				return "Error perm";
 
 			$myversion = $db->escape($version);
