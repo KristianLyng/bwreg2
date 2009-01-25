@@ -1,0 +1,19 @@
+Online. IE: template.php/Directory/Structure.
+
+This only applies to the bwreg-special stuff - Directories referenced in
+the code.
+
+Users/ Anything related to user maintenance that the user can do themself.
+Crew/ Anything that crew can do
+Admin/ Requires admin privileges
+Tickets/ Ticketstuff that the user can do themself.
+News/ News viewing and editing. 
+News/View/Foobar - Show Foobar.
+BWREG/ - Special bwreg stuff. 
+BWREG/Errors/ - Error messages
+BWREG/Menu - The main menu
+BWREG/Menu/Crew - The crew menu
+BWREG/Menu/Admin - Admin menu
+
+*/All - Every page that matches * (so BWREG/Menu/All would list BWREG/Menu
+too). Lists all pages, who modified them and when.
