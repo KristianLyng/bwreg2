@@ -145,6 +145,7 @@ try
 
 /* Ticket handeling */
 	$ticket = new Ticket_System($event);
+	$page->ctrl2->add($ticket);
 
 /* Populate the menu */
 	$menucrew = new menuboks("/" . $event->title);
@@ -155,7 +156,6 @@ try
 	if ($act != false && !isset($session->action))
 			$session->action = $act;
 
-	$page->ctrl2->add($ticket);
 
 /* Set up news handeling */
 	global $news;
