@@ -28,15 +28,14 @@ class contenthistory
 	{
 		global $event;
 		global $db;
-		$query = "SELECT title, gid, version, modified,users.uname, users.firstname, users.lastname FROM content,users WHERE content.uid = users.uid AND ";
-		$query .= "title = '" . $db->escape($title) . "' AND gid = '" . $event->gid . "' ORDER BY version DESC;";
+		$query = "SELECT title, version, modified,users.uname, users.firstname, users.lastname FROM content,users WHERE content.uid = users.uid AND ";
+		$query .= "title = '" . $db->escape($title) . "' ORDER BY version DESC;";
 		$db->query($query, &$this);
 	}
 	function sqlcb($row)
 	{
 		$myarray['version'] = $row['version'];
 		$myarray['timestamp'] = $row['modified'];
-		$myarray['gid'] = $row['gid'];
 		$myarray['title'] = $row['title'];
 		$myarray['author'] = $row['firstname'] . " " . $row['lastname'];
 		$myarray['uname'] = $row['uname'];
@@ -48,7 +47,6 @@ class content
 {
 	var $content;
 	var $version;
-	var $gid;
 	var $title;
 	var $permission;
 	var $main;
@@ -61,13 +59,10 @@ class content
 		global $session;
 		global $execaction;
 		$this->renderme = true;
-		$this->gid = $event->gid;
 		$this->permission = $event->gname . "Info";
-		$query = "SELECT content,version,title,gid,permission FROM content WHERE gid='";
-		$query .= $db->escape($event->gid);
+		$query = "SELECT content,version,title,permission FROM content WHERE title='";
 		if (!$title)
 		{
-			$query .= "' AND title = '";
 			if($_SERVER['PATH_INFO'])
 			{
 				$pg = $_SERVER['PATH_INFO'];
@@ -87,7 +82,6 @@ class content
 			}
 			$this->main = true;
 		} else {
-			$query .= "' AND title = '";
 			$query .= $db->escape($title);
 			$this->title = $title;
 			$this->main = false;
@@ -97,7 +91,7 @@ class content
 			$query .= " AND version = '" . $db->escape("$version") . "'";
 		$query .= " ORDER BY version DESC LIMIT 1;";
 		$db->query($query,&$this);
-		if (!me_perm($this->permission,"r",$event->gid))
+		if (!me_perm($this->permission,"r"))
 		{
 			$this->content = null;
 		}
@@ -108,7 +102,7 @@ class content
 		$this->lastgetversion =& add_action("ContentGetVersion", $this);
 		if($this->main)
 		{
-			if (me_perm($this->permission,"w",$event->gid))
+			if (me_perm($this->permission,"w"))
 			{
 				$page->ctrl2->add($this->editlink());
 			}
@@ -136,14 +130,12 @@ class content
 			{
 				return "Error!";
 			}
-			if (!me_perm($this->permission,"w",$event->gid))
+			if (!me_perm($this->permission,"w"))
 				return "Error perm";
 
 			$myversion = $db->escape($version);
 			$myversion++;
-			$query = "INSERT INTO content (gid,version,title,content,permission,uid) VALUES('";
-			$query .= $db->escape($event->gid);
-			$query .= "','";
+			$query = "INSERT INTO content (version,title,content,permission,uid) VALUES('";
 			$query .= $myversion . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($content) . "','";
@@ -162,7 +154,7 @@ class content
 			next_action($action,$this->lastsave);
 		} else if ($action == "ContentDiff") {
 			global $maincontent;
-			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid))
+			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w"))
 			{
 				$oldcontent = new content($this->title, $_REQUEST['version']);
 				$new = split("\n", $this->content);
@@ -175,12 +167,12 @@ class content
 			}
 			next_action($action,$this->lastdiff);
 		} else if ($action == "ContentHistory") {
-			if ($this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid) && $this->main)
+			if ($this->title == $maincontent->title && me_perm($this->permission,"w") && $this->main)
 				$this->content = $this->gethistory();
 			next_action($action,$this->lasthist);
 		} else if ($action == "ContentGetVersion") {
 			global $maincontent;
-			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w",$event->gid))
+			if ($this->main && $this->title == $maincontent->title && me_perm($this->permission,"w"))
 			{
 				$newcontent = new content($this->title, $_REQUEST['version']);
 				if (is_object($newcontent)) 
@@ -196,7 +188,6 @@ class content
 	{
 		$this->content = $row['content'];
 		$this->version = $row['version'];
-		$this->gid = $row['gid'];
 		$this->title = $row['title'];
 		$this->permission = $row['permission'];
 	}
@@ -241,19 +232,14 @@ class content
 	{
 		global $page;
 		global $me;
-		global $gid;
-		if (!me_perm($this->permission,"w",$event->gid))
+		if (!me_perm($this->permission,"w"))
 			return ;
 		$box = new form();
 		$box->add(str("<fieldset>"));
 		$box->add(flegend("Innholdsredigering"));
 		$box->add(textarea("content",htmlentities($this->content, ENT_NOQUOTES, 'UTF-8')));
 		$permlist .= "<p> Resource (ACL): <select name=\"permission\">";
-		if (isset($this->gid))
-			$gid = $this->gid;
-		else 
-			$gid = $event->gid;
-		$permlist .= $me->list_perms($gid, $this->permission,"w");
+		$permlist .= $me->list_perms($this->permission,"w");
 		$permlist .= "</select></p>";
 		
 		$box->add(str($permlist));

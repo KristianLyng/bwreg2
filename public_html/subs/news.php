@@ -124,7 +124,7 @@ class news
 		global $event;
 		global $db;
 		$this->boss =false;
-		if (me_perm($this->permission,"w",$event->gid))
+		if (me_perm($this->permission,"w"))
 			$this->boss = true;
 		$query = "SELECT users.uname,users.firstname,users.lastname,users.mail,users.birthyear,users.adress,users.phone,users.extra,users.private,";
 		$query .= "news.title,news.date,news.content,news.identifier FROM users,news WHERE news.uid = users.uid AND (eid = '0' OR eid = '";
@@ -168,13 +168,13 @@ class news
 	{
 		global $db;
 		global $event;
-		$query = "SELECT permission, sname, heading, description FROM news_categories WHERE gid = '";
-		$query .= $db->escape($event->gid) . "' AND sname = '";
+		$query = "SELECT permission, sname, heading, description FROM news_categories WHERE ";
+		$query .= "sname = '";
 		$query .= $db->escape($this->sname) . "';";
 		$ret = $db->query($query);
 		$this->category = new newscategory($ret);
 		$this->permission = $ret['permission'];
-		return me_perm($this->category->permission,"r",$event->gid);
+		return me_perm($this->category->permission,"r");
 	}
 	
 	function get()
@@ -210,8 +210,8 @@ class newscategory
 	{
 		global $db;
 		global $event;
-		$query = "SELECT permission,sname,heading,description FROM news_categories WHERE gid = '";
-		$query .= $db->escape($event->gid) . "' AND sname = '";
+		$query = "SELECT permission,sname,heading,description FROM news_categories WHERE ";
+		$query .= "sname = '";
 		$query .= $db->escape($sname) . "';";
 		$row = $db->query($query);
 		if (!$row) 
@@ -236,7 +236,7 @@ class newscategorydeleter extends newscategory
 		global $event;
 		if(!$this->find($sname))
 			return false;
-		if(!me_perm(null,"w",$event->gid))
+		if(!me_perm(null,"w"))
 			return;
 		if ($_REQUEST['deleteitall'] == "GetRidOfIt")
 			$this->delete_it_all();
@@ -260,7 +260,7 @@ class newscategorydeleter extends newscategory
 	{
 		global $event;
 		global $db;
-		$query = "DELETE FROM news WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		$query = "DELETE FROM news WHERE sname='" . $db->escape($this->sname) . "';";
 		$db->insert($query);
 		return true;
 	}
@@ -269,14 +269,14 @@ class newscategorydeleter extends newscategory
 	{
 		global $event;
 		global $db;
-		$query = "SELECT count(*) FROM news WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		$query = "SELECT count(*) FROM news WHERE sname='" . $db->escape($this->sname) . "';";
 		list($ret) = $db->query($query);
 		if ($ret != 0)
 		{
 			$this->count = $ret;
 			return false;
 		}
-		$query = "DELETE FROM news_categories WHERE gid = '" . $event->gid . "' AND sname='" . $db->escape($this->sname) . "';";
+		$query = "DELETE FROM news_categories WHERE sname='" . $db->escape($this->sname) . "';";
 		$db->insert($query);
 		$this->content = str("Sletta " . $this->heading);
 		return true;
@@ -305,10 +305,10 @@ class newscategoryadmin extends newscategory
 				$this->sname = $sname;
 				$this->permission = null;
 			}
-			if (!me_perm($this->permission,"w",$event->gid))
+			if (!me_perm($this->permission,"w"))
 				return false;
 		} else {
-			if (!me_perm(null,"w",$event->gid))
+			if (!me_perm(null,"w"))
 				return false;
 			$this->new = true;
 		}
@@ -329,18 +329,19 @@ class newscategoryadmin extends newscategory
 		$permission = $_REQUEST['permission'];
 		if(!is_numeric($permission))
 			return;
-		if(!me_perm($permission,"w",$event->gid))
+		if(!me_perm($permission,"w"))
 			return;
 		if($this->new) {
+			// FIXME: GID
 			$query = "INSERT INTO news_categories VALUES('";
-			$query .= $event->gid . "','" . $db->escape($permission) . "','";
+			$query .= "1','" . $db->escape($permission) . "','";
 			$query .= $db->escape($this->sname) . "','" . $db->escape($heading) . "','";
 			$query .= $db->escape($desc) . "');";
 			$db->insert($query);
 		} else {
 			$query = "UPDATE news_categories SET heading='" . $db->escape($heading) . "',";
 			$query .= "description = '" . $db->escape($desc) . "',permission = '";
-			$query .= $db->escape($permission) . "' WHERE gid = '" . $event->gid . "' AND ";
+			$query .= $db->escape($permission) . "' WHERE ";
 			$query .= "sname = '" . $db->escape($this->sname) . "';";
 			$db->insert($query);
 		}
@@ -370,7 +371,7 @@ class newscategoryadmin extends newscategory
 		global $event;
 		$b = new box();
 		$b->add(str("<SELECT name=\"permission\">"));
-		$b->add(str($me->list_perms($event->gid, $this->permission,"w")));
+		$b->add(str($me->list_perms($this->permission,"w")));
 		$b->add(str("</SELECT>"));
 		$t->add($b);
 		if ($this->new)
@@ -394,8 +395,7 @@ class newscategorylist
 		global $event;
 		global $db;
 		$this->right = $right;
-		$query = "SELECT permission,sname,heading,description FROM news_categories WHERE ";
-		$query .= "gid = '" . $db->escape($event->gid) . "';";
+		$query = "SELECT permission,sname,heading,description FROM news_categories;";
 		$this->list = array();
 		$db->query($query,&$this);
 		return $this;
@@ -404,7 +404,7 @@ class newscategorylist
 	function sqlcb($row)
 	{
 		global $event;
-		if(me_perm($row['permission'],$this->right,$event->gid))
+		if(me_perm($row['permission'],$this->right))
 			$this->list[] = new newscategory($row);
 	}
 }
@@ -437,9 +437,8 @@ class newslist extends news
 		}
 		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
 		$query .= "news.title,news.identifier,news.date,users.* FROM news,news_categories,users ";
-		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
-		$query .= "news_categories.gid = '";
-		$query .= $db->escape($event->gid) . "' AND ";
+		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid ";
+		$query .= "AND ";
 		if (!is_array($this->category))
 			$query .= "news.sname = '" . $db->escape($this->category->sname) . "'";
 		else
@@ -531,11 +530,11 @@ class newslist extends news
 		$ctrl = new dropdown("Nyhetskontroll");
 		$blank = true;
 		if (!is_array($this->category)) {
-			if (me_perm($this->category->permission,"w",$event->gid))
+			if (me_perm($this->category->permission,"w"))
 			{
 				$blank = false;
 				$ctrl->add(htlink($base . "/News/Editor?action=EditNews",str("Skriv en nyhet")));
-				if (me_perm(null,"w",$event->gid)) {
+				if (me_perm(null,"w")) {
 					$ctrl->add(htlink($base .  "/News/Editor?action=ModifyNewsCategory&amp;sname=" . $this->category->sname ,str("Modifiser nyhetskategorien")));
 					$ctrl->add(htlink($base .  "/News/Editor?action=DeleteNewsCategory&amp;sname=" . $this->category->sname,str("Slett nyhetskategorien")));
 				}
@@ -543,7 +542,7 @@ class newslist extends news
 		} else {
 			foreach ($this->category as $cat)
 			{
-				if (me_perm($cat->permission,"w",$event->gid))
+				if (me_perm($cat->permission,"w"))
 				{
 					$ctrl->add(htlink($base .  "/News/Editor?action=EditNews",str("Skriv en nyhet")));
 					$blank = false;
@@ -551,7 +550,7 @@ class newslist extends news
 				}
 			}
 		}
-		if (me_perm(null,"w",$event->gid)) {
+		if (me_perm(null,"w")) {
 			$ctrl->add(htlink($base . "/News/Editor?action=ModifyNewsCategory",str("Legg til nyhetskategori")));
 			$blank = false;
 		}
@@ -578,19 +577,18 @@ class onenews extends news
 		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
 		$query .= "news.title,news.content,news.identifier,news.date,users.* FROM news,news_categories,users ";
 		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
-		$query .= "news_categories.gid = '";
-		$query .= $db->escape($event->gid) . "' AND news.identifier = '";
+		$query .= "news.identifier = '";
 		$query .= $db->escape($id) . "' LIMIT 1;";
 		
 		$row = $db->query($query);
 		if (!$row)
 			return; //fixme: Error message.
-		if (!me_perm($row['permission'],"r",$event->gid))
+		if (!me_perm($row['permission'],"r"))
 			return; // fixme: ditto
 		$user = new userinfo($row);
 		$h1 = $row['title'];
 		$h2 = new box();
-		if(me_perm($row['permission'],"w",$event->gid))
+		if(me_perm($row['permission'],"w"))
 			$h2->add($this->edit_box($row['identifier']));
 		$h2->add(str($row['date']));
 		$drop = new dropdown($user->get_name());
@@ -659,7 +657,7 @@ class newsedit extends news
 		{
 			return false;
 		}
-		if (!me_perm($cat->permission,"w",$event->gid))
+		if (!me_perm($cat->permission,"w"))
 			return false;
 		if (strlen($title) < 4)
 		{
@@ -668,21 +666,22 @@ class newsedit extends news
 		
 		if ($brand == "true")
 		{
+			//FIXME: gid
 			$query = "INSERT INTO news VALUES('$eid','";
 			$query .= $db->escape($sname) . "','";
 			$query .= $db->escape($title) . "','";
 			$query .= $db->escape($me->uid) . "','";
 			$query .= $db->escape($content) . "',NOW(),'";
 			$query .= $db->escape($id) . "','";
-			$query .= $db->escape($event->gid) . "');";
+			$query .= "1');";
 			if (!$db->insert($query))
 				return false;
 		} else {
 			$query = "UPDATE news SET title = '";
 			$query .= $db->escape($title) . "', content = '";
 			$query .= $db->escape($content) . "', uid = '";
-			$query .= $db->escape($me->uid) . "' WHERE gid = '";
-			$query .= $db->escape($event->gid) . "' AND identifier = '";
+			$query .= $db->escape($me->uid) . "' WHERE ";
+			$query .= "identifier = '";
 			$query .= $db->escape($id) . "';";
 			if(!$db->insert($query))
 				return false;
@@ -699,8 +698,8 @@ class newsedit extends news
 		$id = ucwords($title);
 		$id = eregi_replace('[^a-z]', "", $id);
 		$id = substr($id,0,95);
-		$basequery = "SELECT * FROM news WHERE gid = '";
-		$basequery .= $db->escape($event->gid) . "' AND identifier = '";
+		$basequery = "SELECT * FROM news WHERE ";
+		$basequery .= "identifier = '";
 		$query = $basequery . $db->escape($id) . "';";
 		$ret = $db->query($query);
 		if (!$ret)
@@ -766,14 +765,13 @@ class newsedit extends news
 		$query = "SELECT news_categories.permission,news_categories.sname,news_categories.heading,";
 		$query .= "news.title,news.content,news.date,news.eid,users.* FROM news,news_categories,users ";
 		$query .= "WHERE news.sname = news_categories.sname AND users.uid = news.uid AND ";
-		$query .= "news_categories.gid = '";
-		$query .= $db->escape($event->gid) . "' AND news.identifier = '";
+		$query .= "news.identifier = '";
 		$query .= $db->escape($this->id) . "';";
 		$row = $db->query($query);
 		if (!$row)
 			return; //FIXME
 		$this->permission = $row['permission'];
-		if (!me_perm($this->permission,"r",$event->gid))
+		if (!me_perm($this->permission,"r"))
 			return;  
 			// You can SEE the edit box even if you can't use it. 
 			// The idea beeing that you can read it anyway, and if you know how to edit
@@ -812,7 +810,7 @@ class newsdelete extends newsedit
 			return;
 		if (!isset($this->title))
 			return;
-		if (!me_perm($this->permission,"w",$event->gid))
+		if (!me_perm($this->permission,"w"))
 			return;
 		if (!$verified) {
 			$this->set_verify_box();
@@ -825,8 +823,7 @@ class newsdelete extends newsedit
 		global $db;
 		global $event;
 		global $page;	
-		$query = "DELETE FROM news WHERE gid = '";
-		$query .= $db->escape($event->gid) . "' AND sname = '";
+		$query = "DELETE FROM news WHERE sname = '";
 		$query .= $db->escape($this->sname) . "' AND identifier = '";
 		$query .= $db->escape($this->id) . "' LIMIT 1;";
 

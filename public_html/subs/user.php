@@ -26,7 +26,7 @@
 /* Checks if the current user has $perm permission on $resource, or any
  * resource overriding it (ie: BWReg2 or gname)
  */
-function me_perm($resource, $perm, $gid = null)
+function me_perm($resource, $perm)
 {
 	global $me;
 	global $event;
@@ -34,7 +34,7 @@ function me_perm($resource, $perm, $gid = null)
 		return true;
 	if (strstr($me->permission("BWReg2"),$perm))
 		return true;
-	if ($gid != null && $event->gid == $gid && strstr($me->permission($event->gname),$perm))
+	if (strstr($me->permission($event->gname),$perm))
 		return true;
 	return false;
 }
@@ -87,7 +87,7 @@ class userinfo
 		global $me;
 		global $event;
 		$seeall = false;
-		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r",$event->gid)))
+		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r")))
 			$seeall = true;
 		if (!strstr($this->options,"f") || $seeall)
 			$name = $this->firstname;
@@ -103,7 +103,7 @@ class userinfo
 		global $event;
 		$box = new userinfoboks();
 		$seeall = false;
-		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r",$event->gid)))
+		if ($me->uid != 0 && ($me->userinfo == $this || me_perm(null,"r")))
 			$seeall = true;
 		if (!strstr($this->options,"f") || $seeall)
 			$name = $this->firstname;
@@ -155,14 +155,12 @@ class userinfo
 
 class perm 
 {
-	var $gid;
 	var $eid;
 	var $resourceid;
 	var $resource;
 	var $permission;
-	function perm($gid, $eid, $resourceid, $resource, $permission)
+	function perm($eid, $resourceid, $resource, $permission)
 	{
-		$this->gid = $gid;
 		$this->eid = $eid;
 		$this->resourceid = $resourceid;
 		$this->resource = $resource;
@@ -194,8 +192,7 @@ class permissions
 			 "permissions.resource, " . 
 			 "permissions.resource_name, " .
 			 "IF(@super > 0, \"rwm\", permissions.permissions) as permissions, " .
-			 "permissions.eid, " .
-			 "permissions.gid " . 
+			 "permissions.eid " .
 			 "FROM permissions LEFT JOIN groups ON groups.groupid = permissions.groupid " .
 			 "LEFT JOIN group_members ON group_members.groupid = groups.groupid " .
 			 "WHERE group_members.level > 0 && group_members.uid = '";
@@ -209,7 +206,7 @@ class permissions
 	function sqlcb($row)
 	{
 		$this->keys[$row['resource']] = $row['resource_name'];
-		$this->list[] = new perm($row['gid'], $row['eid'], $row['resource'], $row['resource_name'], $row['permissions']);
+		$this->list[] = new perm($row['eid'], $row['resource'], $row['resource_name'], $row['permissions']);
 	}
 
 	function find_specific_resource($resource)
@@ -226,11 +223,9 @@ class permissions
 		}
 		return $current;
 	}
-	function find($resource, $gid = null, $eid = null)
+	function find($resource, $eid = null)
 	{
 		global $event;
-		if ($gid == null)
-			$gid = $event->gid;
 		if ($eid == null)
 			$eid = $event->eid;
 
@@ -241,8 +236,7 @@ class permissions
 		{
 			if ($item->resource == $resource || $item->resourceid == $resource)
 			{
-				if ($item->gid == $gid || $item->gid == 0 && ($item->eid == 0 || $item->eid == $eid))
-					$current = $this->greater($item,$current);
+				$current = $this->greater($item,$current);
 			}
 		}
 		if ($current == null)
@@ -340,19 +334,19 @@ class user extends box
 			
 		}
 	}
-	function permission($param, $eid = null, $gid = null)
+	function permission($param, $eid = null)
 	{
-		$perm = $this->perms->find($param, "$gid", "$eid");
+		$perm = $this->perms->find($param, "$eid");
 		if($perm != null)
 			return $perm;
 		return false;
 	}
-	function list_perms($gid, $checker, $perm = "r")
+	function list_perms($checker, $perm = "r")
 	{
 		$array  = array();
 		foreach ($this->perms->list as $value)
 		{
-			if($value->gid == $gid && !isset($array[$value->resource]) && strstr($value->permission,$perm))
+			if(!isset($array[$value->resource]) && strstr($value->permission,$perm))
 			{
 				$array[$value->resource] = true;
 				$string .= "<option value=\"" . $value->resourceid . "\"";
@@ -430,7 +424,7 @@ class user extends box
 		global $me;
 		global $event;
 		$seeall = false;
-		if($me->uid == $this->uid || me_perm(null,"r",$event->gid))
+		if($me->uid == $this->uid || me_perm(null,"r"))
 			$seeall = true;
 		$string = "";
 		if (!strstr($this->userinfo->options,"f") || $seeall)
@@ -465,12 +459,11 @@ class groupmember extends userinfo
 class group
 {
 	var $getit;
-	function group($name="", $id=false, $gid="", $desc="", $level = false, $uname = false)
+	function group($name="", $id=false, $desc="", $level = false, $uname = false)
 	{
 		$this->getit = "name";
 		$this->name = $name;
 		$this->id = $id;
-		$this->gid = $gid;
 		$this->desc = $desc;
 		$this->level = $level;
 		$this->uname = $uname;
@@ -482,8 +475,7 @@ class group
 		$this->members = array();
 		$this->getit = "members";
 		$query = "SELECT level, role, uname, firstname, lastname, phone, mail, birthyear, adress, extra,private FROM group_members,groups,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND groups.groupid = '";
-		$query .= $db->escape($this->id) . "' AND gid = '";
-		$query .= $db->escape($this->gid) . "';";
+		$query .= $db->escape($this->id) . "';";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
@@ -498,7 +490,7 @@ class group
 			if ($mem->uname == $user->uname && $mem->level >= $level)
 				return true;
 		global $event;
-		if (me_perm(null,"w",$event->gid))
+		if (me_perm(null,"w"))
 			return true;
 		return false;
 	}
@@ -586,7 +578,7 @@ class group
 
 		$tab->add(flabel("options","Gruppeadmin kan"));
 		$bo = new box();
-		if ($this->id && !me_perm(null,"w",$event->gid))
+		if ($this->id && !me_perm(null,"w"))
 			$dis = true;
 		else
 			$dis = false;
@@ -622,10 +614,8 @@ class group
 		$form->add(fhidden("GroupAdmin"));
 		if ($this->id) {
 			$form->add(fhidden($this->id,"groupid"));
-			$form->add(fhidden($this->gid,"ourgid"));
-		} else {
-			$form->add(fhidden($event->gid,"ourgid"));
-		}
+		} 
+		
 			
 		$form->add($tab);
 		global $page;
@@ -647,8 +637,7 @@ class group
 			if (!$this->member_level($me,10))
 				return false;
 		}
-		$gid = $_REQUEST['ourgid'];
-		$boss = me_perm(null,"w",$gid);
+		$boss = me_perm(null,"w");
 		
 		$name = $_REQUEST['groupname'];
 		$desc = $_REQUEST['groupdesc'];
@@ -694,8 +683,7 @@ class group
 		if (!$this->id || $this->name != $name)
 		{
 			$query = "SELECT * FROM groups WHERE group_name = '";
-			$query .= $db->escape($name) . "' AND gid = '";
-			$query .= $db->escape($gid) . "';";
+			$query .= $db->escape($name) . "';";
 			if ($db->query($query))
 			{
 				$page->warn->add(p("En gruppe med det navnet eksisterer alt"));
@@ -708,19 +696,17 @@ class group
 			$query .= $db->escape($name) . "', group_description = '";
 			$query .= $db->escape($desc) . "', options = '";
 			$query .= $db->escape($opt) . "' WHERE groupid = '";
-			$query .= $db->escape($groupid) . "' AND gid = '";
-			$query .= $db->escape($gid) . "' LIMIT 1;";
+			$query .= $db->escape($groupid) . "'";
+			$query .= " LIMIT 1;";
 			$db->insert($query);
 			$this->fetch_old($groupid);
 		} else {
-			$query = "INSERT INTO groups (gid,group_name,group_description,owner,options) VALUES('";
-			$query .= $db->escape($gid) . "','";
+			$query = "INSERT INTO groups (group_name,group_description,owner,options) VALUES('";
 			$query .= $db->escape($name) . "','" . $db->escape($desc) . "','";
 			$query .= $db->escape($me->uid) . "','" . $db->escape($opt) . "');";
 			$db->insert($query);
 			$query = "SELECT groupid FROM groups WHERE group_name = '";
-			$query .= $db->escape($name) . "' AND gid = '";
-			$query .= $db->escape($gid) . "';";
+			$query .= $db->escape($name) . "';";
 			list($ret) = $db->query($query);
 			if (!$ret)
 				return false;
@@ -736,7 +722,7 @@ class group
 		global $me;
 		global $event;
 		global $page;
-		$boss = me_perm(null,"w",$event->gid);
+		$boss = me_perm(null,"w");
 		$set = false;
 		$guest = false;
 		if (!$this->member_level($me,1))
@@ -780,12 +766,10 @@ class group
 			$f->add(&$b);
 			$f->add(fhidden($mem->uname,"user"));
 			$f->add(fhidden($this->id,"groupid"));
-			$f->add(fhidden($this->gid,"ourgid"));
 			$f->add(fhidden("GroupUserLevelChange"));
 			$f->add(fsubmit("Endre"));
 			$tab->add($f);
-			$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
-			$url .= $this->gid . "&amp;user=";
+			$url = $page->url() . "?action=LeaveGroup&amp;user=";
 			$url .= $mem->uname . "&amp;group=";
 			$url .= $this->id;
 			$link = htlink($url,str("Fjern fra gruppe"));
@@ -798,13 +782,13 @@ class group
 	function fetch_old($id)
 	{
 		global $db;
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,options FROM groups WHERE groupid = '";
+		$query = "SELECT groups.groupid,groups.group_name,groups.group_description,options FROM groups WHERE groupid = '";
 		$query .= $db->escape($id) . "';";
 		$row = $db->query($query);
 		if (!$row)
 			return false;
 		$this->options = $row['options'];
-		$this->group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description']);
+		$this->group($row['group_name'],$row['groupid'], $row['group_description']);
 		return true;
 	}
 	function get()
@@ -826,19 +810,18 @@ class group
 }
 class groupresctrl extends group
 {
-	function groupresctrl($resource, $eid, $name, $id, $gid, $desc, $permissions)
+	function groupresctrl($resource, $eid, $name, $id, $desc, $permissions)
 	{
 		$this->resource = $resource;
 		$this->eid = $eid;
 		$this->permissions = $permissions;
-		parent::group($name,$id,$gid,$desc);
+		parent::group($name,$id,$desc);
 	}
 	function get()
 	{
 		global $page;
 		$url = $page->url() . "?action=ResourceRmGroup&amp;resource=";
-		$url .= $this->resource . "&amp;ourgid=";
-		$url .= $this->gid . "&amp;oureid=";
+		$url .= $this->resource . "&amp;oureid=";
 		$url .= $this->eid . "&amp;groupid=";
 		$url .= $this->id;
 		$text = $this->name . "  - " . $this->permissions . " ";
@@ -850,18 +833,15 @@ class groupresctrl extends group
 class grouplist
 {
 	var $list;
-	function grouplist($gid = null)
+	function grouplist()
 	{
 		global $db;
-		if ($gid == null)
-			return;
-		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
-		$query .= $db->escape($gid) . "';";
+		$query = "SELECT groupid,group_name,group_description FROM groups;";
 		$db->query($query,&$this);
 	}
 	function sqlcb($row)
 	{
-		$this->list[] = new group($row['group_name'],$row['groupid'],$row['gid'], $row['group_description'],$row['level'],$this->uname);
+		$this->list[] = new group($row['group_name'],$row['groupid'], $row['group_description'],$row['level'],$this->uname);
 	}
 	function get()
 	{
@@ -875,12 +855,11 @@ class grouplistopen extends grouplist
 	{
 		global $db;
 		global $event;
-		$gid = $event->gid;
 		$this->existing = $existing;
 		$this->title = $title;
 		parent::grouplist();
-		$query = "SELECT groupid,gid,group_name,group_description FROM groups WHERE gid = '";
-		$query .= $db->escape($gid) . "' AND options LIKE '%$perm%' AND group_name != 'All';";
+		$query = "SELECT groupid,group_name,group_description FROM groups WHERE";
+		$query .= " options LIKE '%$perm%' AND group_name != 'All';";
 		$this->uname = $uname;
 		$db->query($query,&$this);
 	}
@@ -907,7 +886,7 @@ class grouplistopen extends grouplist
 			if ($skip)
 				continue;
 			$notblank = true;
-			if (me_perm(null,"w",$group->gid)) {
+			if (me_perm(null,"w")) {
 				$top =& htlink($base .  "/Group/Admin?action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top); 
 			} else {
@@ -915,10 +894,9 @@ class grouplistopen extends grouplist
 				$tab->add(&$top); 
 			}
 			$string = "";
-			if ($me->uname == $this->uname || me_perm(null,"w",$group->gid))
+			if ($me->uname == $this->uname || me_perm(null,"w"))
 			{
-				$url = $page->url() . "?action=JoinGroup&amp;ourgid=";
-				$url .= $group->gid . "&amp;user=";
+				$url = $page->url() . "?action=JoinGroup&amp;user=";
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Bli med i gruppa"));
@@ -940,7 +918,7 @@ class grouplistuser extends grouplist
 			$level = "=";
 		else
 			$level = ">";
-		$query = "SELECT groups.groupid,groups.gid,groups.group_name,groups.group_description,group_members.level FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND group_members.level $level 0 AND users.uname = '";
+		$query = "SELECT groups.groupid,groups.group_name,groups.group_description,group_members.level FROM groups,group_members,users WHERE groups.groupid = group_members.groupid AND users.uid = group_members.uid AND group_members.level $level 0 AND users.uname = '";
 		$query .= $db->escape($uname) . "';";
 		$this->uname = $uname;
 		$this->title = $title;
@@ -959,7 +937,7 @@ class grouplistuser extends grouplist
 				return "";
 		foreach ($this->list as $group)
 		{
-			$super = me_perm(null,"w",$group->gid);
+			$super = me_perm(null,"w");
 			if (($group->level >= 10 && $group->uname == $me->uname) || $super) {
 				$top =& htlink($base .  "/Group/Admin?action=ShowGroupAdmin&amp;groupid=" . $group->id,str($group->name));
 				$tab->add(&$top);
@@ -971,8 +949,7 @@ class grouplistuser extends grouplist
 			$string = "";
 			if ($me->uname == $this->uname || $super)
 			{
-				$url = $page->url() . "?action=LeaveGroup&amp;ourgid=";
-				$url .= $group->gid . "&amp;user=";
+				$url = $page->url() .  "?action=LeaveGroup&amp;user=";
 				$url .= $this->uname . "&amp;group=";
 				$url .= $group->id;
 				$link = htlink($url,str("Forlat gruppa"));
@@ -988,12 +965,11 @@ class grouplistuser extends grouplist
 }
 class grouplistresadd extends grouplist
 {
-	function grouplistresadd($gid, $eid, $resource)
+	function grouplistresadd($eid, $resource)
 	{
 		$this->resource = $resource;
-		$this->gid = $gid;
 		$this->eid = $eid;
-		parent::grouplist($gid);
+		parent::grouplist();
 	}
 	function get()
 	{
@@ -1003,7 +979,6 @@ class grouplistresadd extends grouplist
 		$form->add(str("<div>"));
 		$form->add(fhidden("ResourceAddGroup"));
 		$form->add(fhidden($this->resource, "resource"));
-		$form->add(fhidden($this->gid,"ourgid"));
 		$form->add(fhidden($this->eid,"oureid"));
 		$form->add(str("<select name=\"groupid\">\n"));
 		foreach ($this->list as $group)
@@ -1038,16 +1013,15 @@ class resourcectrl
 		if(!strstr($perm->permission, "m"))
 			return ;
 		$this->perm = $perm;
-		$query = "SELECT permissions.resource_name,permissions.gid,groups.group_name,groups.groupid,groups.group_description,permissions.eid,permissions.permissions FROM permissions,groups where permissions.groupid = groups.groupid AND ";
+		$query = "SELECT permissions.resource_name,groups.group_name,groups.groupid,groups.group_description,permissions.eid,permissions.permissions FROM permissions,groups where permissions.groupid = groups.groupid AND ";
 		$query .= "resource_name = '" . $db->escape($resource) . "' ";
-		$query .= "AND permissions.gid = '" . $db->escape($perm->gid) . "' ";
 		$query .= "AND permissions.eid = '" . $db->escape($perm->eid) . "';";
 		$db->query($query,&$this);
 		$this->resource = $resource;
 	}
 	function sqlcb($row)
 	{
-		$this->list[] = new groupresctrl($row['resource_name'], $row['eid'],$row['group_name'], $row['groupid'], $row['gid'], $row['group_description'],$row['permissions']);
+		$this->list[] = new groupresctrl($row['resource_name'], $row['eid'],$row['group_name'], $row['groupid'], $row['group_description'],$row['permissions']);
 	}
 	function get()
 	{
@@ -1055,12 +1029,12 @@ class resourcectrl
 			return "No such group or you don't have permission to modify it";
 		$box = new box();
 		$box->add(h1($this->perm->resource));
-		$box->add(p("GID: " . $this->perm->gid . " EID: " . $this->perm->eid));
+		$box->add(p("EID: " . $this->perm->eid));
 		$menu = new menu("Member groups");
 		foreach ($this->list as $group)
 			$menu->addst($group->get());
 		$box->add($menu);
-		$groupadd = new grouplistresadd($this->perm->gid, $this->perm->eid, $this->resource);
+		$groupadd = new grouplistresadd($this->perm->eid, $this->resource);
 		$box->add($groupadd);
 
 		return $box->get();
@@ -1144,25 +1118,25 @@ class myuser extends user
 		$groupid = $_REQUEST['groupid'];
 		$permissions = $_REQUEST['permissions'];
 		$eid = $_REQUEST['oureid'];
-		$gid = $_REQUEST['ourgid'];
 		if (!isset($resource) || !isset($groupid) || !isset($permissions))
 			return;
-		if (!strstr($me->permission($resource, $eid, $gid),"m"))
+		if (!strstr($me->permission($resource, $eid),"m"))
 			return;
 		$res = $me->perms->find_specific_resource($resource);
 		if (!isset($res))
 			return;
 		global $db;
 		global $page;
+		// FIXME: gid
 		$query = "INSERT INTO permissions VALUES('";
-		$query .= $db->escape($gid) . "','";
+		$query .= "1" . "','";
 		$query .= $db->escape($eid) . "','";
 		$query .= $db->escape($res->resourceid) . "','";
 		$query .= $db->escape($res->resource) . "','";
 		$query .= $db->escape($permissions) . "','";
 		$query .= $db->escape($groupid) . "');";
 		$db->insert($query);
-		$page->content->add(p("Adding $groupid to $resource with $permissions (gid: $gid eid: $eid) \n"));
+		$page->content->add(p("Adding $groupid to $resource with $permissions (eid: $eid) \n"));
 	}
 	
 	/* This will list the information for a user. It will evaluate the 
@@ -1193,7 +1167,7 @@ class myuser extends user
 			$caption = $userinfo->uname;
 		}
 		$seeall = false;
-		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"r",$event->gid)))
+		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"r")))
 			$seeall = true;
 		$page->content->add($userinfo);
 		if ($me->uid != 0 && ($me->userinfo == $userinfo || me_perm(null,"w")))
@@ -1206,7 +1180,7 @@ class myuser extends user
 		if (!strstr($userinfo->options,"g") || $seeall) 
 			$page->content->add($list);
 
-		if ($this->userinfo == $userinfo || me_perm(null,"w",$event->gid))
+		if ($this->userinfo == $userinfo || me_perm(null,"w"))
 		{
 			$page->content->add($modlist);
 			$list2 = new grouplistopen($user,$list,"o","&aring;pne grupper $caption kan meldes p&aring;");
@@ -1216,7 +1190,7 @@ class myuser extends user
 					$modlist2->list[] = $item;
 			$list3 = new grouplistopen($user,$modlist2,"m", "Modererte grupper $caption kan meldes på");
 			$page->content->add($list3);
-			if (me_perm(null,"w",$event->gid))
+			if (me_perm(null,"w"))
 			{
 				$list4 = new grouplistopen($user,$modlist2,"l","Låste grupper $caption kan valse rett inn i");
 				$page->content->add($list4);
@@ -1230,18 +1204,17 @@ class myuser extends user
 		$resource = $_REQUEST['resource'];
 		$groupid = $_REQUEST['groupid'];
 		$eid = $_REQUEST['oureid'];
-		$gid = $_REQUEST['ourgid'];
 		if (!isset($resource) || !isset($groupid) || !isset($eid))
 			return;
-		if (!strstr($me->permission($resource, $eid, $gid),"m"))
+		if (!strstr($me->permission($resource, $eid),"m"))
 			return;
 		$res = $me->perms->find_specific_resource($resource);
 		if (!isset($res))
 			return;
 		global $db;
 		global $page;
-		$query = "SELECT COUNT(*) FROM permissions,users,group_members WHERE permissions.gid = '";
-		$query .= $db->escape($gid) . "' AND permissions.eid = '";
+		$query = "SELECT COUNT(*) FROM permissions,users,group_members WHERE ";
+		$query .= "permissions.eid = '";
 		$query .= $db->escape($eid) . "' AND resource = '";
 		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
 		$query .= $db->escape($res->resource) . "' AND permissions.groupid != '";
@@ -1253,8 +1226,8 @@ class myuser extends user
 			$page->content->add(p("Can't delete the last group granting you rwm permissions"));
 			return ;
 		}
-		$query = "SELECT COUNT(*) FROM permissions WHERE permissions.gid = '";
-		$query .= $db->escape($gid) . "' AND permissions.eid = '";
+		$query = "SELECT COUNT(*) FROM permissions WHERE ";
+		$query .= "permissions.eid = '";
 		$query .= $db->escape($eid) . "' AND resource = '";
 		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
 		$query .= $db->escape($res->resource) . "';"; 
@@ -1264,19 +1237,18 @@ class myuser extends user
 			$page->content->add(p("Can't delete the last group..."));
 			return;
 		}
-		$query = "DELETE FROM permissions WHERE gid = '";
-		$query .= $db->escape($gid) . "' AND eid = '";
+		$query = "DELETE FROM permissions WHERE ";
+		$query .= "eid = '";
 		$query .= $db->escape($eid) . "' AND resource = '";
 		$query .= $db->escape($res->resourceid) . "' AND resource_name = '";
 		$query .= $db->escape($res->resource) . "' AND groupid = '";
 		$query .= $db->escape($groupid) . "' LIMIT 1;";
 		$db->insert($query);
-		$page->content->add(p("Deleted $groupid on $resource (gid: $gid eid: $eid) \n"));
+		$page->content->add(p("Deleted $groupid on $resource (eid: $eid) \n"));
 	}
 
 	function handle_join_group()
 	{
-		$gid = $_REQUEST['ourgid'];
 		$user = $_REQUEST['user'];
 		$groupid = $_REQUEST['group'];
 		global $me;
@@ -1287,7 +1259,7 @@ class myuser extends user
 			$page->warn->add(content("ErrorGroupNotFound"));
 			return;
 		}
-		if ($user == $this->uname || me_perm(null,"w",$group->gid))
+		if ($user == $this->uname || me_perm(null,"w"))
 		{
 			if (!isset($group->name))
 				return;
@@ -1304,7 +1276,7 @@ class myuser extends user
 				$level = 1;
 			else if (strstr($group->options,"m"))
 				$level = 0;
-			else if (strstr($group->options,"l") && me_perm(null,"w",$group->gid))
+			else if (strstr($group->options,"l") && me_perm(null,"w"))
 				$level = "1";
 			else
 				return ;
@@ -1327,7 +1299,6 @@ class myuser extends user
 	
 	function handle_group_level_change()
 	{
-		$gid = $_REQUEST['ourgid'];
 		$user = $_REQUEST['user'];
 		$groupid = $_REQUEST['groupid'];
 		$level = $_REQUEST['level'];
@@ -1340,7 +1311,7 @@ class myuser extends user
 			return;
 		if (!$group->member_level($me,$level+1))
 			return;
-		if (me_perm(null,"w",$group->gid) || $group->member_level($me,10))
+		if (me_perm(null,"w") || $group->member_level($me,10))
 		{
 			if (!isset($group->name))
 				return;
@@ -1357,14 +1328,13 @@ class myuser extends user
 	}
 	function handle_leave_group()
 	{
-		$gid = $_REQUEST['ourgid'];
 		$user = $_REQUEST['user'];
 		$groupid = $_REQUEST['group'];
 		global $me;
 		$group = new group();
 		$group->fetch_old($groupid);
 		$group->get_members();
-		if ($user == $this->uname || me_perm(null,"w",$group->gid) || $this->member_level($me,10))
+		if ($user == $this->uname || me_perm(null,"w") || $this->member_level($me,10))
 		{
 			if (!isset($group->name))
 				return;
@@ -1546,7 +1516,7 @@ class myuser extends user
 	function handle_resource_control_blank()
 	{
 		global $event;
-		if (!me_perm(null,"m",$event->gid))
+		if (!me_perm(null,"m"))
 			return;
 		$form = new form();
 		$form->add(fhidden("ResourceControlAddList"));
@@ -1557,7 +1527,7 @@ class myuser extends user
 		$tab->add(str("Startgruppe"));
 		$box = new box();
 		$box->add(str("<div><select name=\"groupid\">\n"));
-		$grouplist = new grouplist($event->gid);
+		$grouplist = new grouplist();
 		foreach ($grouplist->list as $group)
 			$box->add(str("<option value=\"" . $group->id . "\">\n\t" . $group->name . "\n</option>\n"));
 		$box->add(str("</select></div>"));
@@ -1572,7 +1542,7 @@ class myuser extends user
 		global $event;
 		global $db;
 		global $page;	
-		if (!me_perm(null,"m",$event->gid))
+		if (!me_perm(null,"m"))
 			return;
 		$resource = $_REQUEST['aclname'];
 		$groupid = $_REQUEST['groupid'];
@@ -1589,8 +1559,8 @@ class myuser extends user
 		$query = "SELECT max(resource) FROM permissions;";
 		list($resid) = $db->query($query);
 		
-		$query = "SELECT resource FROM permissions WHERE gid = '";
-		$query .= $db->escape($event->gid) . "' AND resource_name = '";
+		$query = "SELECT resource FROM permissions WHERE ";
+		$query .= "resource_name = '";
 		$query .= $db->escape($resource) . "';";
 		global $page;	
 		if ($db->query($query))
@@ -1598,8 +1568,9 @@ class myuser extends user
 			$page->warn->add(str("Denne lista eksisterer alt."));
 			return;
 		}
+		// FIXME: GID
 		$query = "INSERT INTO permissions VALUES('";
-		$query .= $db->escape($event->gid) . "','0',$resid,'";
+		$query .= '1' . "','0',$resid,'";
 		$query .= $db->escape($resource) . "','rwm','";
 		$query .= $db->escape($groupid) . "');";
 		$db->insert($query);

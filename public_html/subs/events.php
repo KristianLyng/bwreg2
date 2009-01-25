@@ -55,7 +55,6 @@ class genrectrl
 }
 class event
 {
-	var $gid;
 	var $eid;
 	var $title;
 	var $description;
@@ -66,23 +65,10 @@ class event
 	var $payment;
 	var $start;
 	var $end;
-	function event($gid = 0, $event = 0)
+	function event()
 	{
 		global $db;
-		if($gid == null)
-		{
-			if ($_REQUEST['gid'])
-			{
-				$gid = $_REQUEST['gid'];
-				$_SESSION['gid'] = $gid;
-			}
-			else if ($_SESSION['gid'])
-				$gid = $_SESSION['gid'];
-			else
-				$gid = 1;
-		}
 		$query = "SELECT " . 
-			"gid," . 
 			"eid," .
 			"gname," .
 			"title," .
@@ -102,16 +88,7 @@ class event
 			"west, " .
 			"css " . 
 			"FROM events left join location on " . 
-			" events.location = location.location WHERE gid = '";
-		$query .= $db->escape($gid);
-		$query .= "'";
-		if($event != 0)
-		{
-			$query .= " and eid='";
-			$query .= $db->escape($event);
-			$query .= "'";
-		}
-
+			" events.location = location.location";
 		$query .= " ORDER BY eid DESC LIMIT 1;";
 		if(!$db->query($query,&$this))
 			return false;
@@ -124,7 +101,6 @@ class event
 
 	function sqlcb($row)
 	{
-		$this->gid = $row['gid'];
 		$this->eid = $row['eid'];
 		$this->title = $row['title'];
 		$this->description = $row['description'];

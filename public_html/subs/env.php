@@ -118,8 +118,6 @@ try
 	
 /* Create event-specific data (Re-populates part of $page) */
 	$event = new event();
-	if ($event->gid == 0)
-		print "No such genre/event";
 	$page->htmltitle = $event->title;
 	$page->header = $event->title;
 	$page->logo->add(img($event->logo,$event->title));
@@ -130,7 +128,7 @@ try
 	if(!isset($maincontent->content))
 	{
 		$page->warn->add(new content("/Error/PageNotFound"));
-		if(me_perm($maincontent->permission,"w",$event->gid))
+		if(me_perm($maincontent->permission,"w"))
 			$page->warn->add(new content("/Error/PageNotFoundAdmin"));
 	} 
 	$page->content->add($maincontent);

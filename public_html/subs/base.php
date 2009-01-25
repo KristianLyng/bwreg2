@@ -165,7 +165,7 @@ function BWlog($level,$message,$module = "")
 		return false;
 	global $event;
 	global $me;
-	$query = "INSERT INTO log (uid,gid,eid,level,module,message) VALUES('" . database::escape($me->uid) . "','" . $event->gid . "','" . $event->eid . "','" . database::escape($level) . "','" . database::escape($module) . "','" . database::escape($message) . "');";
+	$query = "INSERT INTO log (uid,eid,level,module,message) VALUES('" . database::escape($me->uid) . "','" . $event->eid . "','" . database::escape($level) . "','" . database::escape($module) . "','" . database::escape($message) . "');";
 	$db->insert($query);
 	
 }
