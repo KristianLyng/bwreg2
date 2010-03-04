@@ -2,7 +2,9 @@ Work in progress: for bwreg 2.1
 
 The basic goal is:
 
+0. Easier deployment of tests
 1. Cleaner usage
 2. Simplifying ACLs
 3. Better naming scheme
 4. Better code documentation
+5. Proper dependency checking upon install
