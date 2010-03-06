@@ -40,11 +40,17 @@ class str {
 		return $this->data;
 	}
 }
+
+/*
+ * "Anonymous" str function.
+ */
 function &str($str)
 {
 	return new str($str);
 }
-/* The basic container type, most other classes extends this.
+
+/*
+ * The basic container type, most other classes extends this.
  */
 class box {
 	var $items;
@@ -92,7 +98,7 @@ class box {
 			print($item->get());
 	}
 }
-
+ 
 class dateStuff 
 {
 	var $year = 1970;
