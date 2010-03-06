@@ -42,12 +42,27 @@ global $config;
 global $me;
 global $maincontent;
 $execaction = array();
+
+/* Last thing to do before we deliver the final page. Used as a exception
+ * handler, among other things.
+ */
 function down()
 {
 	global $page;
 	$page->output();
 	$_SESSION['action'] = $session->action;
 }
+
+/* add_action and next_action set up and handle actions - respectively.
+ * It's a simple linked list, but each element is responsible for the next
+ * item.
+ *
+ * $execaction["action"] contains the initial function to call when action
+ * "action" is performed. And next_action() simply calls the next action -
+ * assuming the object called it "actioncb" and assuming it exists.
+ * 
+ * Yeah, we hate your stack.
+ */
 function &add_action($action, &$object)
 {
 	global $execaction;
@@ -172,6 +187,12 @@ catch (Error $e)
     $page->warn->add($e);
 }
 /* Enviromental classes too small for their own file
+ */
+
+/*
+ * The session class - it really should be much smarter: we don't really
+ * need a session for non-logged in users and we don't need to claim that
+ * everything is private.
  */
 class session
 {

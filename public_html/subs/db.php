@@ -17,6 +17,12 @@ class database
 		}
 		print("Couldn't connect to the database.");
 	}
+	
+	/* Potentially print an suitable error message:
+	 *    either with the $page-object or plain print
+	 *    either with the SQL query if we've got null-r access, or
+	 *    without.
+	 */
 	function error($query)
 	{
 		global $me;
