@@ -27,7 +27,6 @@ require_once("subs/html.php");
 require_once("subs/user.php");
 require_once("subs/config.php");
 require_once("subs/db.php");
-require_once("subs/plugins.php");
 require_once("subs/events.php");
 require_once("subs/content.php");
 require_once("subs/compotemp.php");
@@ -40,7 +39,6 @@ global $page;
 global $session;
 global $user;
 global $config;
-global $plugins;
 global $me;
 global $maincontent;
 $execaction = array();
@@ -97,9 +95,6 @@ try
 	$config = new config();
 	$db = new database();
 	$compo = new CompoTemp();
-
-/* Possibly load plugins (Nonfunctional at themoment */
-	$plugins = new plugins();
 
 /* Create the default top page */
 	$page = new page();

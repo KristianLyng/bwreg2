@@ -108,15 +108,8 @@ class userinfo
 	var $uid;
 	var $options;
 	var $uname;
-	var $pluginextra; // Plugins add userinfo stuff here.
 	function userinfo($row = null)
 	{
-		global $plugins;
-		$this->pluginextra = new box();
-		for($tmp = 0; $tmp < $plugins->nUserinfo; $tmp++)
-		{
-			$plugins->userinfo[$tmp]->userinfo(&$this);
-		}
 		if ($row != null)
 		{
 			$this->firstname = $row['firstname'];
@@ -203,7 +196,6 @@ class userinfo
 				$box->add(str("Født: " . $this->born->get()));
 		}
 		
-		$box->add($this->pluginextra);
 		return $box;
 	}
 }
@@ -363,7 +355,6 @@ class user extends box
 	function user($token = false, $password = null)
 	{
 		$this->userinfo = new userinfo();
-		global $plugins;
 		if ($password != null)
 			$this->login($token,$password);
 		else if (is_string($token))
@@ -373,8 +364,6 @@ class user extends box
 		else
 			$this->guest();
 		$this->perms =& new permissions($this->uid);
-		for($tmp = 0; $tmp < $plugins->nUser; $tmp++)
-			$plugins->user[$tmp]->user(&$this);
 		$this->lastnewform =& add_action("PrintNewUser", &$this);
 		$this->lastuserstore =& add_action("NewUserStore", &$this);
 	}
